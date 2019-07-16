@@ -22,11 +22,17 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Events
-  const events = new ScanForVarsAndMixin(context);
-  const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => events.scanLine(l), 0));
-  const openDisposable = vscode.workspace.onDidOpenTextDocument(doc => setTimeout(() => events.scanFile(doc), 0));
+  const scan = new ScanForVarsAndMixin(context);
+  setTimeout(() => startUp(scan), 0);
 
-  vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => events.scanFile(doc), 0));
+  const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => scan.scanLine(l), 0));
+  const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
+
+  const activeDisposable = vscode.window.onDidChangeActiveTextEditor(activeEditor => {
+    if (activeEditor !== undefined) {
+      setTimeout(() => scan.scanFile(activeEditor.document), 0);
+    }
+  });
 
   const sassCompletion = new SassCompletion(context);
   const sassCompletionRegister = vscode.languages.registerCompletionItemProvider(
@@ -44,6 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
     '8',
     '9',
     '@',
+    '/',
     '&'
   );
 
@@ -56,8 +63,9 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(sassCompletionRegister);
   context.subscriptions.push(SassFormatterRegister);
-  context.subscriptions.push(openDisposable);
+  context.subscriptions.push(activeDisposable);
   context.subscriptions.push(changeDisposable);
+  context.subscriptions.push(saveDisposable);
 }
 
 function setSassLanguageConfiguration() {
@@ -78,3 +86,10 @@ function setSassLanguageConfiguration() {
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+function startUp(scan: ScanForVarsAndMixin) {
+  const openEditor = vscode.window.activeTextEditor;
+  if (openEditor !== undefined) {
+    scan.scanFile(openEditor.document);
+  }
+}

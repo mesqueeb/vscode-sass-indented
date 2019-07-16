@@ -25,6 +25,7 @@ import { STATE } from './extension';
 import { getImports, getUnits } from './schemas/sassUtils';
 import { sassAt } from './schemas/sassAt';
 import { sassPseudo } from './schemas/sassPseudo';
+import { scanImports } from './schemas/scanImports';
 
 /**
  * Naive check whether currentWord is class, id or placeholder
@@ -159,8 +160,16 @@ class SassCompletion implements CompletionItemProvider {
       values = [],
       imports = getImports(text),
       variables: CompletionItem[] = [];
+    // also get current file from the workspace State.
+    imports.push(path.basename(document.fileName));
 
     let completions: CompletionItem[] = [];
+
+    if (/^@import/.test(currentWord)) {
+      completions = scanImports(document, currentWord);
+      block = true;
+    }
+
     if (currentWord.startsWith('&')) {
       completions = sassPseudo(config.get('sass.andStared'));
       block = true;

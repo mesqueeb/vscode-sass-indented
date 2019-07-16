@@ -12,11 +12,14 @@
         "Sysoev",
         "atdirectives",
         "currentword",
+        "focusring",
         "keyframes",
         "pseudoclasses",
         "pseudoelements",
+        "resizer",
         "robinbentley",
-        "styleable"
+        "styleable",
+        "textfield"
     ],
     "cSpell.enabledLanguageIds": [
         "asciidoc",

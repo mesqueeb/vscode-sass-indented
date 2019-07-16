@@ -274,7 +274,7 @@ const pseudoRaw = {
     },
     {
       name: ':-ms-lang()',
-      desc: 'Represents an element that is in the language specified. Accepts a comma seperated list of language tokens.',
+      desc: 'Represents an element that is in the language specified. Accepts a comma separated list of language tokens.',
       browsers: 'E,IE10'
     },
     {

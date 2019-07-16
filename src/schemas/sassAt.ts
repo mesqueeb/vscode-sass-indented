@@ -28,17 +28,17 @@ const sassAtArr = [
   },
   {
     name: 'if',
-    body: '@if ${1:statement} \n \t$0 ',
+    body: '@if ${1:statement}\n\t$0 ',
     desc: '@if statement (e.g @if 1 + 1 == 2)'
   },
   {
     name: 'for',
-    body: '@for $${1:var} from ${2:1} through ${3:10} \n \t$0 ',
+    body: '@for $${1:var} from ${2:1} through ${3:10}\n\t$0 ',
     desc: 'Create a new for loop'
   },
   {
     name: 'each',
-    body: '@each $${1:var} in ${2:list/map} \n \t$0 ',
+    body: '@each $${1:var} in ${2:list/map}\n\t$0 ',
     desc: 'Create a new for each loop'
   },
   {
@@ -48,22 +48,22 @@ const sassAtArr = [
   },
   {
     name: 'media',
-    body: '@media ${1:screen} ${2:and} ( ${3|max-width: ,min-width: ,max-height: ,min-height: |} )\n \t$0',
+    body: '@media ${1:screen} ${2:and} ( ${3|max-width: ,min-width: ,max-height: ,min-height: |} )\n\t$0',
     desc: '@media'
   },
   {
     name: 'mixin',
-    body: '@mixin ${1:name}( ${2:args} ) \n \t$0',
+    body: '@mixin ${1:name}($2)\n\t$0',
     desc: 'Create a new mixin'
   },
   {
     name: 'keyframes',
-    body: '@keyframes ${1:name}\n \t0% \n \t\t$2 \n \t100% \n \t\t$3',
+    body: '@keyframes ${1:name}\n\t0%\n\t\t$2\nt100%\n\t\t$3',
     desc: '@keyframe'
   },
   {
     name: 'while',
-    body: '@while $${1:i} ${2:statement} \n \t$0 \n \t$${1:i}: $${1:i} ${3://increment/decrement}',
+    body: '@while $${1:i} ${2:statement}\n\t$0\n\t$${1:i}: $${1:i} ${3://increment/decrement}',
     desc: 'Create a new while loop'
   }
 ];

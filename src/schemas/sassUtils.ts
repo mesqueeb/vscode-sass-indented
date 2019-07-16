@@ -26,7 +26,7 @@ export function getUnits(currentword: string) {
  * @param text text of the current File.
  */
 export function getImports(text: string) {
-  const regex = /@import{1}.*/g;
+  const regex = /\/?\/? {0,}@import{1}.*/g; //
   let m: RegExpExecArray;
   const imports = [];
 
@@ -35,13 +35,15 @@ export function getImports(text: string) {
       regex.lastIndex++;
     }
     m.forEach((match: string) => {
-      let rep = match.replace('@import', '').trim();
-      const rEndsWithSass = /.sass$/;
-      if (!rEndsWithSass.test(rep)) {
-        rep = rep.concat('.sass');
-      }
+      if (!match.startsWith('//')) {
+        let rep = match.replace('@import', '').trim();
+        const rEndsWithSass = /.sass$/;
+        if (!rEndsWithSass.test(rep)) {
+          rep = rep.concat('.sass');
+        }
 
-      imports.push(rep);
+        imports.push(rep);
+      }
     });
   }
   return imports;

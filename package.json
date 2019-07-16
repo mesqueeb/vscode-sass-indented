@@ -68,12 +68,6 @@
         "scopeName": "source.sass",
         "path": "./syntaxes/sass.tmLanguage"
       }
-    ],
-    "snippets": [
-      {
-        "language": "sass",
-        "path": "./snippets/sass.json"
-      }
     ]
   },
   "scripts": {
