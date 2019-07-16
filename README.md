@@ -10,7 +10,7 @@ VSCode only has built in support for SCSS syntax so I have put this together for
 
 ## Installing
 Search for Sass from the extension installer within VSCode or put this into the command palette.
-```
+```cmd
 ext install sass-indented
 ```
 
@@ -18,9 +18,9 @@ ext install sass-indented
 
 Configuration options can be set in the `Sass (Indented)` section of VSCode settings or by editing your `settings.json` directly.
 
-| Option | Type  | Default  | Description  |
-|---|---|---|---|
-| `sass.disableAutoIndent` | boolean  | false  | Stop the extension from automatically indenting when pressing Enter |
+| Option                   | Type    | Default | Description                                                         |
+| ------------------------ | ------- | ------- | ------------------------------------------------------------------- |
+| `sass.disableAutoIndent` | boolean | false   | Stop the extension from automatically indenting when pressing Enter |
 
 ## Property/Value Autocompletion & Emmet
 Autocompletion for css properties and built in language functions _(@warn, @at-root, lighten(), darken() etc)_ is built in. As of version 1.3 VSCode supports Emmet in .sass files, the original snippets for css properties have been removed.
@@ -40,7 +40,7 @@ The source for this extension is available on [github](https://github.com/robinb
 
 ## Credits
 - Property/Value Autocompletion - [Stanislav Sysoev (@d4rkr00t)](https://github.com/d4rkr00t) for his work on [language-stylus](https://github.com/d4rkr00t/language-stylus) extension
-- Syntax highlighing - [https://github.com/P233/Syntax-highlighting-for-Sass](https://github.com/P233/Syntax-highlighting-for-Sass)
+- Syntax highlighting - [https://github.com/P233/Syntax-highlighting-for-Sass](https://github.com/P233/Syntax-highlighting-for-Sass)
 - Sass seal logo - [http://sass-lang.com/styleguide/brand](http://sass-lang.com/styleguide/brand)
 
 ## Changelog

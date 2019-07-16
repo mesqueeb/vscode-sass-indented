@@ -3,11 +3,30 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import SassCompletion from './sassAutocomplete';
+import SassFormattingProvider from './format/sassFormattingProvider';
+import { ScanForVarsAndMixin } from './schemas/sassUtils';
+
+export interface STATE {
+  [name: string]: { item: vscode.CompletionItem; type: 'Mixin' | 'Variable' };
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   setSassLanguageConfiguration();
+  // TODO SassFormatter
+  const SassFormatter = new SassFormattingProvider(context);
+  const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
+    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
+    SassFormatter
+  );
+
+  // Events
+  const events = new ScanForVarsAndMixin(context);
+  const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => events.scanLine(l), 0));
+  const openDisposable = vscode.workspace.onDidOpenTextDocument(doc => setTimeout(() => events.scanFile(doc), 0));
+
+  vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => events.scanFile(doc), 0));
 
   const sassCompletion = new SassCompletion(context);
   const sassCompletionRegister = vscode.languages.registerCompletionItemProvider(
@@ -24,7 +43,8 @@ export function activate(context: vscode.ExtensionContext) {
     '7',
     '8',
     '9',
-    '@'
+    '@',
+    '&'
   );
 
   context.subscriptions.push(
@@ -35,6 +55,9 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
   context.subscriptions.push(sassCompletionRegister);
+  context.subscriptions.push(SassFormatterRegister);
+  context.subscriptions.push(openDisposable);
+  context.subscriptions.push(changeDisposable);
 }
 
 function setSassLanguageConfiguration() {

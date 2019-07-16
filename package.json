@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax highlighting, autocomplete & snippets",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "icon": "images/sass-logo-seal.png",
   "publisher": "robinbentley",
   "repository": {
@@ -35,6 +35,16 @@
           "type": "boolean",
           "default": true,
           "description": "adds units to the intellisense completions if false."
+        },
+        "sass.andStared": {
+          "type": "array",
+          "default": [
+            "active",
+            "focus",
+            "hover",
+            "nth-child"
+          ],
+          "description": "item in this array will be at the top of the completion list (only for item that show after the & sign)"
         }
       }
     },
