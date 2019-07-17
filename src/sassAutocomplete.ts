@@ -13,11 +13,16 @@ import {
   Position,
   Range,
   TextDocument,
-  workspace
+  workspace,
+  SnippetString,
+  ExtensionContext
 } from 'vscode';
 
 import * as cssSchema from './schemas/cssSchema';
 import sassSchema from './schemas/sassSchema';
+import sassSchemaUnits from './schemas/sassSchemaUnits';
+
+import * as path from 'path';
 
 /**
  * Naive check whether currentWord is class, id or placeholder
@@ -25,11 +30,7 @@ import sassSchema from './schemas/sassSchema';
  * @return {Boolean}
  */
 export function isClassOrId(currentWord: string): boolean {
-  return (
-    currentWord.startsWith('.') ||
-    currentWord.startsWith('#') ||
-    currentWord.startsWith('%')
-  );
+  return currentWord.startsWith('.') || currentWord.startsWith('#') || currentWord.startsWith('%');
 }
 
 export function isSelector(currentWord: string): boolean {
@@ -106,16 +107,8 @@ export function getAtRules(cssSchema, currentWord: string): CompletionItem[] {
  * @param {String} currentWord
  * @return {CompletionItem}
  */
-export function getProperties(
-  cssSchema,
-  currentWord: string,
-  useSeparator: boolean
-): CompletionItem[] {
-  if (
-    isClassOrId(currentWord) ||
-    isAtRule(currentWord) ||
-    isSelector(currentWord)
-  ) {
+export function getProperties(cssSchema, currentWord: string, useSeparator: boolean): CompletionItem[] {
+  if (isClassOrId(currentWord) || isAtRule(currentWord) || isSelector(currentWord)) {
     return [];
   }
 
@@ -153,37 +146,127 @@ export function getValues(cssSchema, currentWord: string): CompletionItem[] {
     return completionItem;
   });
 }
+/**
+ * checks if currentWord last char is a number?
+ * @param {String} currentWord
+ * @return {CompletionItem}
+ */
+export function isNumber(currentWord: string): boolean {
+  const reg = /[0-9]$/;
+  return reg.test(currentWord) && !currentWord.includes('#');
+}
+/**
+ * gets variable completions.
+ * @param text
+ */
+export function getVariables(text: string, name: string) {
+  const regex = /\${1}\S*:/g;
+  let m;
+  const variables = [];
 
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index === regex.lastIndex) {
+      regex.lastIndex++;
+    }
+    m.forEach((match: string) => {
+      const rep = match.replace(':', '');
+      const completionItem = new CompletionItem(rep);
+      completionItem.insertText = rep;
+      completionItem.detail = `(${rep.replace('$', '')}) - ${name} Variable.`;
+
+      completionItem.kind = CompletionItemKind.Variable;
+      variables.push(completionItem);
+    });
+  }
+  return variables;
+}
+/**
+ * gets unit completions.
+ * @param currentword
+ */
+export function getUnits(currentword: string) {
+  const units = [];
+
+  sassSchemaUnits.forEach(item => {
+    const lastWord = currentword.split(' ');
+    const rep = lastWord[lastWord.length - 1];
+    const completionItem = new CompletionItem(rep + item.name);
+    completionItem.insertText = new SnippetString(rep + item.body);
+    completionItem.detail = item.description;
+    completionItem.kind = CompletionItemKind.Unit;
+    units.push(completionItem);
+  });
+  return units;
+}
+/**
+ * Get the imports.
+ * @param text text of the current File.
+ */
+export function getImports(text) {
+  const regex = /@import{1}.*/g;
+  let m;
+  const imports = [];
+
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index === regex.lastIndex) {
+      regex.lastIndex++;
+    }
+    m.forEach((match: string) => {
+      let rep = match.replace('@import', '').trim();
+      const rEndsWithSass = /.sass$/;
+      if (!rEndsWithSass.test(rep)) {
+        rep = rep.concat('.sass');
+      }
+
+      imports.push(rep);
+    });
+  }
+  return imports;
+}
+
+export let importData: string;
 class SassCompletion implements CompletionItemProvider {
-  provideCompletionItems(
-    document: TextDocument,
-    position: Position,
-    token: CancellationToken
-  ): CompletionItem[] {
+  context: ExtensionContext;
+  constructor(context: ExtensionContext) {
+    this.context = context;
+  }
+  provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): CompletionItem[] {
     const start = new Position(position.line, 0);
     const range = new Range(start, position);
     const currentWord = document.getText(range).trim();
+    const currentWordUT = document.getText(range);
     const text = document.getText();
     const value = isValue(cssSchema, currentWord);
     const config = workspace.getConfiguration('sass-indented');
+    const disableUnitCompletion: boolean = workspace.getConfiguration('sass').get('disableUnitCompletion');
 
     let atRules = [],
+      Units = [],
       properties = [],
-      values = [];
+      values = [],
+      imports = getImports(text),
+      variables = [];
 
+    variables = getVariables(text, path.basename(document.fileName));
+    this.context.workspaceState.update(path.normalize(document.fileName), variables);
+
+    if (isNumber(currentWordUT) && !disableUnitCompletion) {
+      Units = getUnits(currentWord);
+    }
     if (value) {
       values = getValues(cssSchema, currentWord);
+      imports.forEach(item => {
+        const varArr = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
+        if (varArr) {
+          variables = variables.concat(varArr);
+        }
+      });
     } else {
+      variables = [];
       atRules = getAtRules(cssSchema, currentWord);
-      properties = getProperties(
-        cssSchema,
-        currentWord,
-        config.get('useSeparator', true)
-      );
+      properties = getProperties(cssSchema, currentWord, config.get('useSeparator', true));
     }
-
-    const completions = [].concat(atRules, properties, values, sassSchema);
-
+    const completions = [].concat(atRules, properties, values, sassSchema, Units, variables);
     return completions;
   }
 }
