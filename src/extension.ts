@@ -20,6 +20,16 @@ export function activate(context: vscode.ExtensionContext) {
     [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
     SassFormatter
   );
+  const config = vscode.workspace.getConfiguration();
+  const disableEmmet = config.get('sass.disableEmmet');
+
+  if (disableEmmet) {
+    const emmetSettings: string[] = config.get('emmet.excludeLanguages');
+    if (emmetSettings.find(value => value === 'sass') === undefined) {
+      emmetSettings.push('sass');
+      config.update('emmet.excludeLanguages', emmetSettings);
+    }
+  }
 
   // Events
   const scan = new ScanForVarsAndMixin(context);
@@ -51,6 +61,8 @@ export function activate(context: vscode.ExtensionContext) {
     '9',
     '@',
     '/',
+    '?',
+    '?.',
     '&'
   );
 

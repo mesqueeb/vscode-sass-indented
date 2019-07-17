@@ -36,6 +36,11 @@
           "default": true,
           "description": "adds units to the intellisense completions if false."
         },
+        "sass.disableEmmet": {
+          "type": "boolean",
+          "default": true,
+          "description": "disables emmet in the workspace settings to enable emmet remove sass from emmet.excludeLanguages, and disable this option."
+        },
         "sass.andStared": {
           "type": "array",
           "default": [

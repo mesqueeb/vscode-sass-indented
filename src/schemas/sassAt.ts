@@ -1,6 +1,6 @@
 import { CompletionItem, SnippetString, CompletionItemKind } from 'vscode';
 
-const sassAtArr = [
+export const sassAtArr = [
   {
     name: 'debug',
     body: '@debug ',

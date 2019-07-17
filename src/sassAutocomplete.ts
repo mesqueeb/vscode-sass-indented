@@ -26,6 +26,7 @@ import { getImports, getUnits } from './schemas/sassUtils';
 import { sassAt } from './schemas/sassAt';
 import { sassPseudo } from './schemas/sassPseudo';
 import { scanImports } from './schemas/scanImports';
+import { Abbreviations } from './sassAbbreviations';
 
 /**
  * Naive check whether currentWord is class, id or placeholder
@@ -164,6 +165,11 @@ class SassCompletion implements CompletionItemProvider {
     imports.push(path.basename(document.fileName));
 
     let completions: CompletionItem[] = [];
+    // TODO abbreviations.
+    if (currentWord.startsWith('?')) {
+      Abbreviations(document, start);
+      return;
+    }
 
     if (/^@import/.test(currentWord)) {
       completions = scanImports(document, currentWord);
