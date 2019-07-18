@@ -7,41 +7,62 @@ import {
   window,
   Range,
   DecorationOptions,
-  TextEditor
+  TextEditor,
+  FormattingOptions
 } from 'vscode';
+import {
+  isClassOrId,
+  detectTabOffset as detectTabIndentation,
+  detectCLassOrIdOffset,
+  replaceWithOffset,
+  isProperty,
+  isEmpty,
+  isAtRule,
+  isMixin,
+  isAnd
+} from '../functions/sassUtils';
 // TODO SassFormatter
 class SassFormattingProvider implements DocumentFormattingEditProvider {
   context: ExtensionContext;
   constructor(context: ExtensionContext) {
     this.context = context;
   }
-  provideDocumentFormattingEdits(document: TextDocument): ProviderResult<TextEdit[]> {
-    const text = document.getText();
-    const activeEditor = window.activeTextEditor;
-    const tabSize = activeEditor.options.tabSize;
-    if (!activeEditor && activeEditor.document === undefined) {
-      return [];
-    }
+  provideDocumentFormattingEdits(document: TextDocument, options: FormattingOptions): ProviderResult<TextEdit[]> {
     console.log('FORMAT');
     let result: ProviderResult<TextEdit[]> = [];
 
-    function updateDecorations() {
-      if (!activeEditor) {
-        return;
-      }
-      const regEx = /\d+/g;
-      const text = activeEditor.document.getText();
-      const smallNumbers: DecorationOptions[] = [];
-      const largeNumbers: DecorationOptions[] = [];
-      let match;
-      while ((match = regEx.exec(text))) {
-        const startPos = activeEditor.document.positionAt(match.index);
-        const endPos = activeEditor.document.positionAt(match.index + match[0].length);
-        const decoration = { range: new Range(startPos, endPos), hoverMessage: 'Number **' + match[0] + '**' };
-        if (match[0].length < 3) {
-          smallNumbers.push(decoration);
-        } else {
-          largeNumbers.push(decoration);
+    let tabs = 0;
+    for (let i = 0; i < document.lineCount; i++) {
+      const line = document.lineAt(i);
+
+      console.log(line.range.start.line);
+      const indentation = detectTabIndentation(line.text, tabs);
+      if (isClassOrId(line.text) || isMixin(line.text) || isAnd(line.text)) {
+        const offset = detectCLassOrIdOffset(indentation.distance, options.tabSize);
+
+        if (offset !== 0) {
+          console.log('NEW TAB');
+          result.push(new TextEdit(line.range, replaceWithOffset(line.text, offset)));
+        }
+        tabs = Math.max(0, indentation.distance + offset + options.tabSize);
+      } else if (isProperty(line.text)) {
+        if (indentation.offset !== 0) {
+          console.log('MOVE', indentation.offset);
+          result.push(new TextEdit(line.range, replaceWithOffset(line.text, indentation.offset)));
+        }
+      } else if (isEmpty(line.text)) {
+        let pass = true;
+        if (document.lineCount >= i + 1) {
+          const nextLine = document.lineAt(i + 1);
+          if (!isClassOrId(nextLine.text) && !isAtRule(nextLine.text) && !isProperty(nextLine.text) && !isAnd(line.text)) {
+            console.log('DEL', i + 1);
+            pass = false;
+            result.push(new TextEdit(new Range(line.range.start, nextLine.range.start), ''));
+          }
+        }
+        if (line.text.length > 0 && pass) {
+          console.log('WHITESPACE');
+          result.push(new TextEdit(line.range, ''));
         }
       }
     }
@@ -51,15 +72,3 @@ class SassFormattingProvider implements DocumentFormattingEditProvider {
 }
 
 export default SassFormattingProvider;
-
-function test(activeEditor: TextEditor, tabSize: number) {
-  const regEx = /\d+/g;
-  const text = activeEditor.document.getText();
-
-  let match;
-  while ((match = regEx.exec(text))) {
-    const startPos = activeEditor.document.positionAt(match.index);
-    const endPos = activeEditor.document.positionAt(match.index + match[0].length);
-    const decoration = { range: new Range(startPos, endPos), hoverMessage: 'Number **' + match[0] + '**' };
-  }
-}

@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import SassCompletion from './sassAutocomplete';
 import SassFormattingProvider from './format/sassFormattingProvider';
-import { ScanForVarsAndMixin } from './schemas/sassUtils';
+import { ScanForVarsAndMixin } from './functions/sassUtils';
 
 export interface STATE {
   [name: string]: { item: vscode.CompletionItem; type: 'Mixin' | 'Variable' };

@@ -153,7 +153,7 @@ function generateSnippetText(text: string): string {
       case 'border-top:':
       case 'border-bottom:':
         newArr.push(
-          `${item} $\{${(pos++, pos)}: 1px} $\{${(pos++, pos)}|solid,none,dotted,double,groove,ridge,inset,outset,hidden|} $\{${(pos++,
+          `${item} $\{${(pos++, pos)}:1px} $\{${(pos++, pos)}|solid,none,dotted,double,groove,ridge,inset,outset,hidden|} $\{${(pos++,
           pos)}: red}`
         );
         break;
@@ -229,14 +229,12 @@ function generateSnippetText(text: string): string {
       case 'margin-right:':
       case 'margin-top:':
       case 'margin-bottom:':
-        newArr.push(`${item} $\{${(pos++, pos)}: 1px}`);
-        break;
       case 'padding:':
       case 'padding-left:':
       case 'padding-right:':
       case 'padding-top:':
       case 'padding-bottom:':
-        newArr.push(`${item} $\{${(pos++, pos)}: 1px}`);
+        newArr.push(`${item} $\{${(pos++, pos)}:1px}`);
         break;
 
       case 'z-index:':

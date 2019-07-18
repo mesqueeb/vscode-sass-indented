@@ -22,124 +22,12 @@ import sassSchema from './schemas/sassSchema';
 
 import * as path from 'path';
 import { STATE } from './extension';
-import { getImports, getUnits } from './schemas/sassUtils';
+import { getImports, getUnits, isValue, isNumber, getValues, getProperties } from './functions/sassUtils';
 import { sassAt } from './schemas/sassAt';
 import { sassPseudo } from './schemas/sassPseudo';
-import { scanImports } from './schemas/scanImports';
+import { scanImports } from './functions/scanImports';
 import { Abbreviations } from './sassAbbreviations';
 
-/**
- * Naive check whether currentWord is class, id or placeholder
- * @param {String} currentWord
- * @return {Boolean}
- */
-export function isClassOrId(currentWord: string): boolean {
-  return currentWord.startsWith('.') || currentWord.startsWith('#') || currentWord.startsWith('%');
-}
-
-export function isSelector(currentWord: string): boolean {
-  return currentWord === 'section' || currentWord === 'div';
-}
-
-/**
- * Naive check whether currentWord is at rule
- * @param {String} currentWord
- * @return {Boolean}
- */
-export function isAtRule(currentWord: string): boolean {
-  return currentWord.startsWith('@');
-}
-
-/**
- * Naive check whether currentWord is value for given property
- * @param {Object} cssSchema
- * @param {String} currentWord
- * @return {Boolean}
- */
-export function isValue(cssSchema, currentWord: string): boolean {
-  const property = getPropertyName(currentWord);
-
-  return property && Boolean(findPropertySchema(cssSchema, property));
-}
-
-/**
- * Formats property name
- * @param {String} currentWord
- * @return {String}
- */
-export function getPropertyName(currentWord: string): string {
-  return currentWord
-    .trim()
-    .replace(':', ' ')
-    .split(' ')[0];
-}
-
-/**
- * Search for property in cssSchema
- * @param {Object} cssSchema
- * @param {String} property
- * @return {Object}
- */
-export function findPropertySchema(cssSchema, property: string) {
-  return cssSchema.data.css.properties.find(item => item.name === property);
-}
-
-/**
- * Returns property list for completion
- * @param {Object} cssSchema
- * @param {String} currentWord
- * @return {CompletionItem}
- */
-export function getProperties(cssSchema, currentWord: string, useSeparator: boolean): CompletionItem[] {
-  if (isClassOrId(currentWord) || isAtRule(currentWord) || isSelector(currentWord)) {
-    return [];
-  }
-
-  return cssSchema.data.css.properties.map(property => {
-    const completionItem = new CompletionItem(property.name);
-
-    completionItem.insertText = property.name + (useSeparator ? ': ' : ' ');
-    completionItem.detail = property.desc;
-    completionItem.kind = CompletionItemKind.Property;
-
-    return completionItem;
-  });
-}
-
-/**
- * Returns values for current property for completion list
- * @param {Object} cssSchema
- * @param {String} currentWord
- * @return {CompletionItem}
- */
-export function getValues(cssSchema, currentWord: string): CompletionItem[] {
-  const property = getPropertyName(currentWord);
-  const values = findPropertySchema(cssSchema, property).values;
-
-  if (!values) {
-    return [];
-  }
-
-  return values.map(property => {
-    const completionItem = new CompletionItem(property.name);
-
-    completionItem.detail = property.desc;
-    completionItem.kind = CompletionItemKind.Value;
-
-    return completionItem;
-  });
-}
-/**
- * checks if currentWord last char is a number?
- * @param {String} currentWord
- * @return {CompletionItem}
- */
-export function isNumber(currentWord: string): boolean {
-  const reg = /[0-9]$/;
-  return reg.test(currentWord) && !currentWord.includes('#');
-}
-
-export let importData: string;
 class SassCompletion implements CompletionItemProvider {
   context: ExtensionContext;
   constructor(context: ExtensionContext) {
@@ -165,7 +53,7 @@ class SassCompletion implements CompletionItemProvider {
     imports.push(path.basename(document.fileName));
 
     let completions: CompletionItem[] = [];
-    // TODO abbreviations.
+
     if (currentWord.startsWith('?')) {
       Abbreviations(document, start);
       return;

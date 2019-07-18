@@ -4,12 +4,12 @@
   "description": "Indented Sass syntax highlighting, autocomplete & snippets",
   "version": "1.5.2",
   "icon": "images/sass-logo-seal.png",
-  "publisher": "robinbentley",
+  "publisher": "syler",
   "repository": {
     "type": "git",
-    "url": "https://github.com/robinbentley/vscode-sass-indented"
+    "url": "https://github.com/TheRealSyler/vscode-sass-indented"
   },
-  "bugs": "https://github.com/robinbentley/vscode-sass-indented/issues",
+  "bugs": "https://github.com/TheRealSyler/vscode-sass-indented/issues",
   "engines": {
     "vscode": "^1.30.0"
   },
@@ -18,8 +18,7 @@
   ],
   "main": "./out/extension",
   "categories": [
-    "Programming Languages",
-    "Snippets"
+    "Programming Languages"
   ],
   "contributes": {
     "configuration": {
