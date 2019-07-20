@@ -23,6 +23,7 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
       let command = commands[i];
       let key = command[0];
       let secondKey = command[1];
+      let thirdKey = command[2];
       let addTab = false;
       let resetTab = false;
       if (command.startsWith(' ')) {
@@ -67,18 +68,59 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
           command = command.replace(Utility.propRegex('e'), 'empty-cells:');
           break;
         case 'f':
-          command = command.replace(Utility.propRegex('f', 'fl'), 'empty-cells:');
+          command = command.replace(Utility.propRegex('f', 'fbdoghrlaksjtyvw'), CharComp.getF(secondKey));
           break;
         case 'F':
           command = command.replace(Utility.propRegex('F', 'brcdghioseu'), CharComp.getFilter(secondKey));
           break;
+        case 'g':
+          command = command.replace(Utility.propRegex('g', 'aufwlngoitscr'), CharComp.getG(secondKey));
+          break;
+        case 'h':
+          command = command.replace(Utility.propRegex('h', 'ay'), CharComp.getH(secondKey));
+          break;
+        case 'i':
+          command = command.replace(Utility.propRegex('i'), 'isolation:');
+          break;
+        case 'j':
+          command = command.replace(Utility.propRegex('j', 'si'), CharComp.getJ(secondKey, 'justify'));
+          break;
+        case 'l':
+          command = command.replace(Utility.propRegex('l', 'phsiot'), CharComp.getL(secondKey));
+          break;
         case 'm':
-          command = command.replace(Utility.directionalPropRegex('m'), CharComp.appendDirection(secondKey, 'margin'));
+          command = command.replace(Utility.propRegex('m', 'blrthweim'), CharComp.getM(secondKey));
+          break;
+        case 'o':
+          command = command.replace(Utility.propRegex('o', 'fparucoswyxw'), CharComp.getO(secondKey));
           break;
         case 'p':
-          command = command.replace(Utility.directionalPropRegex('p'), CharComp.appendDirection(secondKey, 'padding'));
+          command = command.replace(Utility.propRegex('p', 'blrtabsrieo'), CharComp.getP(secondKey));
           break;
-
+        case 'q':
+          command = command.replace(Utility.propRegex('q'), 'quotes:');
+          break;
+        case 'r':
+          command = command.replace(Utility.propRegex('r', 'e'), CharComp.getR(secondKey));
+          break;
+        case 's':
+          command = command.replace(Utility.propRegex('s'), 'scroll-behavior:');
+          break;
+        case 't':
+          command = command.replace(Utility.propRegex('t', 'sadijhrto'), CharComp.getT(secondKey));
+          break;
+        case 'T':
+          command = command.replace(Utility.propRegex('T', 'mtsrkp', '3xyz'), CharComp.getTransform(secondKey, thirdKey));
+          break;
+        case 'u':
+          command = command.replace(Utility.propRegex('u', 'u'), CharComp.getU(secondKey));
+          break;
+        case 'v':
+          command = command.replace(Utility.propRegex('v', 'a'), CharComp.getV(secondKey));
+          break;
+        case 'w':
+          command = command.replace(Utility.propRegex('v', 'sbpwm'), CharComp.getW(secondKey));
+          break;
         case 'z':
           command = command.replace(Utility.propRegex('z'), 'z-index:');
           break;

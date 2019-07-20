@@ -1,7 +1,7 @@
 import { DocumentFormattingEditProvider, ExtensionContext, TextDocument, ProviderResult, TextEdit, Range, FormattingOptions } from 'vscode';
 import { isMixin, isAnd, isClassOrId, isProperty, isAtRule, isInclude } from '../utility/utility.regex';
 import { getCLassOrIdIndentationOffset, replaceWithOffset, getIndentationOffset } from './format.utility';
-import { getDistanceReversed } from '../utility/utility';
+import { getDistanceReversed, isHtmlTag } from '../utility/utility';
 // TODO SassFormatter
 class SassFormattingProvider implements DocumentFormattingEditProvider {
   context: ExtensionContext;
@@ -16,7 +16,7 @@ class SassFormattingProvider implements DocumentFormattingEditProvider {
     for (let i = 0; i < document.lineCount; i++) {
       const line = document.lineAt(i);
       const indentation = getIndentationOffset(line.text, tabs);
-      if (isClassOrId(line.text) || isMixin(line.text) || isAnd(line.text)) {
+      if (isClassOrId(line.text) || isMixin(line.text) || isAnd(line.text) || isHtmlTag(line.text.trim())) {
         const offset = getCLassOrIdIndentationOffset(indentation.distance, options.tabSize);
 
         if (offset !== 0) {

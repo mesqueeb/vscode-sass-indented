@@ -47,6 +47,7 @@ class SassCompletion implements CompletionItemProvider {
     let Units = [],
       properties = [],
       values = [],
+      functions = [],
       imports = Utility.getImports(text),
       variables: CompletionItem[] = [];
     // also get current file from the workspace State.
@@ -91,6 +92,7 @@ class SassCompletion implements CompletionItemProvider {
           }
         }
       });
+      functions = sassSchema;
     } else if (!block) {
       variables = [];
       imports.forEach(item => {
@@ -115,7 +117,7 @@ class SassCompletion implements CompletionItemProvider {
       properties = Utility.getProperties(cssSchema, currentWord, config.get('useSeparator', true));
     }
     if (!block) {
-      completions = [].concat(properties, values, sassSchema, Units, variables, atRules);
+      completions = [].concat(properties, values, functions, Units, variables, atRules);
     }
 
     return completions;

@@ -7,13 +7,13 @@ export const abbreviationsUtility = {
     return tabs;
   },
 
-  directionalPropRegex(firstLetter: string) {
-    return new RegExp(`^ ?${firstLetter}{1}[lrtb]?`);
-  },
-  propRegex(firstLetter: string, secondary?: string) {
+  propRegex(firstLetter: string, secondary?: string, tertiary?: string) {
     let additional = '';
     if (secondary !== undefined) {
-      additional = `[${secondary}]?`;
+      additional = additional.concat(`[${secondary}]?`);
+    }
+    if (tertiary !== undefined) {
+      additional = additional.concat(`[${tertiary}]?`);
     }
     return new RegExp(`^ ?${firstLetter}{1}${additional}`);
   }
