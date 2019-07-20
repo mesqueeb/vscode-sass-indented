@@ -2,14 +2,14 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import SassCompletion from './sassAutocomplete';
-import SassFormattingProvider from './format/sassFormattingProvider';
-import { ScanForVarsAndMixin } from './functions/sassUtils';
+import SassFormattingProvider from './format/format.provider';
+import { Scanner } from './autocomplete/scan/autocomplete.scan';
+import SassCompletion from './autocomplete/autocomplete';
 
 export interface STATE {
-  [name: string]: { item: vscode.CompletionItem; type: 'Mixin' | 'Variable' };
+  [name: string]: { item: STATEItem; type: 'Mixin' | 'Variable' };
 }
-
+export type STATEItem = { title: string; insert: string; detail: string; kind: vscode.CompletionItemKind };
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -32,8 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
   }
 
   // Events
-  const scan = new ScanForVarsAndMixin(context);
-  setTimeout(() => startUp(scan), 0);
+  const scan = new Scanner(context);
 
   const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => scan.scanLine(l), 0));
   const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
@@ -98,10 +97,3 @@ function setSassLanguageConfiguration() {
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
-
-function startUp(scan: ScanForVarsAndMixin) {
-  const openEditor = vscode.window.activeTextEditor;
-  if (openEditor !== undefined) {
-    scan.scanFile(openEditor.document);
-  }
-}

@@ -8,25 +8,25 @@
 import {
   CancellationToken,
   CompletionItem,
-  CompletionItemKind,
   CompletionItemProvider,
   Position,
   Range,
   TextDocument,
   workspace,
-  ExtensionContext
+  ExtensionContext,
+  SnippetString
 } from 'vscode';
 
-import * as cssSchema from './schemas/cssSchema';
-import sassSchema from './schemas/sassSchema';
+import * as cssSchema from './schemas/autocomplete.cssSchema';
+import sassSchema from './schemas/autocomplete.schema';
 
 import * as path from 'path';
-import { STATE } from './extension';
-import { getImports, getUnits, isValue, isNumber, getValues, getProperties } from './functions/sassUtils';
-import { sassAt } from './schemas/sassAt';
-import { sassPseudo } from './schemas/sassPseudo';
-import { scanImports } from './functions/scanImports';
-import { Abbreviations } from './sassAbbreviations';
+import { STATE } from '../extension';
+import { sassAt } from './schemas/autocomplete.at';
+import { sassPseudo } from './schemas/autocomplete.pseudo';
+import { isNumber } from 'util';
+import { Abbreviations } from '../abbreviations/abbreviations';
+import { autocompleteUtilities as Utility } from './autocomplete.utility';
 
 class SassCompletion implements CompletionItemProvider {
   context: ExtensionContext;
@@ -39,7 +39,7 @@ class SassCompletion implements CompletionItemProvider {
     const currentWord = document.getText(range).trim();
     const currentWordUT = document.getText(range);
     const text = document.getText();
-    const value = isValue(cssSchema, currentWord);
+    const value = Utility.isValue(cssSchema, currentWord);
     const config = workspace.getConfiguration();
     const disableUnitCompletion: boolean = config.get('sass.disableUnitCompletion');
     let block = false;
@@ -47,7 +47,7 @@ class SassCompletion implements CompletionItemProvider {
     let Units = [],
       properties = [],
       values = [],
-      imports = getImports(text),
+      imports = Utility.getImports(text),
       variables: CompletionItem[] = [];
     // also get current file from the workspace State.
     imports.push(path.basename(document.fileName));
@@ -55,12 +55,12 @@ class SassCompletion implements CompletionItemProvider {
     let completions: CompletionItem[] = [];
 
     if (currentWord.startsWith('?')) {
-      Abbreviations(document, start);
+      Abbreviations(document, start, currentWordUT);
       return;
     }
 
     if (/^@import/.test(currentWord)) {
-      completions = scanImports(document, currentWord);
+      completions = Utility.getImportFromCurrentWord(document, currentWord);
       block = true;
     }
 
@@ -70,10 +70,10 @@ class SassCompletion implements CompletionItemProvider {
     }
 
     if (isNumber(currentWordUT) && !disableUnitCompletion && !block) {
-      Units = getUnits(currentWord);
+      Units = Utility.getUnits(currentWord);
     }
     if (value && !block) {
-      values = getValues(cssSchema, currentWord);
+      values = Utility.getValues(cssSchema, currentWord);
       imports.forEach(item => {
         const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
         if (state) {
@@ -81,7 +81,11 @@ class SassCompletion implements CompletionItemProvider {
             if (state.hasOwnProperty(key)) {
               const element = state[key];
               if (element.type === 'Variable') {
-                variables.push(element.item);
+                const completionItem = new CompletionItem(element.item.title);
+                completionItem.insertText = element.item.insert;
+                completionItem.detail = element.item.detail;
+                completionItem.kind = element.item.kind;
+                variables.push(completionItem);
               }
             }
           }
@@ -96,7 +100,11 @@ class SassCompletion implements CompletionItemProvider {
             if (state.hasOwnProperty(key)) {
               const element = state[key];
               if (element.type === 'Mixin') {
-                variables.push(element.item);
+                const completionItem = new CompletionItem(element.item.title);
+                completionItem.insertText = new SnippetString(element.item.insert);
+                completionItem.detail = element.item.detail;
+                completionItem.kind = element.item.kind;
+                variables.push(completionItem);
               }
             }
           }
@@ -104,7 +112,7 @@ class SassCompletion implements CompletionItemProvider {
       });
 
       atRules = sassAt;
-      properties = getProperties(cssSchema, currentWord, config.get('useSeparator', true));
+      properties = Utility.getProperties(cssSchema, currentWord, config.get('useSeparator', true));
     }
     if (!block) {
       completions = [].concat(properties, values, sassSchema, Units, variables, atRules);
