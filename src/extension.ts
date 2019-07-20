@@ -3,11 +3,46 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import SassCompletion from './sassAutocomplete';
+import SassFormattingProvider from './format/sassFormattingProvider';
+import { ScanForVarsAndMixin } from './functions/sassUtils';
+
+export interface STATE {
+  [name: string]: { item: vscode.CompletionItem; type: 'Mixin' | 'Variable' };
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   setSassLanguageConfiguration();
+  // TODO SassFormatter
+  const SassFormatter = new SassFormattingProvider(context);
+  const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
+    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
+    SassFormatter
+  );
+  const config = vscode.workspace.getConfiguration();
+  const disableEmmet = config.get('sass.disableEmmet');
+
+  if (disableEmmet) {
+    const emmetSettings: string[] = config.get('emmet.excludeLanguages');
+    if (emmetSettings.find(value => value === 'sass') === undefined) {
+      emmetSettings.push('sass');
+      config.update('emmet.excludeLanguages', emmetSettings);
+    }
+  }
+
+  // Events
+  const scan = new ScanForVarsAndMixin(context);
+  setTimeout(() => startUp(scan), 0);
+
+  const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => scan.scanLine(l), 0));
+  const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
+
+  const activeDisposable = vscode.window.onDidChangeActiveTextEditor(activeEditor => {
+    if (activeEditor !== undefined) {
+      setTimeout(() => scan.scanFile(activeEditor.document), 0);
+    }
+  });
 
   const sassCompletion = new SassCompletion(context);
   const sassCompletionRegister = vscode.languages.registerCompletionItemProvider(
@@ -24,7 +59,11 @@ export function activate(context: vscode.ExtensionContext) {
     '7',
     '8',
     '9',
-    '@'
+    '@',
+    '/',
+    '?',
+    '?.',
+    '&'
   );
 
   context.subscriptions.push(
@@ -35,6 +74,10 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
   context.subscriptions.push(sassCompletionRegister);
+  context.subscriptions.push(SassFormatterRegister);
+  context.subscriptions.push(activeDisposable);
+  context.subscriptions.push(changeDisposable);
+  context.subscriptions.push(saveDisposable);
 }
 
 function setSassLanguageConfiguration() {
@@ -55,3 +98,10 @@ function setSassLanguageConfiguration() {
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+function startUp(scan: ScanForVarsAndMixin) {
+  const openEditor = vscode.window.activeTextEditor;
+  if (openEditor !== undefined) {
+    scan.scanFile(openEditor.document);
+  }
+}

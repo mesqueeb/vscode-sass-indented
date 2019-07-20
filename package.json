@@ -18,8 +18,7 @@
   ],
   "main": "./out/extension",
   "categories": [
-    "Programming Languages",
-    "Snippets"
+    "Programming Languages"
   ],
   "contributes": {
     "configuration": {
@@ -35,6 +34,21 @@
           "type": "boolean",
           "default": true,
           "description": "adds units to the intellisense completions if false."
+        },
+        "sass.disableEmmet": {
+          "type": "boolean",
+          "default": true,
+          "description": "disables emmet in the workspace settings to enable emmet remove sass from emmet.excludeLanguages, and disable this option."
+        },
+        "sass.andStared": {
+          "type": "array",
+          "default": [
+            "active",
+            "focus",
+            "hover",
+            "nth-child"
+          ],
+          "description": "item in this array will be at the top of the completion list (only for item that show after the & sign)"
         }
       }
     },
@@ -57,12 +71,6 @@
         "language": "sass",
         "scopeName": "source.sass",
         "path": "./syntaxes/sass.tmLanguage"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "sass",
-        "path": "./snippets/sass.json"
       }
     ]
   },

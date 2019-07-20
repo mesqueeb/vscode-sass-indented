@@ -2,51 +2,6 @@ import { CompletionItem, CompletionItemKind, SnippetString } from 'vscode';
 
 const sassSchema = [
   {
-    name: '@debug',
-    body: '@debug ',
-    description: 'Prints the value to the standard error output stream'
-  },
-  {
-    name: '@error',
-    body: '@error ',
-    description: 'Throws the value as a fatal error'
-  },
-  {
-    name: '@extend',
-    body: '@extend ',
-    description: 'Inherit the styles of another selector'
-  },
-  {
-    name: '@warn',
-    body: '@warn ',
-    description: 'Prints the value to the standard error output stream'
-  },
-  {
-    name: '@at-root',
-    body: '@at-root ',
-    description: 'Causes one or more rules to be emitted at the root of the document'
-  },
-  {
-    name: '@if',
-    body: '@if ',
-    description: '@if statement (e.g @if 1 + 1 == 2)'
-  },
-  {
-    name: '@for',
-    body: '@for ',
-    description: '@for loop'
-  },
-  {
-    name: '@each',
-    body: '@each ',
-    description: '@each loop'
-  },
-  {
-    name: '@while',
-    body: '@while ',
-    description: '@while loop'
-  },
-  {
     name: 'rgb()',
     body: 'rgb($1, $2, $3)$0',
     description: 'rgb($red, $green, $blue) - Creates a color from red, green, and blue values.'
@@ -80,8 +35,7 @@ const sassSchema = [
   {
     name: 'hsla()',
     body: 'hsla($1, $2, $3, $4)$0',
-    description:
-      'hsl($hue, $saturation, $lightness, $alpha) - Creates a color from hue, saturation, lightness and alpha values.'
+    description: 'hsl($hue, $saturation, $lightness, $alpha) - Creates a color from hue, saturation, lightness and alpha values.'
   },
   {
     name: 'hue()',
