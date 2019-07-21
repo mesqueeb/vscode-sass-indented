@@ -114,7 +114,7 @@ class SassCompletion implements CompletionItemProvider {
       });
 
       atRules = sassAt;
-      properties = Utility.getProperties(cssSchema, currentWord, config.get('useSeparator', true));
+      properties = Utility.getProperties(cssSchema, currentWord);
     }
     if (!block) {
       completions = [].concat(properties, values, functions, Units, variables, atRules);

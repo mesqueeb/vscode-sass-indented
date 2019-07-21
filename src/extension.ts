@@ -2,7 +2,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import SassFormattingProvider from './format/format.provider';
+import FormattingProvider from './format/format.provider';
 import { Scanner } from './autocomplete/scan/autocomplete.scan';
 import SassCompletion from './autocomplete/autocomplete';
 
@@ -14,26 +14,14 @@ export type STATEItem = { title: string; insert: string; detail: string; kind: v
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   setSassLanguageConfiguration();
-  // TODO SassFormatter
-  const SassFormatter = new SassFormattingProvider(context);
+  const SassFormatter = new FormattingProvider(context);
   const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
     [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
     SassFormatter
   );
-  const config = vscode.workspace.getConfiguration();
-  const disableEmmet = config.get('sass.disableEmmet');
-
-  if (disableEmmet) {
-    const emmetSettings: string[] = config.get('emmet.excludeLanguages');
-    if (emmetSettings.find(value => value === 'sass') === undefined) {
-      emmetSettings.push('sass');
-      config.update('emmet.excludeLanguages', emmetSettings);
-    }
-  }
 
   // Events
   const scan = new Scanner(context);
-
   const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => scan.scanLine(l), 0));
   const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
 
@@ -80,7 +68,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 function setSassLanguageConfiguration() {
-  const disableAutoIndent: boolean = vscode.workspace.getConfiguration('sass').get('disableAutoIndent');
+  const config = vscode.workspace.getConfiguration();
+  const disableEmmet = config.get('sass.disableEmmet');
+  const disableFormatter = config.get('sass.disableFormatter');
+  const disableAutoIndent: boolean = config.get('sass.disableAutoIndent');
 
   vscode.languages.setLanguageConfiguration('sass', {
     wordPattern: /(#?-?\d*\.\d\w*%?)|([$@#!.:]?[\w-?]+%?)|[$@#!.]/g,
@@ -93,6 +84,13 @@ function setSassLanguageConfiguration() {
       }
     ]
   });
+  if (disableEmmet) {
+    const emmetSettings: string[] = config.get('emmet.excludeLanguages');
+    if (emmetSettings.find(value => value === 'sass') === undefined) {
+      emmetSettings.push('sass');
+      config.update('emmet.excludeLanguages', emmetSettings);
+    }
+  }
 }
 
 // this method is called when your extension is deactivated

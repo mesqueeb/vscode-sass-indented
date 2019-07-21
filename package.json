@@ -40,6 +40,31 @@
           "default": true,
           "description": "disables emmet in the workspace settings to enable emmet remove sass from emmet.excludeLanguages, and disable this option."
         },
+        "sass.format.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "disables the sass formatter."
+        },
+        "sass.format.deleteWhitespace": {
+          "type": "boolean",
+          "default": true,
+          "description": "removes trailing whitespace."
+        },
+        "sass.format.deleteEmptyRows": {
+          "type": "boolean",
+          "default": true,
+          "description": "removes empty rows."
+        },
+        "sass.format.deleteCompact": {
+          "type": "boolean",
+          "default": true,
+          "description": "also removes empty rows that are near a property."
+        },
+        "sass.format.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "enables debug mode."
+        },
         "sass.andStared": {
           "type": "array",
           "default": [

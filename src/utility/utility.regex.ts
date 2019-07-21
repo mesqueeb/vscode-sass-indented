@@ -2,11 +2,12 @@ export function escapeRegExp(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
-// REVIEW is this needed or can it be deleted?
-export function isSelector(currentWord: string): boolean {
-  return currentWord === 'section' || currentWord === 'div';
+/**
+ * Check whether text is class, id or placeholder
+ */
+export function isVar(text: string): boolean {
+  return /^ *?.*:/.test(text);
 }
-
 /**
  * Check whether text is class, id or placeholder
  */

@@ -1,4 +1,4 @@
-import { isClassOrId, isAtRule, isSelector } from '../utility/utility.regex';
+import { isClassOrId, isAtRule } from '../utility/utility.regex';
 import { CompletionItem, CompletionItemKind, SnippetString, TextDocument } from 'vscode';
 import sassSchemaUnits from './schemas/autocomplete.units';
 import { readdirSync, statSync } from 'fs';
@@ -44,14 +44,14 @@ export const autocompleteUtilities = {
    * @param {String} currentWord
    * @return {CompletionItem}
    */
-  getProperties(cssSchema, currentWord: string, useSeparator: boolean): CompletionItem[] {
-    if (isClassOrId(currentWord) || isAtRule(currentWord) || isSelector(currentWord)) {
+  getProperties(cssSchema, currentWord: string): CompletionItem[] {
+    if (isClassOrId(currentWord) || isAtRule(currentWord)) {
       return [];
     }
     return cssSchema.data.css.properties.map(property => {
       const completionItem = new CompletionItem(property.name);
 
-      completionItem.insertText = property.name + (useSeparator ? ': ' : ' ');
+      completionItem.insertText = property.name.concat(': ');
       completionItem.detail = property.desc;
       completionItem.kind = CompletionItemKind.Property;
 
