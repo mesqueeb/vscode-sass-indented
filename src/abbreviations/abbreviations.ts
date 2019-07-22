@@ -63,6 +63,9 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
             case '.':
               addTab = true;
               break;
+            case '*':
+              addTab = true;
+              break;
             case 'I':
               command = command.replace(/^ ?I{1}/, '');
               command = '@include'.concat(command);

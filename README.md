@@ -7,7 +7,7 @@
 # Indented Sass syntax highlighting, autocomplete & snippets for VSCode
 VSCode only has built in support for SCSS syntax so I have put this together for people who prefer to use the indented syntax.
 
-![Highlighting Example](https://raw.githubusercontent.com/TheRealSyler/vscode-sass-indented/master/images/screenshot.png)
+![Highlighting Example](https://raw.githubusercontent.com/TheRealSyler/vscode-sass-indented/master/resources/images/screenshot.png)
 
 ## Installing
 Search for Sass from the extension installer within VSCode or put this into the command palette.

@@ -11,6 +11,12 @@ export function isVar(text: string): boolean {
 /**
  * Check whether text is class, id or placeholder
  */
+export function isStar(text: string): boolean {
+  return /^ *?\*/.test(text);
+}
+/**
+ * Check whether text is class, id or placeholder
+ */
 export function isClassOrId(text: string): boolean {
   return /^ *?#/.test(text) || /^ *\./.test(text) || /^ *%/.test(text);
 }

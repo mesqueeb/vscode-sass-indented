@@ -2,8 +2,8 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax highlighting, autocomplete & snippets",
-  "version": "1.5.2",
-  "icon": "images/sass-logo-seal.png",
+  "version": "1.5.9",
+  "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
     "type": "git",
@@ -14,7 +14,8 @@
     "vscode": "^1.30.0"
   },
   "activationEvents": [
-    "onLanguage:sass"
+    "onLanguage:sass",
+    "onView:colorPallet"
   ],
   "main": "./out/extension",
   "categories": [
@@ -76,6 +77,131 @@
           "description": "item in this array will be at the top of the completion list (only for item that show after the & sign)"
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sass",
+          "title": "Sass",
+          "icon": "resources/images/Sass_Logo_Color.svg"
+        }
+      ]
+    },
+    "views": {
+      "sass": [
+        {
+          "id": "colorPallet",
+          "name": "Color Pallet"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "colorPallet.refreshEntry",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        },
+        "category": "Color Pallet"
+      },
+      {
+        "command": "colorPallet.addToFile",
+        "title": "Add to File",
+        "category": "Color Pallet"
+      },
+      {
+        "command": "colorPallet.addFolderItem",
+        "title": "Add item",
+        "icon": {
+          "light": "resources/matIo/light/baseline-add-24px.svg",
+          "dark": "resources/matIo/dark/baseline-add-24px.svg"
+        },
+        "category": "Color Pallet",
+        "enablement": "view == colorPallet"
+      },
+      {
+        "command": "colorPallet.addFolder",
+        "title": "Add Folder",
+        "icon": {
+          "light": "resources/matIo/light/baseline-add-24px.svg",
+          "dark": "resources/matIo/dark/baseline-add-24px.svg"
+        },
+        "category": "Color Pallet",
+        "enablement": "view == colorPallet"
+      },
+      {
+        "command": "colorPallet.editEntry",
+        "title": "Edit",
+        "icon": {
+          "light": "resources/light/edit.svg",
+          "dark": "resources/dark/edit.svg"
+        },
+        "category": "Color Pallet",
+        "enablement": "view == colorPallet"
+      },
+      {
+        "command": "colorPallet.deleteEntry",
+        "title": "Delete",
+        "category": "Color Pallet",
+        "enablement": "view == colorPallet"
+      },
+      {
+        "command": "colorPallet.scanColors",
+        "title": "Add colors to Pallet",
+        "category": "Color Pallet",
+        "enablement": "resourceExtname == .sass"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "colorPallet.refreshEntry",
+          "when": "view == colorPallet",
+          "group": "navigation"
+        },
+        {
+          "command": "colorPallet.addFolder",
+          "when": "view == colorPallet",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "colorPallet.editEntry",
+          "when": "view == colorPallet && viewItem == folder",
+          "group": "inline"
+        },
+        {
+          "command": "colorPallet.editEntry",
+          "when": "view == colorPallet && viewItem == folder"
+        },
+        {
+          "command": "colorPallet.addFolderItem",
+          "when": "view == colorPallet && viewItem == folder",
+          "group": "inline"
+        },
+        {
+          "command": "colorPallet.deleteEntry",
+          "when": "view == colorPallet"
+        },
+        {
+          "command": "colorPallet.addToFile",
+          "when": "view == colorPallet"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "colorPallet.scanColors",
+          "group": "navigation",
+          "when": "resourceExtname == .sass"
+        },
+        {
+          "command": "colorPallet.addToFile",
+          "group": "navigation",
+          "when": "resourceExtname == .sass"
+        }
+      ]
     },
     "languages": [
       {

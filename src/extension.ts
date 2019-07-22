@@ -5,6 +5,9 @@ import * as vscode from 'vscode';
 import FormattingProvider from './format/format.provider';
 import { Scanner } from './autocomplete/scan/autocomplete.scan';
 import SassCompletion from './autocomplete/autocomplete';
+import { TreeColorPalletProvider } from './tree/color pallet/tree.colorPallet.provider';
+import { PalletItem } from './tree/color pallet/tree.colorPallet.Item';
+import { ColorPalletUtility } from './tree/color pallet/tree.colorPallet.utility';
 
 export interface STATE {
   [name: string]: { item: STATEItem; type: 'Mixin' | 'Variable' };
@@ -14,6 +17,8 @@ export type STATEItem = { title: string; insert: string; detail: string; kind: v
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   setSassLanguageConfiguration();
+  const config = vscode.workspace.getConfiguration();
+  const disableColorPallet = config.get('sass.disableColorPallet');
   const SassFormatter = new FormattingProvider(context);
   const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
     [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
@@ -32,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   const sassCompletion = new SassCompletion(context);
-  const sassCompletionRegister = vscode.languages.registerCompletionItemProvider(
+  const sassCompletionDisposable = vscode.languages.registerCompletionItemProvider(
     [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
     sassCompletion,
     '\\.',
@@ -53,6 +58,26 @@ export function activate(context: vscode.ExtensionContext) {
     '&'
   );
 
+  // Tree SECTION
+  const colorPalletProvider = new TreeColorPalletProvider(context);
+  const treeDisposable = vscode.window.registerTreeDataProvider('colorPallet', colorPalletProvider);
+  vscode.commands.registerCommand('colorPallet.refreshEntry', () => colorPalletProvider.refresh());
+
+  vscode.commands.registerCommand('colorPallet.addFolder', () => ColorPalletUtility.addFolder(context, colorPalletProvider));
+  vscode.commands.registerCommand('colorPallet.addFolderItem', (node: PalletItem) =>
+    ColorPalletUtility.addFolderItem(node, context, colorPalletProvider)
+  );
+  vscode.commands.registerCommand('colorPallet.editEntry', (node: PalletItem) =>
+    ColorPalletUtility.edit(node, context, colorPalletProvider)
+  );
+  vscode.commands.registerCommand('colorPallet.deleteEntry', (node: PalletItem) =>
+    ColorPalletUtility.delete(node, context, colorPalletProvider)
+  );
+  vscode.commands.registerCommand('colorPallet.addToFile', (node: PalletItem) => ColorPalletUtility.addToFile(node, context));
+  vscode.commands.registerCommand('colorPallet.scanColors', () => ColorPalletUtility.scanColors(context, colorPalletProvider));
+  // - !SECTION
+  context.subscriptions.push(treeDisposable);
+
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((config: vscode.ConfigurationChangeEvent) => {
       if (config.affectsConfiguration('sass')) {
@@ -60,7 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
     })
   );
-  context.subscriptions.push(sassCompletionRegister);
+  context.subscriptions.push(sassCompletionDisposable);
   context.subscriptions.push(SassFormatterRegister);
   context.subscriptions.push(activeDisposable);
   context.subscriptions.push(changeDisposable);
@@ -70,7 +95,6 @@ export function activate(context: vscode.ExtensionContext) {
 function setSassLanguageConfiguration() {
   const config = vscode.workspace.getConfiguration();
   const disableEmmet = config.get('sass.disableEmmet');
-  const disableFormatter = config.get('sass.disableFormatter');
   const disableAutoIndent: boolean = config.get('sass.disableAutoIndent');
 
   vscode.languages.setLanguageConfiguration('sass', {

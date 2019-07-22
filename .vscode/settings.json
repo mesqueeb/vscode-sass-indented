@@ -17,6 +17,7 @@
     "brcdghioseu",
     "currentword",
     "deincrement",
+    "enablement",
     "fbdoghrlaksityvw",
     "fbdoghrlaksjtyvw",
     "focusring",
@@ -43,7 +44,7 @@
     "sbpwm",
     "styleable",
     "textfield"
-],
+  ],
   "cSpell.enabledLanguageIds": [
     "asciidoc",
     "c",

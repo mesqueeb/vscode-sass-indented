@@ -6,9 +6,10 @@ import {
   TextEdit,
   Range,
   FormattingOptions,
-  workspace
+  workspace,
+  Position
 } from 'vscode';
-import { isMixin, isAnd, isClassOrId, isProperty, isAtRule, isInclude } from '../utility/utility.regex';
+import { isMixin, isAnd, isClassOrId, isProperty, isAtRule, isInclude, isStar } from '../utility/utility.regex';
 import { getCLassOrIdIndentationOffset, replaceWithOffset, getIndentationOffset } from './format.utility';
 import { getDistanceReversed, isHtmlTag } from '../utility/utility';
 class FormattingProvider implements DocumentFormattingEditProvider {
@@ -29,7 +30,7 @@ class FormattingProvider implements DocumentFormattingEditProvider {
       for (let i = 0; i < document.lineCount; i++) {
         const line = document.lineAt(i);
         const indentation = getIndentationOffset(line.text, tabs);
-        if (isClassOrId(line.text) || isMixin(line.text) || isAnd(line.text) || isHtmlTag(line.text.trim())) {
+        if (isClassOrId(line.text) || isMixin(line.text) || isAnd(line.text) || isHtmlTag(line.text.trim()) || isStar(line.text)) {
           const offset = getCLassOrIdIndentationOffset(indentation.distance, options.tabSize);
 
           if (offset !== 0) {
