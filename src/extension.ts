@@ -17,24 +17,11 @@ export type STATEItem = { title: string; insert: string; detail: string; kind: v
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   setSassLanguageConfiguration();
-  const config = vscode.workspace.getConfiguration();
-  const disableColorPallet = config.get('sass.disableColorPallet');
   const SassFormatter = new FormattingProvider(context);
   const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
     [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
     SassFormatter
   );
-
-  // Events
-  const scan = new Scanner(context);
-  const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => scan.scanLine(l), 0));
-  const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
-
-  const activeDisposable = vscode.window.onDidChangeActiveTextEditor(activeEditor => {
-    if (activeEditor !== undefined) {
-      setTimeout(() => scan.scanFile(activeEditor.document), 0);
-    }
-  });
 
   const sassCompletion = new SassCompletion(context);
   const sassCompletionDisposable = vscode.languages.registerCompletionItemProvider(
@@ -87,9 +74,6 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(sassCompletionDisposable);
   context.subscriptions.push(SassFormatterRegister);
-  context.subscriptions.push(activeDisposable);
-  context.subscriptions.push(changeDisposable);
-  context.subscriptions.push(saveDisposable);
 }
 
 function setSassLanguageConfiguration() {

@@ -39,6 +39,8 @@ export const charCompletion = {
         return `${base}-bottom:`;
       case 'g':
         return `background:`;
+      case 'a':
+        return `${base}-radius:`;
       case 'u':
         return `bottom:`;
       case 's':

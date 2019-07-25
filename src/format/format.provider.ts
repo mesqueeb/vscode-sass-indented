@@ -9,9 +9,20 @@ import {
   workspace,
   Position
 } from 'vscode';
-import { isMixin, isAnd, isClassOrId, isProperty, isAtRule, isInclude, isStar } from '../utility/utility.regex';
-import { getCLassOrIdIndentationOffset, replaceWithOffset, getIndentationOffset } from './format.utility';
-import { getDistanceReversed, isHtmlTag } from '../utility/utility';
+import {
+  isMixin,
+  isAnd,
+  isClassOrId,
+  isProperty,
+  isAtRule,
+  isInclude,
+  isStar,
+  isHtmlTag,
+  isPseudo,
+  isKeyframes
+} from '../utility/utility.regex';
+import { getCLassOrIdIndentationOffset, replaceWithOffset, getIndentationOffset, isKeyframePoint } from './format.utility';
+import { getDistanceReversed } from '../utility/utility';
 class FormattingProvider implements DocumentFormattingEditProvider {
   context: ExtensionContext;
   constructor(context: ExtensionContext) {
@@ -27,11 +38,25 @@ class FormattingProvider implements DocumentFormattingEditProvider {
 
       let result: ProviderResult<TextEdit[]> = [];
       let tabs = 0;
+      let isAtKeyframes = false;
       for (let i = 0; i < document.lineCount; i++) {
         const line = document.lineAt(i);
         const indentation = getIndentationOffset(line.text, tabs);
-        if (isClassOrId(line.text) || isMixin(line.text) || isAnd(line.text) || isHtmlTag(line.text.trim()) || isStar(line.text)) {
+        const isKeyframesCheck = isKeyframes(line.text);
+        const isKeyframesPointCheck = isKeyframePoint(line.text, isAtKeyframes);
+        if (
+          isClassOrId(line.text) ||
+          isMixin(line.text) ||
+          isAnd(line.text) ||
+          isHtmlTag(line.text.trim()) ||
+          isStar(line.text) ||
+          isPseudo(line.text) ||
+          isKeyframesCheck ||
+          isKeyframesPointCheck
+        ) {
           const offset = getCLassOrIdIndentationOffset(indentation.distance, options.tabSize);
+          // set is at keyframes.
+          isAtKeyframes = isKeyframesCheck || isKeyframesPointCheck;
 
           if (offset !== 0) {
             if (enableDebug) {
@@ -71,6 +96,8 @@ class FormattingProvider implements DocumentFormattingEditProvider {
               compact &&
               !isAnd(nextLine.text) &&
               !isHtmlTag(nextLine.text.trim()) &&
+              !isStar(nextLine.text) &&
+              !isPseudo(nextLine.text) &&
               config.get('deleteEmptyRows')
             ) {
               if (enableDebug) {

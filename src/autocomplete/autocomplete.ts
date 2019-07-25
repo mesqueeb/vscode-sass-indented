@@ -27,11 +27,14 @@ import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
 import { Abbreviations } from '../abbreviations/abbreviations';
 import { autocompleteUtilities as Utility } from './autocomplete.utility';
+import { Scanner } from './scan/autocomplete.scan';
 
 class SassCompletion implements CompletionItemProvider {
   context: ExtensionContext;
+  scan: Scanner;
   constructor(context: ExtensionContext) {
     this.context = context;
+    this.scan = new Scanner(context);
   }
   provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): CompletionItem[] {
     const start = new Position(position.line, 0);
@@ -73,7 +76,9 @@ class SassCompletion implements CompletionItemProvider {
     if (isNumber(currentWordUT) && !disableUnitCompletion && !block) {
       Units = Utility.getUnits(currentWord);
     }
+
     if (value && !block) {
+      this.scan.scanFile(document, 'Variable');
       values = Utility.getValues(cssSchema, currentWord);
       imports.forEach(item => {
         const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
@@ -94,6 +99,7 @@ class SassCompletion implements CompletionItemProvider {
       });
       functions = sassSchema;
     } else if (!block) {
+      this.scan.scanFile(document, 'Mixin');
       variables = [];
       imports.forEach(item => {
         const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));

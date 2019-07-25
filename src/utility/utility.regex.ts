@@ -1,3 +1,5 @@
+import { htmlTags, voidHtmlTags } from '../autocomplete/schemas/autocomplete.html';
+
 export function escapeRegExp(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
@@ -33,6 +35,12 @@ export function isInclude(text: string): boolean {
   return /^ *@include/.test(text);
 }
 /**
+ * Check whether text is a property
+ */
+export function isKeyframes(text: string): boolean {
+  return /^ *@keyframes/.test(text);
+}
+/**
  * Check whether text is a mixin
  */
 export function isMixin(text: string): boolean {
@@ -45,17 +53,51 @@ export function isAnd(text: string): boolean {
   return /^ *&/.test(text);
 }
 /**
- * Check whether currentWord is at rule
+ * Check whether text is at rule
  */
-export function isAtRule(currentWord: string): boolean {
-  return /^ *@/.test(currentWord);
+export function isAtRule(text: string): boolean {
+  return /^ *@/.test(text);
 }
 /**
- * checks if currentWord last char is a number
- * @param {String} currentWord
+ * checks if text last char is a number
+ * @param {String} text
  * @return {CompletionItem}
  */
-export function isNumber(currentWord: string): boolean {
+export function isNumber(text: string): boolean {
   const reg = /[0-9]$/;
-  return reg.test(currentWord) && !currentWord.includes('#');
+  return reg.test(text) && !text.includes('#');
+}
+/**
+ * Check whether text starts with an html tag.
+ */
+export function isHtmlTag(text: string) {
+  let isTag = false;
+  for (let i = 0; i < htmlTags.length; i++) {
+    const tag = htmlTags[i];
+    if (new RegExp(`^ *${tag}$|^ *${tag}\\[.*\\].*$`).test(text)) {
+      isTag = true;
+      break;
+    }
+  }
+  return isTag;
+}
+/**
+ * Check whether text starts with a self closing html tag.
+ */
+export function isVoidHtmlTag(text: string) {
+  let isTag = false;
+  for (let i = 0; i < voidHtmlTags.length; i++) {
+    const tag = voidHtmlTags[i];
+    if (new RegExp(`^ *${tag}$|^ *${tag}\\[.*\\].*$`).test(text)) {
+      isTag = true;
+      break;
+    }
+  }
+  return isTag;
+}
+/**
+ * Check whether text starts with ::.
+ */
+export function isPseudo(text: string) {
+  return /^ *::/.test(text);
 }

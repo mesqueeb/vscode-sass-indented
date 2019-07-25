@@ -25,7 +25,9 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
     InitialEdit.replace(document.uri, new Range(start, new Position(start.line, initialEmptySpace.length + 1)), previousText);
     workspace.applyEdit(InitialEdit);
     //
-    inputBox.onDidChangeValue(value => {
+    inputBox.onDidChangeValue(valueChange);
+
+    function valueChange(value: string) {
       let commands = value.split(',');
       const charInfo = getCharInfo(commands[commands.length - 1][0], initialEmptySpace);
       let tabs = initialEmptySpace;
@@ -42,15 +44,17 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
       } else {
         for (let i = 0; i < commands.length; i++) {
           let command = commands[i];
+          // Get KEYS
           let key = command[0];
           let secondKey = command[1];
           let thirdKey = command[2];
-          let addTab = false;
-          let resetTab = false;
           if (command.startsWith(' ')) {
             key = command[1];
             secondKey = command[2];
           }
+          //-----------------------------
+          let addTab = false;
+          let resetTab = false;
           switch (key) {
             // SECTION Special.
             case 'M':
@@ -70,6 +74,10 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
               command = command.replace(/^ ?I{1}/, '');
               command = '@include'.concat(command);
               break;
+            case 'D':
+              inputBox.value = inputBox.value.replace(/ ?D{1}$/, '').concat('t 0,bu 0,r 0,l 0');
+              setTimeout(() => valueChange(inputBox.value), 10);
+              break;
             case 'R':
               resetTab = true;
               command = command.replace(/^ ?R{1}$/, '');
@@ -80,7 +88,7 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
               command = command.replace(Utility.propRegex('a', 'lcsi'), CharComp.getA(secondKey));
               break;
             case 'b':
-              command = command.replace(Utility.propRegex('b', 'lrtbgvdbszu'), CharComp.getB(secondKey, 'border'));
+              command = command.replace(Utility.propRegex('b', 'lrtbgvdbszua'), CharComp.getB(secondKey, 'border'));
               break;
             case 'c':
               command = command.replace(Utility.propRegex('c', 'lostirc'), CharComp.getC(secondKey));
@@ -152,6 +160,7 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
           }
 
           command = tabs.concat(command);
+
           commands[i] = command;
 
           if (resetTab) {
@@ -170,7 +179,7 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
         previousText = insertText;
         commandsText = commands.join('\n');
       }
-    });
+    }
     inputBox.onDidAccept(() => {
       inputBox.dispose();
       isActive = false;

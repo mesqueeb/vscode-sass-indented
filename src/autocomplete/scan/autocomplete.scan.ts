@@ -1,6 +1,6 @@
 import { STATE, STATEItem } from '../../extension';
 import { CompletionItemKind, ExtensionContext, TextDocumentChangeEvent, TextDocument } from 'vscode';
-import { normalize, basename } from 'path';
+import { normalize, basename, join } from 'path';
 import { escapeRegExp } from '../../utility/utility.regex';
 
 export class Scanner {
@@ -55,14 +55,22 @@ export class Scanner {
   /**
    * scans for variables and mixin.
    */
-  scanFile(document: TextDocument) {
+  scanFile(document: TextDocument, type?: 'Mixin' | 'Variable') {
     if (document.languageId === 'sass') {
       const text = document.getText();
       const pathBasename = basename(document.fileName);
 
       let variables: STATE = {};
-      variables = this.scanFileHandleGetVars(text, pathBasename, variables);
-      variables = this.scanFileHandleGetMixin(text, pathBasename, variables);
+      if (type !== undefined) {
+        variables = this.context.workspaceState.get(normalize(document.fileName));
+        variables =
+          type === 'Mixin'
+            ? this.scanFileHandleGetMixin(text, pathBasename, variables)
+            : this.scanFileHandleGetVars(text, pathBasename, variables);
+      } else {
+        variables = this.scanFileHandleGetVars(text, pathBasename, variables);
+        variables = this.scanFileHandleGetMixin(text, pathBasename, variables);
+      }
 
       this.context.workspaceState.update(normalize(document.fileName), variables);
     }

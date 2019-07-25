@@ -2,6 +2,7 @@ import { PalletItem } from './tree.colorPallet.Item';
 import { TreeItemCollapsibleState as colState, workspace, ExtensionContext, window, SnippetString, TextDocument } from 'vscode';
 import { TreeColorPalletProvider } from './tree.colorPallet.provider';
 import { basename } from 'path';
+import { Scanner } from '../../autocomplete/scan/autocomplete.scan';
 
 export interface ColorPalletFolder {
   colors: { [color: string]: { label: string; value: string; folder: string } };
@@ -137,7 +138,6 @@ export const ColorPalletUtility = {
           }
         });
       }
-    } else {
     }
   },
   getSnippetTextFromFolder(folder: ColorPalletFolder) {

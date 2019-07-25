@@ -1,5 +1,3 @@
-import { htmlTags } from '../autocomplete/schemas/autocomplete.html';
-
 /**
  * returns the distance between the beginning and the first char that is not the checkAgainstChar in form of a number.
  * @param checkAgainstChar defaults to `' '` should always be only one char.
@@ -29,7 +27,4 @@ export function getDistanceReversed(text: string, checkAgainstChar: string = ' '
     count++;
   }
   return count;
-}
-export function isHtmlTag(text: string) {
-  return htmlTags.indexOf(text) === -1 ? false : true;
 }

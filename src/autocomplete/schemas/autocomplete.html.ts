@@ -113,3 +113,23 @@ export const htmlTags = [
   'video',
   'wbr'
 ];
+
+export const voidHtmlTags = [
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+  'command',
+  'keygen',
+  'menuitem'
+];

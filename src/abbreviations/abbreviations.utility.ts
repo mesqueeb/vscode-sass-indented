@@ -2,6 +2,7 @@ import { TextDocument, WorkspaceEdit, workspace, window, Range, Position, Snippe
 import { normalize, join, basename, resolve, relative } from 'path';
 import { readdirSync, readFileSync, existsSync } from 'fs';
 import { replaceWithOffset } from '../format/format.utility';
+import { isVoidHtmlTag } from '../utility/utility.regex';
 
 export const abbreviationsUtility = {
   getTabs(chars: number) {
@@ -25,6 +26,9 @@ export const abbreviationsUtility = {
   getHtmlStructure(document: TextDocument) {
     const path = normalize(join(document.fileName, '../', './'));
     const dir = readdirSync(path);
+
+    let tagArr: boolean[] = [];
+    let previousResLength = 0;
     const res: { name: string; indentation: number }[] = [];
     for (const file of dir) {
       if (new RegExp(`${basename(document.fileName).replace('.sass', '.html')}`).test(file)) {
@@ -33,13 +37,14 @@ export const abbreviationsUtility = {
         let indentation = 0;
         for (let index = 0; index < textLines.length; index++) {
           const line = textLines[index];
-          const tags = line.split('<');
-          for (let i = 0; i < tags.length; i++) {
-            const tag = tags[i];
-            const regex = /class="(.*)"|id="(.*)"/g;
-            if (tag.trim() !== '' && !tag.startsWith('/')) {
+          const tagParts = line.split('<');
+          for (let i = 0; i < tagParts.length; i++) {
+            const tagPart = tagParts[i];
+            const tagPartName = tagPart.split(' ')[0].replace('>', '');
+            const regex = /class="(\w*)"|id="(\w*)"/g;
+            if (tagPart.trim() !== '' && !tagPart.startsWith('/')) {
               let m;
-              while ((m = regex.exec(tag)) !== null) {
+              while ((m = regex.exec(tagPart)) !== null) {
                 if (m.index === regex.lastIndex) {
                   regex.lastIndex++;
                 }
@@ -47,16 +52,24 @@ export const abbreviationsUtility = {
                   if (groupIndex !== 0 && match !== undefined) {
                     if (groupIndex === 1) {
                       const classes = match.split(' ');
-                      classes.forEach(className => res.push({ name: '.'.concat(className), indentation }));
+                      classes.forEach(className => res.push({ name: '.'.concat(className), indentation: indentation }));
                     } else {
-                      res.push({ name: '#'.concat(match), indentation });
+                      res.push({ name: '#'.concat(match), indentation: indentation });
                     }
                   }
                 });
               }
-              indentation++;
-            } else if (tag.startsWith('/')) {
-              indentation--;
+
+              tagArr.unshift(previousResLength !== res.length ? true && !isVoidHtmlTag(tagPartName) : false);
+              previousResLength = res.length;
+              if (tagArr[0] === true) {
+                indentation++;
+              }
+            } else if (tagPart.startsWith('/')) {
+              const currentTagPart = tagArr.shift();
+              if (currentTagPart === true) {
+                indentation--;
+              }
             }
           }
         }

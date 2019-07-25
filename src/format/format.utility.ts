@@ -31,3 +31,9 @@ export function getIndentationOffset(text: string, indentation: number): { offse
   let distance = getDistance(text);
   return { offset: indentation - distance, distance };
 }
+export function isKeyframePoint(text: string, isAtKeyframe: boolean) {
+  if (isAtKeyframe === false) {
+    return false;
+  }
+  return /^ *\d+%/.test(text) || /^ *from|to/.test(text);
+}

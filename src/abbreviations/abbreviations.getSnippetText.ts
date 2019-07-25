@@ -41,7 +41,7 @@ export function generateSnippetText(text: string): string {
         case 'outline-style:':
           newArr.push(
             `${item} $\{${(pos++, pos)}:1px} $\{${(pos++, pos)}|solid,none,dotted,double,groove,ridge,inset,outset,hidden|} $\{${(pos++,
-            pos)}: red}`
+            pos)}:red}`
           );
           break;
 
@@ -289,7 +289,12 @@ export function generateSnippetText(text: string): string {
         case 'writing-mode:':
           newArr.push(`${item} $\{${(pos++, pos)}|horizontal-tb,vertical-rl,vertical-lr|}`);
           break;
-
+        case 'top: 0':
+        case 'bottom: 0':
+        case 'left: 0':
+        case 'right: 0':
+          newArr.push(item);
+          break;
         default:
           newArr.push(`${item} $${(pos++, pos)}`);
           break;

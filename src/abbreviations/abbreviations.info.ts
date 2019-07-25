@@ -9,7 +9,7 @@ export function getCharInfo(char: string, space: string): { text: string; lines:
       return {
         text: `${space}// g = background, u = bottom, s = box-shadow, z = box-sizing
 ${space}// ${directionSuggestions('border')}
-${space}// d = box-decoration-break, f = backface-visibility)`,
+${space}// d = box-decoration-break, a = border-radius, f = backface-visibility`,
         lines: 3
       };
     case 'c':
