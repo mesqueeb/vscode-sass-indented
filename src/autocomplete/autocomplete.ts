@@ -28,6 +28,8 @@ import { isNumber } from 'util';
 import { Abbreviations } from '../abbreviations/abbreviations';
 import { autocompleteUtilities as Utility } from './autocomplete.utility';
 import { Scanner } from './scan/autocomplete.scan';
+import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
+import { isPath } from '../utility/utility.regex';
 
 class SassCompletion implements CompletionItemProvider {
   context: ExtensionContext;
@@ -50,6 +52,7 @@ class SassCompletion implements CompletionItemProvider {
     let Units = [],
       properties = [],
       values = [],
+      classesAndIds = [],
       functions = [],
       imports = Utility.getImports(text),
       variables: CompletionItem[] = [];
@@ -76,9 +79,18 @@ class SassCompletion implements CompletionItemProvider {
     if (isNumber(currentWordUT) && !disableUnitCompletion && !block) {
       Units = Utility.getUnits(currentWord);
     }
+    if (currentWord.startsWith('/')) {
+      completions = sassCommentCompletions();
+      block = true;
+    }
+    if (!block && isPath(currentWord)) {
+      block = true;
+    }
+    if (!block) {
+      this.scan.scanFile(document);
+    }
 
     if (value && !block) {
-      this.scan.scanFile(document, 'Variable');
       values = Utility.getValues(cssSchema, currentWord);
       imports.forEach(item => {
         const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
@@ -99,7 +111,6 @@ class SassCompletion implements CompletionItemProvider {
       });
       functions = sassSchema;
     } else if (!block) {
-      this.scan.scanFile(document, 'Mixin');
       variables = [];
       imports.forEach(item => {
         const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
@@ -119,11 +130,12 @@ class SassCompletion implements CompletionItemProvider {
         }
       });
 
+      classesAndIds = Utility.getHtmlClassOrIdCompletions(document);
       atRules = sassAt;
       properties = Utility.getProperties(cssSchema, currentWord);
     }
     if (!block) {
-      completions = [].concat(properties, values, functions, Units, variables, atRules);
+      completions = [].concat(properties, values, functions, Units, variables, atRules, classesAndIds);
     }
 
     return completions;

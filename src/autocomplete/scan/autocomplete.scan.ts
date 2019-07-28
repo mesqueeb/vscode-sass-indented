@@ -55,22 +55,15 @@ export class Scanner {
   /**
    * scans for variables and mixin.
    */
-  scanFile(document: TextDocument, type?: 'Mixin' | 'Variable') {
+  scanFile(document: TextDocument) {
     if (document.languageId === 'sass') {
       const text = document.getText();
       const pathBasename = basename(document.fileName);
 
       let variables: STATE = {};
-      if (type !== undefined) {
-        variables = this.context.workspaceState.get(normalize(document.fileName));
-        variables =
-          type === 'Mixin'
-            ? this.scanFileHandleGetMixin(text, pathBasename, variables)
-            : this.scanFileHandleGetVars(text, pathBasename, variables);
-      } else {
-        variables = this.scanFileHandleGetVars(text, pathBasename, variables);
-        variables = this.scanFileHandleGetMixin(text, pathBasename, variables);
-      }
+
+      variables = this.scanFileHandleGetVars(text, pathBasename, variables);
+      variables = this.scanFileHandleGetMixin(text, pathBasename, variables);
 
       this.context.workspaceState.update(normalize(document.fileName), variables);
     }
@@ -121,10 +114,17 @@ export class Scanner {
     const namespace = `${pathBasename}/${rep}`;
     const item: STATEItem = {
       title: `$${rep.split('(')[0]}`,
-      insert: `@include ${rep.replace(/(\$\S*)/g, (r, g) => {
-        argNum++;
-        return `$\{${argNum}:${g}\}`;
-      })}`,
+      insert: `@include ${rep
+        .replace(/(\$\w*:? ?\w*,?)/g, r => {
+          argNum++;
+          return `$\{${argNum}:${
+            r
+              .replace('$', '\\$')
+              .replace(',', '')
+              .split(':')[0]
+          }: \},`;
+        })
+        .replace(/,\)$/, ')')}\n$0`,
       detail: `Include ${rep} - ${pathBasename} Mixin.`,
       kind: CompletionItemKind.Method
     };

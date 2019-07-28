@@ -37,6 +37,11 @@ export const sassAtArr = [
     desc: 'Create a new for loop'
   },
   {
+    name: '@else',
+    body: '@else \n\t$0',
+    desc: '@else'
+  },
+  {
     name: '@each',
     body: '@each $${1:var} in ${2:list/map}\n\t$0 ',
     desc: 'Create a new for each loop'
@@ -58,7 +63,7 @@ export const sassAtArr = [
   },
   {
     name: '@keyframes',
-    body: '@keyframes ${1:name}\n\t0%\n\t\t$2\nt100%\n\t\t$3',
+    body: '@keyframes ${1:name}\n\t0%\n\t\t$2\n\t100%\n\t\t$3',
     desc: 'Create a new animation'
   },
   {

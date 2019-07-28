@@ -108,7 +108,7 @@ export const abbreviationsUtility = {
       const path = workspace.workspaceFolders[i];
       if (existsSync(join(path.uri.fsPath, '/src/styles.sass'))) {
         const importPath = relative(join(document.uri.fsPath, '../'), join(path.uri.fsPath, 'src/styles.sass'));
-        const rep = importPath.replace('\\', '/');
+        const rep = importPath.replace(/\\/g, '/');
         setTimeout(() => {
           const edit = new WorkspaceEdit();
           edit.insert(document.uri, new Position(0, 0), `@import ${importPath.startsWith('.') ? rep : './'.concat(rep)}\n`);

@@ -33,6 +33,17 @@
 				</dict>
 			</array>
 		</dict>
+		<!-- EXTRA STUFF -->
+		<!-- reset -->
+		<dict>
+		<key>begin</key>
+		<string>^ *\/?\/\/RESET-SASS-TABS</string>
+		<key>end</key>
+		<string>(?=\n|\()</string>
+		<key>name</key>
+		<string>keyword.other.sass.formatter.action</string>
+		</dict>
+		<!--  -->
 		<dict>
 			<key>begin</key>
 			<string>\s/\*</string>

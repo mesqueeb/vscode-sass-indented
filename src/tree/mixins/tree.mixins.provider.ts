@@ -2,9 +2,8 @@ import { TreeDataProvider, TreeItemCollapsibleState, TreeItem, EventEmitter, Eve
 
 import { SassTreeUtility as Utility } from '../tree.utility';
 import { SassTreeItem } from '../tree.item';
-import { ColorPalletUtility } from './tree.colorPallet.utility';
 
-export class TreeColorPalletProvider implements TreeDataProvider<SassTreeItem> {
+export class TreeMixinsProvider implements TreeDataProvider<SassTreeItem> {
   private _onDidChangeTreeData: EventEmitter<SassTreeItem | undefined> = new EventEmitter<SassTreeItem | undefined>();
   readonly onDidChangeTreeData: Event<SassTreeItem | undefined> = this._onDidChangeTreeData.event;
 
@@ -23,9 +22,9 @@ export class TreeColorPalletProvider implements TreeDataProvider<SassTreeItem> {
 
   getChildren(element?: SassTreeItem): Thenable<SassTreeItem[]> {
     if (element) {
-      return Promise.resolve(ColorPalletUtility.getColors(element.subFolder));
+      // return Promise.resolve(Utility.getColors(element.data)); TODO
     } else {
-      return Promise.resolve(Utility.getFolders(this.context, 'pallet'));
+      return Promise.resolve(Utility.getFolders(this.context, 'mixin'));
     }
   }
 }

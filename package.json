@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax highlighting, autocomplete & snippets",
-  "version": "1.5.9",
+  "version": "1.5.8",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -38,8 +38,8 @@
         },
         "sass.disableEmmet": {
           "type": "boolean",
-          "default": true,
-          "description": "disables emmet in the workspace settings to enable emmet remove sass from emmet.excludeLanguages, and disable this option."
+          "default": false,
+          "description": " REVIEW disables emmet in the workspace settings to enable emmet remove sass from emmet.excludeLanguages, and disable this option."
         },
         "sass.format.enabled": {
           "type": "boolean",
@@ -92,6 +92,10 @@
         {
           "id": "colorPallet",
           "name": "Color Pallet"
+        },
+        {
+          "id": "mixins",
+          "name": "Mixins"
         }
       ]
     },
@@ -154,6 +158,28 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "colorPallet.deleteEntry",
+          "when": "false"
+        },
+        {
+          "command": "colorPallet.editEntry",
+          "when": "false"
+        },
+        {
+          "command": "colorPallet.refreshEntry",
+          "when": "false"
+        },
+        {
+          "command": "colorPallet.addFolderItem",
+          "when": "false"
+        },
+        {
+          "command": "colorPallet.addFolder",
+          "when": "false"
+        }
+      ],
       "view/title": [
         {
           "command": "colorPallet.refreshEntry",
@@ -221,7 +247,7 @@
       {
         "language": "sass",
         "scopeName": "source.sass",
-        "path": "./syntaxes/sass.tmLanguage"
+        "path": "./syntaxes/sass.language.json"
       }
     ]
   },

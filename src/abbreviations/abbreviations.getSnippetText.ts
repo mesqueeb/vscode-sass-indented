@@ -23,15 +23,15 @@ export function generateSnippetText(text: string): string {
           break;
         case 'justify-self:':
         case 'align-self:':
-          newArr.push(`${item} $\{${(pos++, pos)}|auto,stretch,center,flex-start,flex-end,baseline,initial,inherit|}`);
+          newArr.push(`${item} $\{${(pos++, pos)}|auto,stretch,center,flex-start,flex-end,baseline|}`);
           break;
         case 'align-content:':
         case 'justify-content:':
-          newArr.push(`${item} $\{${(pos++, pos)}|stretch,center,flex-start,flex-end,space-between,space-around,initial,inherit|}`);
+          newArr.push(`${item} $\{${(pos++, pos)}|stretch,center,flex-start,flex-end,space-between,space-around|}`);
           break;
         case 'justify-items:':
         case 'align-items:':
-          newArr.push(`${item} $\{${(pos++, pos)}|stretch,center,flex-start,flex-end,baseline,initial,inherit,}`);
+          newArr.push(`${item} $\{${(pos++, pos)}|stretch,center,flex-start,flex-end,baseline|}`);
           break;
         case 'border:':
         case 'border-left:':
@@ -177,7 +177,7 @@ export function generateSnippetText(text: string): string {
           newArr.push(`${item} $\{${(pos++, pos)}|auto,isolate|}`);
           break;
         case '@mixin':
-          newArr.push(`@mixin $\{${(pos++, pos)}:name} ($${(pos++, pos)})`);
+          newArr.push(`@mixin $\{${(pos++, pos)}:name} ($${(pos++, pos)})\n\t$${(pos++, pos)}`);
           break;
         case 'list-style':
           newArr.push(`${item} $\{${(pos++, pos)}:type} $\{${(pos++, pos)}:position} $\{${(pos++, pos)}:image}`);

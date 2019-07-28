@@ -101,3 +101,33 @@ export function isVoidHtmlTag(text: string) {
 export function isPseudo(text: string) {
   return /^ *::/.test(text);
 }
+/**
+ * Check whether text starts with @if.
+ */
+export function isIfOrElse(text: string) {
+  return /^ *@if|^ *@else/.test(text);
+}
+/**
+ * Check whether text starts with @else.
+ */
+export function isElse(text: string) {
+  return /^ *@else/.test(text);
+}
+/**
+ * Check whether text starts with //R.
+ */
+export function isReset(text: string) {
+  return /^ *\/?\/\/ *R *$/.test(text);
+}
+/**
+ * Check whether text starts with //S.
+ */
+export function isSassSpace(text: string) {
+  return /^ *\/?\/\/ *S *$/.test(text);
+}
+/**
+ *
+ */
+export function isPath(text: string) {
+  return /^.*['"]\.?[\.\/]$/.test(text);
+}

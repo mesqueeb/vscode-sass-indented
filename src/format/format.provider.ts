@@ -19,7 +19,11 @@ import {
   isStar,
   isHtmlTag,
   isPseudo,
-  isKeyframes
+  isKeyframes,
+  isIfOrElse,
+  isReset,
+  isSassSpace,
+  isElse
 } from '../utility/utility.regex';
 import { getCLassOrIdIndentationOffset, replaceWithOffset, getIndentationOffset, isKeyframePoint } from './format.utility';
 import { getDistanceReversed } from '../utility/utility';
@@ -38,25 +42,56 @@ class FormattingProvider implements DocumentFormattingEditProvider {
 
       let result: ProviderResult<TextEdit[]> = [];
       let tabs = 0;
+      let keyframesTabs = 0;
+      let currentTabs = 0;
       let isAtKeyframes = false;
+      let AllowSpace = false;
       for (let i = 0; i < document.lineCount; i++) {
         const line = document.lineAt(i);
-        const indentation = getIndentationOffset(line.text, tabs);
-        const isKeyframesCheck = isKeyframes(line.text);
         const isKeyframesPointCheck = isKeyframePoint(line.text, isAtKeyframes);
+        if (isAtKeyframes && isKeyframesPointCheck) {
+          tabs = Math.max(0, keyframesTabs);
+        }
+        const isKeyframesCheck = isKeyframes(line.text);
+
+        let isIfOrElse_ = isIfOrElse(line.text);
+        let isIfOrElseAProp = false;
+        if (isAtKeyframes && isIfOrElse_) {
+          isIfOrElse_ = false;
+          isIfOrElseAProp = true;
+          tabs = keyframesTabs + options.tabSize;
+        }
+        if (isIfOrElse_ && !isAtKeyframes && isElse(line.text)) {
+          isIfOrElseAProp = true;
+          isIfOrElse_ = false;
+          tabs = Math.max(0, currentTabs - options.tabSize);
+        }
+
+        const ResetTabs = isReset(line.text);
+        const isAnd_ = isAnd(line.text);
+        if (isAnd_) {
+          tabs = currentTabs;
+        }
+        const indentation = getIndentationOffset(line.text, tabs);
+        if (isSassSpace(line.text)) {
+          AllowSpace = true;
+        }
+        //####### Classes, id and other stuff. #######
         if (
           isClassOrId(line.text) ||
           isMixin(line.text) ||
-          isAnd(line.text) ||
           isHtmlTag(line.text.trim()) ||
           isStar(line.text) ||
+          isIfOrElse_ ||
+          ResetTabs ||
           isPseudo(line.text) ||
-          isKeyframesCheck ||
-          isKeyframesPointCheck
+          isKeyframesCheck
         ) {
-          const offset = getCLassOrIdIndentationOffset(indentation.distance, options.tabSize);
-          // set is at keyframes.
+          const offset = getCLassOrIdIndentationOffset(indentation.distance, options.tabSize, currentTabs, ResetTabs);
+
           isAtKeyframes = isKeyframesCheck || isKeyframesPointCheck;
+
+          AllowSpace = false;
 
           if (offset !== 0) {
             if (enableDebug) {
@@ -70,8 +105,19 @@ class FormattingProvider implements DocumentFormattingEditProvider {
             }
             result.push(new TextEdit(line.range, line.text.trimRight()));
           }
-          tabs = Math.max(0, indentation.distance + offset + options.tabSize);
-        } else if (isProperty(line.text) || isInclude(line.text)) {
+          if (isKeyframesCheck) {
+            keyframesTabs = Math.max(0, indentation.distance + offset + options.tabSize);
+          }
+          if (ResetTabs) {
+            tabs = Math.max(0, indentation.distance + offset);
+            currentTabs = tabs;
+          } else {
+            tabs = Math.max(0, indentation.distance + offset + options.tabSize);
+            currentTabs = tabs;
+          }
+        }
+        // ####### properties and other stuff #######
+        else if (isProperty(line.text) || isInclude(line.text) || isKeyframesPointCheck || isAnd_ || isIfOrElseAProp) {
           if (indentation.offset !== 0) {
             if (enableDebug) {
               console.log('MOVE', 'Offset:', indentation.offset, 'Row:', i + 1);
@@ -85,7 +131,19 @@ class FormattingProvider implements DocumentFormattingEditProvider {
 
             result.push(new TextEdit(line.range, line.text.trimRight()));
           }
-        } else if (line.isEmptyOrWhitespace) {
+          if (isAtKeyframes && isKeyframesPointCheck) {
+            tabs = Math.max(0, keyframesTabs + options.tabSize);
+          }
+          if (isAnd_) {
+            tabs = currentTabs + options.tabSize;
+          } else if (isIfOrElseAProp && isAtKeyframes) {
+            tabs = keyframesTabs + options.tabSize * 2;
+          } else if (isIfOrElseAProp && !isAtKeyframes) {
+            tabs = currentTabs;
+          }
+        }
+        // ####### Empty  Space (and Delete)  #######
+        else if (line.isEmptyOrWhitespace) {
           let pass = true;
           if (document.lineCount - 1 > i) {
             const nextLine = document.lineAt(i + 1);
@@ -97,6 +155,7 @@ class FormattingProvider implements DocumentFormattingEditProvider {
               !isAnd(nextLine.text) &&
               !isHtmlTag(nextLine.text.trim()) &&
               !isStar(nextLine.text) &&
+              !AllowSpace &&
               !isPseudo(nextLine.text) &&
               config.get('deleteEmptyRows')
             ) {

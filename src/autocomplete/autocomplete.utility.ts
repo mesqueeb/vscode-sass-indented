@@ -1,7 +1,7 @@
 import { isClassOrId, isAtRule } from '../utility/utility.regex';
 import { CompletionItem, CompletionItemKind, SnippetString, TextDocument } from 'vscode';
 import sassSchemaUnits from './schemas/autocomplete.units';
-import { readdirSync, statSync } from 'fs';
+import { readdirSync, statSync, readFileSync } from 'fs';
 import { join, normalize, basename } from 'path';
 
 export const autocompleteUtilities = {
@@ -123,7 +123,7 @@ export const autocompleteUtilities = {
       const rep = lastWord[lastWord.length - 1];
       const completionItem = new CompletionItem(rep + item.name);
       completionItem.insertText = new SnippetString(rep + item.body);
-      completionItem.detail = item.description;
+      completionItem.detail = item.desc;
       completionItem.kind = CompletionItemKind.Unit;
       units.push(completionItem);
     });
@@ -152,5 +152,49 @@ export const autocompleteUtilities = {
       }
     }
     return suggestions;
+  },
+  getHtmlClassOrIdCompletions(document: TextDocument) {
+    const path = normalize(join(document.fileName, '../', './'));
+    const dir = readdirSync(path);
+
+    const res: CompletionItem[] = [];
+    const addedClasses: string[] = [];
+    const regex = /class="(\w*)"|id="(\w*)"/g;
+    for (const file of dir) {
+      const fileName = basename(document.fileName).replace('.sass', '.html');
+      if (new RegExp(fileName).test(file)) {
+        const text = readFileSync(normalize(document.fileName).replace('.sass', '.html')).toString();
+        let m;
+        while ((m = regex.exec(text)) !== null) {
+          if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+          m.forEach((match: string, groupIndex) => {
+            if (groupIndex !== 0 && match !== undefined) {
+              if (groupIndex === 1) {
+                const classes = match.split(' ');
+                classes.forEach(className => {
+                  if (addedClasses.find(item => className === item) === undefined) {
+                    addedClasses.push(className);
+                    const item = new CompletionItem('.'.concat(className));
+                    item.kind = CompletionItemKind.Class;
+                    item.detail = `Class From: ${fileName}`;
+                    item.insertText = new SnippetString('.'.concat(className, '\n\t$0'));
+                    res.push(item);
+                  }
+                });
+              } else {
+                const item = new CompletionItem('#'.concat(match));
+                item.kind = CompletionItemKind.Class;
+                item.detail = `Id From: ${fileName}`;
+                item.insertText = new SnippetString('#'.concat(match, '\n\t$0'));
+                res.push(item);
+              }
+            }
+          });
+        }
+      }
+    }
+    return res;
   }
 };

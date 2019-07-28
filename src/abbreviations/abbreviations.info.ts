@@ -42,6 +42,8 @@ ${space}// o = row, i = row-, t = template, s = template-areas, c = template-col
       };
     case 'h':
       return { text: `${space}// a = hanging-punctuation, y = hyphens`, lines: 1 };
+    case 'j':
+      return { text: `${space}// s = justify-self, i = justify-items`, lines: 1 };
     case 'l':
       return {
         text: `${space}// p = letter-spacing, h = line-height, s = list-style, i = list-style-image 

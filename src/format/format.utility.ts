@@ -3,9 +3,12 @@ import { getDistance } from '../utility/utility';
 /**
  * returns the relative distance that the class or id should be at.
  */
-export function getCLassOrIdIndentationOffset(distance: number, tabSize: number) {
+export function getCLassOrIdIndentationOffset(distance: number, tabSize: number, current: number, ignoreCurrent: boolean) {
   if (distance === 0) {
     return 0;
+  }
+  if (tabSize * Math.round(distance / tabSize - 0.1) > current && !ignoreCurrent) {
+    return current - distance;
   }
   return tabSize * Math.round(distance / tabSize - 0.1) - distance;
 }

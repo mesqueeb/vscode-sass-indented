@@ -1,6 +1,7 @@
 import { CompletionItem, SnippetString, CompletionItemKind, workspace } from 'vscode';
+import { BasicRawCompletion } from '../autocomplete.interfaces';
 
-const pseudoRaw = {
+const pseudoRaw: { [key: string]: BasicRawCompletion[] } = {
   pseudoclasses: [
     {
       name: ':active',

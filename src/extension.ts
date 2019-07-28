@@ -6,7 +6,9 @@ import FormattingProvider from './format/format.provider';
 import { Scanner } from './autocomplete/scan/autocomplete.scan';
 import SassCompletion from './autocomplete/autocomplete';
 import { TreeColorPalletProvider } from './tree/color pallet/tree.colorPallet.provider';
-import { PalletItem } from './tree/color pallet/tree.colorPallet.Item';
+import { SassTreeUtility } from './tree/tree.utility';
+import { TreeMixinsProvider } from './tree/mixins/tree.mixins.provider';
+import { SassTreeItem } from './tree/tree.item';
 import { ColorPalletUtility } from './tree/color pallet/tree.colorPallet.utility';
 
 export interface STATE {
@@ -22,6 +24,21 @@ export function activate(context: vscode.ExtensionContext) {
     [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
     SassFormatter
   );
+
+  // Events
+  const scan = new Scanner(context);
+  // const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => scan.scanLine(l), 0));
+  // const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
+  let previouslyActiveEditor: vscode.TextEditor = vscode.window.activeTextEditor;
+  const activeDisposable = vscode.window.onDidChangeActiveTextEditor(activeEditor => {
+    if (previouslyActiveEditor !== undefined) {
+      setTimeout(() => scan.scanFile(activeEditor.document), 0);
+    }
+    if (activeEditor !== undefined) {
+      previouslyActiveEditor = activeEditor;
+      setTimeout(() => scan.scanFile(activeEditor.document), 0);
+    }
+  });
 
   const sassCompletion = new SassCompletion(context);
   const sassCompletionDisposable = vscode.languages.registerCompletionItemProvider(
@@ -46,24 +63,29 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Tree SECTION
+  // color pallet
   const colorPalletProvider = new TreeColorPalletProvider(context);
   const treeDisposable = vscode.window.registerTreeDataProvider('colorPallet', colorPalletProvider);
   vscode.commands.registerCommand('colorPallet.refreshEntry', () => colorPalletProvider.refresh());
 
-  vscode.commands.registerCommand('colorPallet.addFolder', () => ColorPalletUtility.addFolder(context, colorPalletProvider));
-  vscode.commands.registerCommand('colorPallet.addFolderItem', (node: PalletItem) =>
-    ColorPalletUtility.addFolderItem(node, context, colorPalletProvider)
+  vscode.commands.registerCommand('colorPallet.addFolder', () => SassTreeUtility.addFolder(context, colorPalletProvider, 'pallet'));
+  vscode.commands.registerCommand('colorPallet.addFolderItem', (node: SassTreeItem) =>
+    SassTreeUtility.addFolderItem(node, context, colorPalletProvider, 'pallet')
   );
-  vscode.commands.registerCommand('colorPallet.editEntry', (node: PalletItem) =>
-    ColorPalletUtility.edit(node, context, colorPalletProvider)
+  vscode.commands.registerCommand('colorPallet.editEntry', (node: SassTreeItem) =>
+    SassTreeUtility.edit(node, context, colorPalletProvider, 'pallet')
   );
-  vscode.commands.registerCommand('colorPallet.deleteEntry', (node: PalletItem) =>
-    ColorPalletUtility.delete(node, context, colorPalletProvider)
+  vscode.commands.registerCommand('colorPallet.deleteEntry', (node: SassTreeItem) =>
+    SassTreeUtility.delete(node, context, colorPalletProvider, 'pallet')
   );
-  vscode.commands.registerCommand('colorPallet.addToFile', (node: PalletItem) => ColorPalletUtility.addToFile(node, context));
-  vscode.commands.registerCommand('colorPallet.scanColors', () => ColorPalletUtility.scanColors(context, colorPalletProvider));
+  vscode.commands.registerCommand('colorPallet.addToFile', (node: SassTreeItem) => SassTreeUtility.addToFile(node, context, 'pallet'));
+  vscode.commands.registerCommand('colorPallet.scanColors', () => ColorPalletUtility.scanColors(context, colorPalletProvider, 'pallet'));
+
+  // mixins
+  const b = new TreeMixinsProvider(context);
+  const a = vscode.window.registerTreeDataProvider('mixins', b);
+
   // - !SECTION
-  context.subscriptions.push(treeDisposable);
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((config: vscode.ConfigurationChangeEvent) => {
@@ -74,6 +96,10 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(sassCompletionDisposable);
   context.subscriptions.push(SassFormatterRegister);
+  context.subscriptions.push(activeDisposable);
+  context.subscriptions.push(treeDisposable);
+  // context.subscriptions.push(changeDisposable);
+  // context.subscriptions.push(saveDisposable);
 }
 
 function setSassLanguageConfiguration() {
