@@ -5,11 +5,8 @@ import * as vscode from 'vscode';
 import FormattingProvider from './format/format.provider';
 import { Scanner } from './autocomplete/scan/autocomplete.scan';
 import SassCompletion from './autocomplete/autocomplete';
-import { TreeColorPalletProvider } from './tree/color pallet/tree.colorPallet.provider';
-import { SassTreeUtility } from './tree/tree.utility';
-import { TreeMixinsProvider } from './tree/mixins/tree.mixins.provider';
+import { TreeSnippetProvider } from './tree/tree.provider';
 import { SassTreeItem } from './tree/tree.item';
-import { ColorPalletUtility } from './tree/color pallet/tree.colorPallet.utility';
 
 export interface STATE {
   [name: string]: { item: STATEItem; type: 'Mixin' | 'Variable' };
@@ -63,28 +60,16 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Tree SECTION
-  // color pallet
-  const colorPalletProvider = new TreeColorPalletProvider(context);
-  const treeDisposable = vscode.window.registerTreeDataProvider('colorPallet', colorPalletProvider);
-  vscode.commands.registerCommand('colorPallet.refreshEntry', () => colorPalletProvider.refresh());
-
-  vscode.commands.registerCommand('colorPallet.addFolder', () => SassTreeUtility.addFolder(context, colorPalletProvider, 'pallet'));
-  vscode.commands.registerCommand('colorPallet.addFolderItem', (node: SassTreeItem) =>
-    SassTreeUtility.addFolderItem(node, context, colorPalletProvider, 'pallet')
-  );
-  vscode.commands.registerCommand('colorPallet.editEntry', (node: SassTreeItem) =>
-    SassTreeUtility.edit(node, context, colorPalletProvider, 'pallet')
-  );
-  vscode.commands.registerCommand('colorPallet.deleteEntry', (node: SassTreeItem) =>
-    SassTreeUtility.delete(node, context, colorPalletProvider, 'pallet')
-  );
-  vscode.commands.registerCommand('colorPallet.addToFile', (node: SassTreeItem) => SassTreeUtility.addToFile(node, context, 'pallet'));
-  vscode.commands.registerCommand('colorPallet.scanColors', () => ColorPalletUtility.scanColors(context, colorPalletProvider, 'pallet'));
-
-  // mixins
-  const b = new TreeMixinsProvider(context);
-  const a = vscode.window.registerTreeDataProvider('mixins', b);
-
+  let TreeDisposables: vscode.Disposable[] = [];
+  const TreeProvider = new TreeSnippetProvider(context);
+  TreeDisposables[0] = vscode.window.registerTreeDataProvider('snippets', TreeProvider);
+  TreeDisposables[1] = vscode.commands.registerCommand('tree.sass.refreshEntry', () => {
+    TreeProvider.refresh(true);
+  });
+  TreeDisposables[2] = vscode.commands.registerCommand('tree.sass.addFromSelection', () => {
+    console.log('ADD');
+    console.log(vscode.window.activeTextEditor);
+  });
   // - !SECTION
 
   context.subscriptions.push(
@@ -94,10 +79,11 @@ export function activate(context: vscode.ExtensionContext) {
       }
     })
   );
+  context.subscriptions.push(...TreeDisposables);
   context.subscriptions.push(sassCompletionDisposable);
   context.subscriptions.push(SassFormatterRegister);
   context.subscriptions.push(activeDisposable);
-  context.subscriptions.push(treeDisposable);
+
   // context.subscriptions.push(changeDisposable);
   // context.subscriptions.push(saveDisposable);
 }

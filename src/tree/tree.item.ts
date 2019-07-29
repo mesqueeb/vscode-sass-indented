@@ -1,36 +1,42 @@
-import { TreeItemCollapsibleState as colState, TreeItem, Command, TreeItemCollapsibleState } from 'vscode';
+import { TreeItem, TreeItemCollapsibleState, Command } from 'vscode';
 import { join } from 'path';
-import { SassTreeFolder } from './tree.utility';
+export type SassTreeItemType = 'folder' | 'color' | 'custom' | 'mixin';
+export class SassTreeItemData {
+  constructor(public insert: string, public type: SassTreeItemType, public path: string[], public desc?: string) {}
+}
 
 export class SassTreeItem extends TreeItem {
   constructor(
     public readonly label: string,
-    public readonly data: any,
-    public readonly desc: string,
+    public readonly data: SassTreeItemData,
     public readonly collapsibleState: TreeItemCollapsibleState,
-    public readonly isFolder: boolean,
-    public readonly subFolder?: SassTreeFolder,
-    public readonly parentFolder?: string,
     public readonly command?: Command
   ) {
     super(label, collapsibleState);
   }
 
   get tooltip(): string {
-    return this.isFolder ? this.label : `${this.label}-${this.desc}`;
+    return this.data.desc === undefined ? this.label : this.data.desc;
   }
 
   get description(): string {
-    return this.desc;
+    return this.data.desc;
   }
 
-  iconPath = this.isFolder
-    ? {
-        light: join(__filename, '..', '..', '..', 'resources', 'light', 'folder.svg'),
-        dark: join(__filename, '..', '..', '..', 'resources', 'dark', 'folder.svg')
-      }
-    : null;
+  get iconPath() {
+    switch (this.data.type) {
+      case 'folder':
+        return {
+          light: join(__filename, '..', '..', '..', 'resources', 'light', 'folder.svg'),
+          dark: join(__filename, '..', '..', '..', 'resources', 'dark', 'folder.svg')
+        };
+
+      default:
+        return null;
+    }
+  }
+
   get contextValue(): string {
-    return this.isFolder ? 'folder' : 'item';
+    return this.data.type;
   }
 }
