@@ -1,15 +1,15 @@
 {
   "name": "sass-indented",
   "displayName": "Sass",
-  "description": "Indented Sass syntax highlighting, autocomplete & snippets",
-  "version": "1.5.8",
+  "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
+  "version": "1.6.0",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
     "type": "git",
     "url": "https://github.com/TheRealSyler/vscode-sass-indented"
   },
-  "bugs": "https://github.com/TheRealSyler/vscode-sass-indented/issues",
+  "bugs": "https://github.com/TheRealSyler/vscode-sass-indented/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=",
   "engines": {
     "vscode": "^1.30.0"
   },
@@ -19,7 +19,8 @@
   ],
   "main": "./out/extension",
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Formatters"
   ],
   "contributes": {
     "configuration": {
@@ -35,11 +36,6 @@
           "type": "boolean",
           "default": true,
           "description": "adds units to the intellisense completions if false."
-        },
-        "sass.disableEmmet": {
-          "type": "boolean",
-          "default": false,
-          "description": " REVIEW disables emmet in the workspace settings to enable emmet remove sass from emmet.excludeLanguages, and disable this option."
         },
         "sass.format.enabled": {
           "type": "boolean",
@@ -66,6 +62,11 @@
           "default": false,
           "description": "enables debug mode."
         },
+        "sass.snippets.path": {
+          "type": "string",
+          "default": "none",
+          "description": "path for the global snippets file."
+        },
         "sass.andStared": {
           "type": "array",
           "default": [
@@ -74,7 +75,7 @@
             "hover",
             "nth-child"
           ],
-          "description": "item in this array will be at the top of the completion list (only for item that show after the & sign)"
+          "description": "items in this array will be at the top of the completion list (only for items that show after the & sign)"
         }
       }
     },
@@ -97,7 +98,7 @@
     },
     "commands": [
       {
-        "command": "tree.sass.refreshEntry",
+        "command": "sass.tree.refreshEntry",
         "title": "Refresh",
         "icon": {
           "light": "resources/light/refresh.svg",
@@ -106,35 +107,177 @@
         "category": "Sass"
       },
       {
-        "command": "tree.sass.addFromSelection",
-        "title": "Add From Selection",
+        "command": "sass.tree.addFromSelection",
+        "title": "Add Snippet From Selection",
         "category": "Sass"
+      },
+      {
+        "command": "sass.tree.delete",
+        "title": "Delete",
+        "category": "Sass"
+      },
+      {
+        "command": "sass.tree.edit",
+        "title": "Edit",
+        "category": "Sass"
+      },
+      {
+        "command": "sass.tree.addFolder",
+        "title": "Add Folder",
+        "category": "Sass"
+      },
+      {
+        "command": "sass.tree.moveUp",
+        "title": "⯅ Move Up",
+        "category": "Sass"
+      },
+      {
+        "command": "sass.tree.moveDown",
+        "title": "⯆ Move Down",
+        "category": "Sass"
+      },
+      {
+        "command": "sass.tree.copy",
+        "title": "Copy",
+        "category": "Sass"
+      },
+      {
+        "command": "sass.tree.paste",
+        "title": "Paste",
+        "category": "Sass"
+      },
+      {
+        "command": "sass.tree.insert",
+        "title": "Insert",
+        "category": "Sass"
+      },
+      {
+        "command": "sass.tree.openFile",
+        "title": "Open File",
+        "category": "Sass"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "sass.tree.addFromSelection",
+        "key": "shift+alt+d",
+        "mac": "shift+alt+d",
+        "when": "resourceExtname == .sass && editorHasSelection"
       }
     ],
     "menus": {
       "commandPalette": [
         {
-          "command": "tree.sass.refreshEntry",
+          "command": "sass.tree.refreshEntry",
           "when": "false"
         },
         {
-          "command": "tree.sass.addFromSelection",
+          "command": "sass.tree.addFromSelection",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.delete",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.edit",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.addFolder",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.moveUp",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.moveDown",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.copy",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.paste",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.insert",
+          "when": "false"
+        },
+        {
+          "command": "sass.tree.openFile",
           "when": "false"
         }
       ],
       "view/title": [
         {
-          "command": "tree.sass.refreshEntry",
+          "command": "sass.tree.refreshEntry",
           "when": "view == snippets",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "tree.sass.addFromSelection"
+          "command": "sass.tree.addFromSelection",
+          "group": "navigation",
+          "when": "viewItem != snippet"
+        },
+        {
+          "command": "sass.tree.insert",
+          "group": "navigation",
+          "when": "viewItem == snippet"
+        },
+        {
+          "command": "sass.tree.delete",
+          "group": "2_edit",
+          "when": "viewItem != root"
+        },
+        {
+          "command": "sass.tree.edit",
+          "group": "2_edit",
+          "when": "viewItem != root"
+        },
+        {
+          "command": "sass.tree.addFolder",
+          "group": "2_edit",
+          "when": "viewItem != snippet"
+        },
+        {
+          "command": "sass.tree.moveUp",
+          "group": "3_move",
+          "when": "viewItem != root"
+        },
+        {
+          "command": "sass.tree.moveDown",
+          "group": "3_move",
+          "when": "viewItem != root"
+        },
+        {
+          "command": "sass.tree.copy",
+          "group": "1_copyPaste",
+          "when": "viewItem != root"
+        },
+        {
+          "command": "sass.tree.paste",
+          "group": "1_copyPaste",
+          "when": "viewItem != snippet"
+        },
+        {
+          "command": "sass.tree.openFile",
+          "group": "navigation",
+          "when": "viewItem == root"
         }
       ],
-      "editor/context": []
+      "editor/context": [
+        {
+          "command": "sass.tree.addFromSelection",
+          "group": "navigation",
+          "when": "resourceExtname == .sass"
+        }
+      ]
     },
     "languages": [
       {

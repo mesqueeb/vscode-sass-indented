@@ -1,8 +1,8 @@
 import { TreeItem, TreeItemCollapsibleState, Command } from 'vscode';
 import { join } from 'path';
-export type SassTreeItemType = 'folder' | 'color' | 'custom' | 'mixin';
+export type SassTreeItemType = 'folder' | 'snippet' | 'root';
 export class SassTreeItemData {
-  constructor(public insert: string, public type: SassTreeItemType, public path: string[], public desc?: string) {}
+  constructor(public insert: string, public type: SassTreeItemType, public path: string[], public position: number, public desc?: string) {}
 }
 
 export class SassTreeItem extends TreeItem {
@@ -25,6 +25,7 @@ export class SassTreeItem extends TreeItem {
 
   get iconPath() {
     switch (this.data.type) {
+      case 'root':
       case 'folder':
         return {
           light: join(__filename, '..', '..', '..', 'resources', 'light', 'folder.svg'),
@@ -32,7 +33,10 @@ export class SassTreeItem extends TreeItem {
         };
 
       default:
-        return null;
+        return {
+          light: join(__filename, '..', '..', '..', 'resources', 'light', 'snippet.svg'),
+          dark: join(__filename, '..', '..', '..', 'resources', 'dark', 'snippet.svg')
+        };
     }
   }
 

@@ -11,8 +11,8 @@ export class TreeSnippetProvider implements TreeDataProvider<SassTreeItem> {
     this.context = context;
   }
 
-  refresh(force?: boolean): void {
-    if (force) {
+  refresh(readFromFile?: boolean): void {
+    if (readFromFile) {
       this.ReadFromFiles = true;
     }
     this._onDidChangeTreeData.fire();
@@ -28,10 +28,19 @@ export class TreeSnippetProvider implements TreeDataProvider<SassTreeItem> {
     } else {
       if (this.ReadFromFiles) {
         this.ReadFromFiles = false;
-        return Promise.resolve(TreeUtility.getItems(TreeUtility.getLocalSassSnippets()));
+        return Promise.resolve(TreeUtility.getItems(TreeUtility.getDataFromFile()));
       } else {
         return Promise.resolve(TreeUtility.getItems(TreeUtility.getData()));
       }
     }
+  }
+}
+export class SnippetProviderUtility {
+  private static _PROVIDER: TreeSnippetProvider;
+  static setProvider(provider: TreeSnippetProvider) {
+    this._PROVIDER = provider;
+  }
+  static Refresh(readFromFile?: boolean) {
+    this._PROVIDER.refresh(readFromFile);
   }
 }

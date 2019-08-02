@@ -12,6 +12,7 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
     const tabSize = window.activeTextEditor.options.tabSize || 4;
 
     inputBox.title = 'SASS Abbreviations';
+    inputBox.placeholder = 'Abbreviations';
     inputBox.show();
     console.log('SASS Abbreviations', isActive);
     isActive = true;
