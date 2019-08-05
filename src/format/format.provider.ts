@@ -6,8 +6,7 @@ import {
   TextEdit,
   Range,
   FormattingOptions,
-  workspace,
-  Position
+  workspace
 } from 'vscode';
 import {
   isMixin,
@@ -39,7 +38,6 @@ class FormattingProvider implements DocumentFormattingEditProvider {
       if (enableDebug) {
         console.log('FORMAT');
       }
-
       let result: ProviderResult<TextEdit[]> = [];
       let tabs = 0;
       let keyframesTabs = 0;
@@ -69,9 +67,9 @@ class FormattingProvider implements DocumentFormattingEditProvider {
 
         const ResetTabs = isReset(line.text);
         const isAnd_ = isAnd(line.text);
-        if (isAnd_) {
-          tabs = currentTabs;
-        }
+        // if (isAnd_) {
+        //   tabs = currentTabs;
+        // }
         const indentation = getIndentationOffset(line.text, tabs);
         if (isSassSpace(line.text)) {
           AllowSpace = true;
@@ -84,6 +82,7 @@ class FormattingProvider implements DocumentFormattingEditProvider {
           isStar(line.text) ||
           isIfOrElse_ ||
           ResetTabs ||
+          isAnd_ ||
           isPseudo(line.text) ||
           isKeyframesCheck
         ) {
@@ -117,7 +116,7 @@ class FormattingProvider implements DocumentFormattingEditProvider {
           }
         }
         // ####### properties and other stuff #######
-        else if (isProperty(line.text) || isInclude(line.text) || isKeyframesPointCheck || isAnd_ || isIfOrElseAProp) {
+        else if (isProperty(line.text) || isInclude(line.text) || isKeyframesPointCheck || isIfOrElseAProp) {
           if (indentation.offset !== 0) {
             if (enableDebug) {
               console.log('MOVE', 'Offset:', indentation.offset, 'Row:', i + 1);
@@ -134,9 +133,10 @@ class FormattingProvider implements DocumentFormattingEditProvider {
           if (isAtKeyframes && isKeyframesPointCheck) {
             tabs = Math.max(0, keyframesTabs + options.tabSize);
           }
-          if (isAnd_) {
-            tabs = currentTabs + options.tabSize;
-          } else if (isIfOrElseAProp && isAtKeyframes) {
+          // if (isAnd_) {
+          //   tabs += options.tabSize;
+          // } else
+          if (isIfOrElseAProp && isAtKeyframes) {
             tabs = keyframesTabs + options.tabSize * 2;
           } else if (isIfOrElseAProp && !isAtKeyframes) {
             tabs = currentTabs;

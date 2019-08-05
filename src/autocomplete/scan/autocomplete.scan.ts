@@ -115,7 +115,7 @@ export class Scanner {
     const item: STATEItem = {
       title: `$${rep.split('(')[0]}`,
       insert: `@include ${rep
-        .replace(/(\$\w*:? ?\w*,?)/g, r => {
+        .replace(/(\$\w*:? ?[\w-]*,?)/g, r => {
           argNum++;
           return `$\{${argNum}:${
             r

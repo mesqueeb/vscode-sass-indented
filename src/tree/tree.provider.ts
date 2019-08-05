@@ -40,6 +40,9 @@ export class SnippetProviderUtility {
   static setProvider(provider: TreeSnippetProvider) {
     this._PROVIDER = provider;
   }
+  static get Context() {
+    return this._PROVIDER.context;
+  }
   static Refresh(readFromFile?: boolean) {
     this._PROVIDER.refresh(readFromFile);
   }

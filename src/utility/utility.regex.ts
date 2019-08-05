@@ -5,13 +5,13 @@ export function escapeRegExp(text) {
 }
 
 /**
- * Check whether text is class, id or placeholder
+ * Check whether text is a variable.
  */
 export function isVar(text: string): boolean {
-  return /^ *?.*:/.test(text);
+  return /^ *?\$.*:.*/.test(text);
 }
 /**
- * Check whether text is class, id or placeholder
+ * Check whether text is a *
  */
 export function isStar(text: string): boolean {
   return /^ *?\*/.test(text);

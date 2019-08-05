@@ -32,11 +32,23 @@ export class SassTreeItem extends TreeItem {
           dark: join(__filename, '..', '..', '..', 'resources', 'dark', 'folder.svg')
         };
 
-      default:
-        return {
-          light: join(__filename, '..', '..', '..', 'resources', 'light', 'snippet.svg'),
-          dark: join(__filename, '..', '..', '..', 'resources', 'dark', 'snippet.svg')
-        };
+      case 'snippet':
+        if (this.label.startsWith('@')) {
+          return {
+            light: join(__filename, '..', '..', '..', 'resources', 'light', 'method.svg'),
+            dark: join(__filename, '..', '..', '..', 'resources', 'dark', 'method.svg')
+          };
+        } else if (this.label.startsWith('$')) {
+          return {
+            light: join(__filename, '..', '..', '..', 'resources', 'light', 'variable.svg'),
+            dark: join(__filename, '..', '..', '..', 'resources', 'dark', 'variable.svg')
+          };
+        } else {
+          return {
+            light: join(__filename, '..', '..', '..', 'resources', 'light', 'snippet.svg'),
+            dark: join(__filename, '..', '..', '..', 'resources', 'dark', 'snippet.svg')
+          };
+        }
     }
   }
 

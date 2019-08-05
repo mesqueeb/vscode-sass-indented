@@ -1,8 +1,12 @@
-import { workspace, TreeItemCollapsibleState as ColState, window, SnippetString, Uri } from 'vscode';
+import { workspace, TreeItemCollapsibleState as ColState, window, SnippetString, Uri, TextDocument, env } from 'vscode';
 import { readFileSync, existsSync, writeFile, writeFileSync } from 'fs';
-import { join } from 'path';
+import { join, basename, normalize } from 'path';
 import { SassTreeItemData, SassTreeItem, SassTreeItemType } from './tree.item';
 import { SnippetProviderUtility as provider } from './tree.provider';
+import { STATE } from '../extension';
+import { Scanner } from '../autocomplete/scan/autocomplete.scan';
+import { isVar, isMixin, isClassOrId, isIfOrElse, isAnd } from '../utility/utility.regex';
+import { replaceWithOffset } from '../format/format.utility';
 
 class SassTreeItemDataRaw {
   constructor(
@@ -22,6 +26,9 @@ interface FileLocation {
 }
 
 export class TreeUtility {
+  /**
+   * Stores the absolute path for each root folder;
+   */
   private static _FILE_LOCATIONS: { [name: string]: FileLocation } = {};
   private static _DATA: TreeData;
   private static _COPY: { data: TreeData['any']; name: string };
@@ -121,7 +128,9 @@ export class TreeUtility {
       let newItems: SassTreeItemDataRaw[] = [];
       for (let i = 0; i < selections.length; i++) {
         const selection = document.getText(selections[i]);
-        newItems.push(new SassTreeItemDataRaw('snippet', 0, selection));
+        if (selection.length > 0) {
+          newItems.push(new SassTreeItemDataRaw('snippet', 0, selection));
+        }
       }
       for (let i = 0; i < newItems.length; i++) {
         const newItem = newItems[i];
@@ -144,18 +153,16 @@ export class TreeUtility {
           itemName = `Selection-${i + counter}`;
         }
 
-        newItem.position = Object.keys(this.getData(path)).length;
+        newItem.position = this._GET_POSITION(path);
 
         this._INSERT_DATA(path, { [itemName]: { data: newItem, children: {} } });
         this._WRITE_DATA_TO_FILES({ location: this._FILE_LOCATIONS[path[0]], baseName: path[0] });
         provider.Refresh();
       }
-    } else {
-      console.warn('addFromSelection', 'activeTextEditor or activeTextEditor.document is', undefined);
     }
   }
   static delete(item: SassTreeItem) {
-    this._DELETE_DATA(item.data.path, this._DATA);
+    this._DELETE_DATA(item.data.path);
     provider.Refresh();
     this._WRITE_DATA_TO_FILES({ location: this._FILE_LOCATIONS[item.data.path[0]], baseName: item.data.path[0] });
   }
@@ -164,7 +171,7 @@ export class TreeUtility {
       if (value) {
         const newPath = item.data.path.slice(0, item.data.path.length - 1).concat(value);
         if (!this._DOES_PATH_EXIST(newPath).exists) {
-          let deletedData = this._DELETE_DATA(item.data.path, this._DATA);
+          let deletedData = this._DELETE_DATA(item.data.path);
           provider.Refresh();
           this._INSERT_DATA(item.data.path.slice(0, item.data.path.length - 1), { [value]: deletedData });
           this._WRITE_DATA_TO_FILES({ location: this._FILE_LOCATIONS[item.data.path[0]], baseName: item.data.path[0] });
@@ -188,7 +195,10 @@ export class TreeUtility {
   }
   static copy(item: SassTreeItem) {
     this._COPY = { data: this.getData(item.data.path.slice(0, item.data.path.length - 1))[item.label], name: item.label };
-    window.showInformationMessage(`${item.label} copied!`);
+  }
+  static cut(item: SassTreeItem) {
+    this._COPY = { data: this._DELETE_DATA(item.data.path), name: item.label };
+    provider.Refresh();
   }
 
   static paste(item: SassTreeItem) {
@@ -209,7 +219,7 @@ export class TreeUtility {
         const newPath = item.data.path.concat(value);
         if (!this._DOES_PATH_EXIST(newPath).exists) {
           this._INSERT_DATA(item.data.path, {
-            [value]: { children: {}, data: { type: 'folder', position: Object.keys(this.getData(item.data.path)).length } }
+            [value]: { children: {}, data: { type: 'folder', position: this._GET_POSITION(item.data.path) } }
           });
           provider.Refresh();
           this._WRITE_DATA_TO_FILES({ location: this._FILE_LOCATIONS[item.data.path[0]], baseName: item.data.path[0] });
@@ -221,12 +231,202 @@ export class TreeUtility {
   }
   static insert(item: SassTreeItem) {
     if (window.activeTextEditor) {
-      window.activeTextEditor.insertSnippet(new SnippetString(item.data.insert));
+      let counter = 0;
+      const insert = item.data.insert.replace(/(\\?\${?N)/g, function(_, grp) {
+        return grp[0] === '\\' ? grp : grp.replace(/^\${?N$/, `$${grp[1] === '{' ? '{' : ''}${(counter++, counter)}`);
+      });
+      window.activeTextEditor.insertSnippet(new SnippetString(insert.concat('\n')));
+    }
+  }
+  static insertFolder(item: SassTreeItem) {
+    if (window.activeTextEditor) {
+      const data = this.getData(item.data.path);
+      let items = '';
+      let counter = 0;
+      for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+          const item = data[key];
+          if (item.data && item.data.insert) {
+            const insert = item.data.insert.replace(/(\\?\${?N)/g, function(_, grp) {
+              return grp[0] === '\\' ? grp : grp.replace(/^\${?N$/, `$${grp[1] === '{' ? '{' : ''}${(counter++, counter)}`);
+            });
+
+            items = items.concat(insert.concat('\n'));
+          }
+        }
+      }
+      window.activeTextEditor.insertSnippet(new SnippetString(items));
     }
   }
   static openFile(item: SassTreeItem) {
     window.showTextDocument(Uri.file(this._FILE_LOCATIONS[item.data.path[0]].path));
   }
+
+  static recalculatePosition(item: SassTreeItem) {
+    const path = item.data.path;
+    let level = 0;
+    let pos = 0;
+    path.reduce((lastReturnValue, currentKey) => {
+      level++;
+      if (level === path.length) {
+        for (const key in lastReturnValue[currentKey].children) {
+          if (lastReturnValue[currentKey].children.hasOwnProperty(key)) {
+            lastReturnValue[currentKey].children[key].data.position = pos;
+            pos++;
+          }
+        }
+        return lastReturnValue[currentKey];
+      } else {
+        return lastReturnValue[currentKey].children;
+      }
+    }, this._DATA);
+
+    this._WRITE_DATA_TO_FILES({ location: this._FILE_LOCATIONS[item.data.path[0]], baseName: item.data.path[0] });
+    provider.Refresh();
+  }
+  static pasteFromClipboard() {
+    env.clipboard.readText().then(text => {
+      console.log('clipboard', text);
+    });
+  }
+  static addFromFile(item: SassTreeItem, type: 'both' | 'mixin' | 'var') {
+    if (window.activeTextEditor !== undefined && window.activeTextEditor.document !== undefined) {
+      const document = window.activeTextEditor.document;
+      const baseName = basename(document.fileName);
+
+      const itemsRaw = TreeUtility._SCAN_FILE(document);
+
+      let items: { vars: { name: string; data: SassTreeItemDataRaw }[]; mixin: { name: string; data: SassTreeItemDataRaw }[] } = {
+        vars: [],
+        mixin: []
+      };
+      let path = [];
+      if (item && item.data !== undefined) {
+        path = item.data.path;
+      } else {
+        const config = workspace.getConfiguration().get('sass.snippets.path');
+        if (config !== '' && config !== 'none') {
+          path = ['Global'];
+        } else {
+          path = [workspace.getWorkspaceFolder(document.uri).name];
+        }
+      }
+      let pos = 0;
+      for (const key in itemsRaw) {
+        if (itemsRaw.hasOwnProperty(key)) {
+          const item = itemsRaw[key];
+          if (item.type === 'mixin' && type !== 'var') {
+            items.mixin.push({
+              data: new SassTreeItemDataRaw('snippet', pos, item.insert, item.desc),
+              name: item.name
+            });
+            pos++;
+          } else if (item.type === 'var' && type !== 'mixin') {
+            items.vars.push({
+              data: new SassTreeItemDataRaw('snippet', pos, item.insert, item.desc),
+              name: item.name
+            });
+            pos++;
+          }
+        }
+      }
+      let folderName = baseName;
+      let counter = 0;
+      while (this._DOES_PATH_EXIST(path.concat([folderName])).exists === true) {
+        counter++;
+        folderName = `${baseName}-${counter}`;
+      }
+      const desc = type === 'both' ? '' : type === 'mixin' ? '.Mixins' : '.Variables';
+      let res: TreeData;
+      switch (type) {
+        case 'both':
+          res = {
+            [folderName]: {
+              children: {
+                Variables: { children: {}, data: { position: 0, type: 'folder' } },
+                Mixins: { children: {}, data: { position: 1, type: 'folder' } }
+              },
+              data: { type: 'folder', position: this._GET_POSITION(path) }
+            }
+          };
+          items.mixin.reduce(accumulator, res[folderName].children.Mixins.children);
+          items.vars.reduce(accumulator, res[folderName].children.Variables.children);
+          break;
+        case 'mixin':
+          res = {
+            [folderName.concat(desc)]: {
+              children: {},
+              data: { type: 'folder', position: this._GET_POSITION(path) }
+            }
+          };
+          items.mixin.reduce(accumulator, res[folderName.concat(desc)].children);
+          break;
+        case 'var':
+          res = {
+            [folderName.concat(desc)]: {
+              children: {},
+              data: { type: 'folder', position: this._GET_POSITION(path) }
+            }
+          };
+          items.vars.reduce(accumulator, res[folderName.concat(desc)].children);
+          break;
+      }
+      function accumulator(acc: TreeData, currentItem: { name: string; data: SassTreeItemDataRaw }) {
+        acc[currentItem.name] = { data: currentItem.data, children: {} };
+        return acc;
+      }
+      this._INSERT_DATA(path, res);
+      this._WRITE_DATA_TO_FILES({ location: this._FILE_LOCATIONS[path[0]], baseName: path[0] });
+      provider.Refresh();
+    }
+  }
+  private static _SCAN_FILE(document: TextDocument) {
+    const items: { insert: string; name: string; type: 'var' | 'mixin'; desc: string }[] = [];
+    let isInMixin = false;
+    let currentMixin = '';
+    let currentMixinName = '';
+
+    for (let i = 0; i < document.lineCount; i++) {
+      const line = document.lineAt(i);
+      const lineText = line.text.trim();
+      if (isVar(line.text)) {
+        const varSplit = lineText.split(':');
+        items.push({
+          insert: lineText.replace('$', '\\$'),
+          name: varSplit[0],
+          desc: varSplit[1].trim(),
+          type: 'var'
+        });
+      } else if (isMixin(lineText)) {
+        if (isInMixin === true) {
+          pushMixin();
+        }
+        currentMixinName = lineText
+          .split('(')[0]
+          .replace('@mixin', '')
+          .trim();
+        currentMixin = currentMixin.concat(lineText);
+        isInMixin = true;
+      } else if (!line.isEmptyOrWhitespace && /^[@#\.]/.test(line.text)) {
+        if (isInMixin) {
+          pushMixin();
+          isInMixin = false;
+        }
+      } else if (isInMixin && !line.isEmptyOrWhitespace) {
+        currentMixin = currentMixin.concat('\n', line.text);
+      }
+    }
+    if (isInMixin) {
+      pushMixin();
+    }
+    function pushMixin() {
+      items.push({ name: '@'.concat(currentMixinName), desc: '', insert: currentMixin, type: 'mixin' });
+      currentMixin = '';
+      currentMixinName = '';
+    }
+    return items;
+  }
+
   private static _PASTE(item: SassTreeItem) {
     this._INSERT_DATA(item.data.path, {
       [this._COPY.name]: {
@@ -243,6 +443,9 @@ export class TreeUtility {
 
     this._WRITE_DATA_TO_FILES({ location: this._FILE_LOCATIONS[item.data.path[0]], baseName: item.data.path[0] });
     provider.Refresh();
+  }
+  private static _GET_POSITION(path: string[]) {
+    return Object.keys(this.getData(path)).length;
   }
 
   private static _GET_GLOBAL_PATH(skipQuestion?: boolean) {
@@ -268,17 +471,22 @@ export class TreeUtility {
       });
     }
   }
-
+  /**
+   * Inserts data Into the given folder.
+   *
+   * Example path = [a, b, c], data will be added to c.[currentKey].children.
+   *
+   * **`Overwrites data with the same key.`**
+   */
   private static _INSERT_DATA(path: string[], data: TreeData) {
     let level = 0;
 
-    path.reduce((lastReturnValue, currentKey) => {
+    path.reduce((accumulator, currentKey) => {
       level++;
       if (level === path.length) {
-        lastReturnValue[currentKey].children = { ...lastReturnValue[currentKey].children, ...data };
-        return data;
+        accumulator[currentKey].children = { ...accumulator[currentKey].children, ...data };
       } else {
-        return lastReturnValue[currentKey].children;
+        return accumulator[currentKey].children;
       }
     }, this._DATA);
   }
@@ -286,38 +494,38 @@ export class TreeUtility {
   private static _UPDATE_ITEM_POSITIONS(path: string[], itemToMove: { name: string; data: SassTreeItemDataRaw }, direction: 'up' | 'down') {
     let level = 0;
     let canChangePos = false;
-    path.reduce((lastReturnValue, currentKey) => {
+    path.reduce((accumulator, currentKey) => {
       level++;
       if (level === path.length) {
-        for (const key in lastReturnValue[currentKey].children) {
-          if (lastReturnValue[currentKey].children.hasOwnProperty(key)) {
-            const currentItemDataRef = lastReturnValue[currentKey].children[key].data;
+        for (const key in accumulator[currentKey].children) {
+          if (accumulator[currentKey].children.hasOwnProperty(key)) {
+            const currentItemDataRef = accumulator[currentKey].children[key].data;
             if (!(key === itemToMove.name)) {
               if (direction === 'up' && itemToMove.data.position - 1 === currentItemDataRef.position) {
                 canChangePos = true;
-                lastReturnValue[currentKey].children[key].data.position = currentItemDataRef.position + 1;
+                accumulator[currentKey].children[key].data.position = currentItemDataRef.position + 1;
               } else if (direction === 'down' && itemToMove.data.position + 1 === currentItemDataRef.position) {
                 canChangePos = true;
-                lastReturnValue[currentKey].children[key].data.position = currentItemDataRef.position - 1;
+                accumulator[currentKey].children[key].data.position = currentItemDataRef.position - 1;
               }
             }
           }
         }
         if (canChangePos) {
-          lastReturnValue[currentKey].children[itemToMove.name].data.position =
+          accumulator[currentKey].children[itemToMove.name].data.position =
             direction === 'up'
-              ? lastReturnValue[currentKey].children[itemToMove.name].data.position - 1
-              : lastReturnValue[currentKey].children[itemToMove.name].data.position + 1;
+              ? accumulator[currentKey].children[itemToMove.name].data.position - 1
+              : accumulator[currentKey].children[itemToMove.name].data.position + 1;
         }
-        return lastReturnValue;
+        return accumulator;
       } else {
-        return lastReturnValue[currentKey].children;
+        return accumulator[currentKey].children;
       }
     }, this._DATA);
     return canChangePos;
   }
 
-  private static _DELETE_DATA(path: string[], _DATA: TreeData) {
+  private static _DELETE_DATA(path: string[]) {
     let level = 0;
     let deletedData: TreeData['any'] = undefined;
     path.reduce((lastReturnValue, currentKey) => {
@@ -329,7 +537,7 @@ export class TreeUtility {
       } else {
         return lastReturnValue[currentKey].children;
       }
-    }, _DATA);
+    }, this._DATA);
     return deletedData;
   }
   private static _WRITE_DATA_TO_FILES(single?: { location: FileLocation; baseName: string }) {
