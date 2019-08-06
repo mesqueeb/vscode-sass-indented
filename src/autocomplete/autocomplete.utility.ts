@@ -1,42 +1,52 @@
 import { isClassOrId, isAtRule } from '../utility/utility.regex';
-import { CompletionItem, CompletionItemKind, SnippetString, TextDocument } from 'vscode';
+
+import { CompletionItem, CompletionItemKind, SnippetString, TextDocument, Position } from 'vscode';
+
 import sassSchemaUnits from './schemas/autocomplete.units';
 import { readdirSync, statSync, readFileSync } from 'fs';
 import { join, normalize, basename } from 'path';
 
-export const autocompleteUtilities = {
+
+export class AutocompleteUtilities {
+
   /**
    * Naive check whether currentWord is value for given property
    * @param {Object} cssSchema
    * @param {String} currentWord
    * @return {Boolean}
    */
-  isValue(cssSchema, currentWord: string): boolean {
-    const property = autocompleteUtilities.getPropertyName(currentWord);
 
-    return property && Boolean(autocompleteUtilities.findPropertySchema(cssSchema, property));
-  },
+  static isValue(cssSchema, currentWord: string): boolean {
+    const property = AutocompleteUtilities.getPropertyName(currentWord);
+
+    return property && Boolean(AutocompleteUtilities.findPropertySchema(cssSchema, property));
+  }
+
 
   /**
    * Formats property name
    * @param {String} currentWord
    * @return {String}
    */
-  getPropertyName(currentWord: string): string {
+
+  static getPropertyName(currentWord: string): string {
+
     return currentWord
       .trim()
       .replace(':', ' ')
       .split(' ')[0];
-  },
+
+  }
+
   /**
    * Search for property in cssSchema
    * @param {Object} cssSchema
    * @param {String} property
    * @return {Object}
    */
-  findPropertySchema(cssSchema, property: string) {
+  static findPropertySchema(cssSchema, property: string) {
     return cssSchema.data.css.properties.find(item => item.name === property);
-  },
+  }
 
   /**
    * Returns property list for completion
@@ -44,7 +54,8 @@ export const autocompleteUtilities = {
    * @param {String} currentWord
    * @return {CompletionItem}
    */
-  getProperties(cssSchema, currentWord: string): CompletionItem[] {
+
+  static getProperties(cssSchema, currentWord: string): CompletionItem[] {
     if (isClassOrId(currentWord) || isAtRule(currentWord)) {
       return [];
     }
@@ -57,7 +68,7 @@ export const autocompleteUtilities = {
 
       return completionItem;
     });
-  },
+  }
 
   /**
    * Returns values for current property for completion list
@@ -65,9 +76,10 @@ export const autocompleteUtilities = {
    * @param {String} currentWord
    * @return {CompletionItem}
    */
-  getValues(cssSchema, currentWord: string): CompletionItem[] {
-    const property = autocompleteUtilities.getPropertyName(currentWord);
-    const values = autocompleteUtilities.findPropertySchema(cssSchema, property).values;
+  static getValues(cssSchema, currentWord: string): CompletionItem[] {
+    const property = AutocompleteUtilities.getPropertyName(currentWord);
+    const values = AutocompleteUtilities.findPropertySchema(cssSchema, property).values;
+
 
     if (!values) {
       return [];
@@ -81,13 +93,17 @@ export const autocompleteUtilities = {
 
       return completionItem;
     });
-  },
+
+  }
+
 
   /**
    * Get the imports.
    * @param text text of the current File.
    */
-  getImports(text: string) {
+
+  static getImports(text: string) {
+
     const regex = /\/?\/? {0,}@import{1}.*/g; //
     let m: RegExpExecArray;
     const imports = [];
@@ -109,13 +125,15 @@ export const autocompleteUtilities = {
       });
     }
     return imports;
-  },
+
+  }
+
 
   /**
    * gets unit completions.
    * @param currentword
    */
-  getUnits(currentword: string) {
+  static getUnits(currentword: string) {
     const units = [];
 
     sassSchemaUnits.forEach(item => {
@@ -128,9 +146,10 @@ export const autocompleteUtilities = {
       units.push(completionItem);
     });
     return units;
-  },
+  }
 
-  getImportFromCurrentWord(document: TextDocument, currentWord: string): CompletionItem[] {
+  static getImportFromCurrentWord(document: TextDocument, currentWord: string): CompletionItem[] {
+
     const suggestions: CompletionItem[] = [];
     const path = normalize(join(document.fileName, '../', currentWord.replace('@import', '').trim()));
 
@@ -152,8 +171,9 @@ export const autocompleteUtilities = {
       }
     }
     return suggestions;
-  },
-  getHtmlClassOrIdCompletions(document: TextDocument) {
+  }
+  static getHtmlClassOrIdCompletions(document: TextDocument) {
+
     const path = normalize(join(document.fileName, '../', './'));
     const dir = readdirSync(path);
 
@@ -197,4 +217,22 @@ export const autocompleteUtilities = {
     }
     return res;
   }
-};
+  static isInVueStyleBlock(start: Position, document: TextDocument) {
+    for (let i = start.line; i > 0; i--) {
+      const line = document.lineAt(i);
+      if (/^ *<[\w"'= ]*lang="sass"[\w"'= ]*>/.test(line.text)) {
+        if (!(i === start.line)) {
+          return false;
+        }
+        break;
+      } else if (/<\/ *style *>/.test(line.text)) {
+        if (!(i === start.line)) {
+          return true;
+        }
+        break;
+      }
+    }
+    return true;
+  }
+}
+

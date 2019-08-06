@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const sassCompletion = new SassCompletion(context);
   const sassCompletionDisposable = vscode.languages.registerCompletionItemProvider(
-    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
+    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' },{ language: 'vue', scheme: 'file' }, { language: 'vue', scheme: 'untitled' }],
     sassCompletion,
     '\\.',
     '0',

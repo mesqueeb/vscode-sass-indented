@@ -6,7 +6,8 @@
   "patterns": [
     {
       "begin": "^(/\\*)",
-      "end": "^(\\*/)",
+      "end": "\\*/|(?=^[a-zA-Z0-9#.%$@\\[=*+])",
+
       "name": "comment.block.sass",
       "patterns": [
         {
