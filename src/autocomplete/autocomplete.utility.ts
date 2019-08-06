@@ -1,33 +1,43 @@
 import { isClassOrId, isAtRule } from '../utility/utility.regex';
+
 import { CompletionItem, CompletionItemKind, SnippetString, TextDocument, Position } from 'vscode';
+
 import sassSchemaUnits from './schemas/autocomplete.units';
 import { readdirSync, statSync, readFileSync } from 'fs';
 import { join, normalize, basename } from 'path';
 
+
 export class AutocompleteUtilities {
+
   /**
    * Naive check whether currentWord is value for given property
    * @param {Object} cssSchema
    * @param {String} currentWord
    * @return {Boolean}
    */
+
   static isValue(cssSchema, currentWord: string): boolean {
     const property = AutocompleteUtilities.getPropertyName(currentWord);
 
     return property && Boolean(AutocompleteUtilities.findPropertySchema(cssSchema, property));
   }
 
+
   /**
    * Formats property name
    * @param {String} currentWord
    * @return {String}
    */
+
   static getPropertyName(currentWord: string): string {
+
     return currentWord
       .trim()
       .replace(':', ' ')
       .split(' ')[0];
+
   }
+
   /**
    * Search for property in cssSchema
    * @param {Object} cssSchema
@@ -44,6 +54,7 @@ export class AutocompleteUtilities {
    * @param {String} currentWord
    * @return {CompletionItem}
    */
+
   static getProperties(cssSchema, currentWord: string): CompletionItem[] {
     if (isClassOrId(currentWord) || isAtRule(currentWord)) {
       return [];
@@ -69,6 +80,7 @@ export class AutocompleteUtilities {
     const property = AutocompleteUtilities.getPropertyName(currentWord);
     const values = AutocompleteUtilities.findPropertySchema(cssSchema, property).values;
 
+
     if (!values) {
       return [];
     }
@@ -81,13 +93,17 @@ export class AutocompleteUtilities {
 
       return completionItem;
     });
+
   }
+
 
   /**
    * Get the imports.
    * @param text text of the current File.
    */
+
   static getImports(text: string) {
+
     const regex = /\/?\/? {0,}@import{1}.*/g; //
     let m: RegExpExecArray;
     const imports = [];
@@ -109,7 +125,9 @@ export class AutocompleteUtilities {
       });
     }
     return imports;
+
   }
+
 
   /**
    * gets unit completions.
@@ -131,6 +149,7 @@ export class AutocompleteUtilities {
   }
 
   static getImportFromCurrentWord(document: TextDocument, currentWord: string): CompletionItem[] {
+
     const suggestions: CompletionItem[] = [];
     const path = normalize(join(document.fileName, '../', currentWord.replace('@import', '').trim()));
 
@@ -154,6 +173,7 @@ export class AutocompleteUtilities {
     return suggestions;
   }
   static getHtmlClassOrIdCompletions(document: TextDocument) {
+
     const path = normalize(join(document.fileName, '../', './'));
     const dir = readdirSync(path);
 
@@ -215,3 +235,4 @@ export class AutocompleteUtilities {
     return true;
   }
 }
+

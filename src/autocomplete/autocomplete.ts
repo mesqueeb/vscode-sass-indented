@@ -59,6 +59,7 @@ class SassCompletion implements CompletionItemProvider {
     // also get current file from the workspace State.
     imports.push(path.basename(document.fileName));
 
+
     if (document.languageId === 'vue') {
       block = Utility.isInVueStyleBlock(start, document);
     }
@@ -70,12 +71,15 @@ class SassCompletion implements CompletionItemProvider {
       return;
     }
 
+
     if (/^@import/.test(currentWord) && !block) {
+
       completions = Utility.getImportFromCurrentWord(document, currentWord);
       block = true;
     }
 
     if (currentWord.startsWith('&') && !block) {
+
       completions = sassPseudo(config.get('sass.andStared'));
       block = true;
     }
@@ -83,6 +87,7 @@ class SassCompletion implements CompletionItemProvider {
     if (isNumber(currentWordUT) && !disableUnitCompletion && !block) {
       Units = Utility.getUnits(currentWord);
     }
+
     if (currentWord.startsWith('/') && !block) {
       completions = sassCommentCompletions();
       block = true;

@@ -24,3 +24,5 @@
 | 1.0.0   | 02.09.2016 | Add property/value autocompletion                                              |
 | 0.1.3   | 25.07.2016 | Publish v0.1.3                                                                 |
 | 0.1.0   | 21.12.2015 | Initial Release                                                                |
+
+
