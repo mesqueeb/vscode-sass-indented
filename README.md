@@ -22,12 +22,8 @@ ___
 
 > Abbreviations and Sass Snippets, are experiments, i might remove them.
 
-### 1.6 New Additions
-* Classes and id completions.
-* `@Import` path suggestions.
-* `@include` completion across files.
-* Completions for `&**`.
-* Formatter, Abbreviations, Sass Snippets.
+### 1.6.2 New Additions
+* the formatter now set the space between a property and its value.
 
 >Note: The snippets have been removed if you still want to use them, you can get them [here](https://github.com/TheRealSyler/vscode-sass-indented/blob/a3ffc7a005c2ccd82e7c50ccf391ba5d22afee13/snippets/sass.json).
 
@@ -105,12 +101,13 @@ Configuration options can be set in the `Sass (Indented)` section of VSCode sett
 | `sass.andStared`             | array   | `["active", "focus",  "hover", "nth-child"]` | items in this array will be at the top of the completion list (only for items that show after the & sign) |
 
 ### Formatter
-| Option                         | Type    | Default | Description                                  |
-| ------------------------------ | ------- | ------- | -------------------------------------------- |
-| `sass.format.enabled`          | boolean | false   | disables the sass formatter.                 |
-| `sass.format.deleteWhitespace` | boolean | true    | removes trailing whitespace.                 |
-| `sass.format.deleteEmptyRows`  | boolean | true    | removes empty rows.                          |
-| `sass.format.deleteCompact`    | boolean | true    | removes empty rows that are near a property. |
+| Option                         | Type    | Default | Description                                                    |
+| ------------------------------ | ------- | ------- | -------------------------------------------------------------- |
+| `sass.format.enabled`          | boolean | true    | enables the sass formatter.                                    |
+| `sass.format.deleteWhitespace` | boolean | true    | removes trailing whitespace.                                   |
+| `sass.format.deleteEmptyRows`  | boolean | true    | removes empty rows.                                            |
+| `sass.format.deleteCompact`    | boolean | true    | removes empty rows that are near a property.                   |
+| `sass.format.setPropertySpace` | boolean | true    | If true space between the property: value, is always set to 1. |
 
 
 ## **Bugs**

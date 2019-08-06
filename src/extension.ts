@@ -25,22 +25,25 @@ export function activate(context: vscode.ExtensionContext) {
   const scan = new Scanner(context);
   // const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => scan.scanLine(l), 0));
   // const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
-  let previouslyActiveEditor: vscode.TextEditor = vscode.window.activeTextEditor;
-  let activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
+  let previousDocument: vscode.TextDocument = vscode.window.activeTextEditor.document;
   const activeDisposable = vscode.window.onDidChangeActiveTextEditor(editor => {
-    activeEditor = editor;
-    if (previouslyActiveEditor !== undefined) {
-      setTimeout(() => scan.scanFile(activeEditor.document), 0);
+    if (previousDocument !== undefined) {
+      scan.scanFile(previousDocument);
     }
-    if (activeEditor !== undefined) {
-      previouslyActiveEditor = activeEditor;
-      setTimeout(() => scan.scanFile(activeEditor.document), 0);
+    if (editor !== undefined) {
+      previousDocument = editor.document;
+      scan.scanFile(editor.document);
     }
   });
 
   const sassCompletion = new SassCompletion(context);
   const sassCompletionDisposable = vscode.languages.registerCompletionItemProvider(
-    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' },{ language: 'vue', scheme: 'file' }, { language: 'vue', scheme: 'untitled' }],
+    [
+      { language: 'sass', scheme: 'file' },
+      { language: 'sass', scheme: 'untitled' },
+      { language: 'vue', scheme: 'file' },
+      { language: 'vue', scheme: 'untitled' }
+    ],
     sassCompletion,
     '\\.',
     '0',

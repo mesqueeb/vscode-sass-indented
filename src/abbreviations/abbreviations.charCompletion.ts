@@ -27,7 +27,7 @@ export const charCompletion = {
         return `animation:`;
     }
   },
-  getB(secondKey: string, base: string) {
+  getB(secondKey: string, thirdKey: string, base: string) {
     switch (secondKey) {
       case 'l':
         return `${base}-left:`;
@@ -40,7 +40,7 @@ export const charCompletion = {
       case 'g':
         return `background:`;
       case 'a':
-        return `${base}-radius:`;
+        return borderThirdKey(base, thirdKey);
       case 'u':
         return `bottom:`;
       case 's':
@@ -403,5 +403,19 @@ function transformExtensions(base: string, funcName: string, thirdKey: string, a
       return `${base}: ${funcName}Z()`;
     default:
       return `${base}: ${funcName}()`;
+  }
+}
+function borderThirdKey(base: string, thirdKey: string) {
+  switch (thirdKey) {
+    case 't':
+      return `${base}-top-left-radius:`;
+    case 'r':
+      return `${base}-top-right-radius:`;
+    case 'f':
+      return `${base}-bottom-left-radius:`;
+    case 'g':
+      return `${base}-bottom-right-radius:`;
+    default:
+      return `${base}-radius:`;
   }
 }

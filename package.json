@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -40,8 +40,8 @@
         },
         "sass.format.enabled": {
           "type": "boolean",
-          "default": false,
-          "description": "disables the sass formatter."
+          "default": true,
+          "description": "enables the sass formatter."
         },
         "sass.format.deleteWhitespace": {
           "type": "boolean",
@@ -52,6 +52,11 @@
           "type": "boolean",
           "default": true,
           "description": "removes empty rows."
+        },
+        "sass.format.setPropertySpace": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true space between the property: value, is always set to 1."
         },
         "sass.format.deleteCompact": {
           "type": "boolean",

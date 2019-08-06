@@ -89,7 +89,7 @@ export function Abbreviations(document: TextDocument, start: Position, currentWo
               command = command.replace(Utility.propRegex('a', 'lcsi'), CharComp.getA(secondKey));
               break;
             case 'b':
-              command = command.replace(Utility.propRegex('b', 'lrtbgvdbszua'), CharComp.getB(secondKey, 'border'));
+              command = command.replace(Utility.propRegex('b', 'lrtbgvdbszua', 'trfg'), CharComp.getB(secondKey, thirdKey, 'border'));
               break;
             case 'c':
               command = command.replace(Utility.propRegex('c', 'lostirc'), CharComp.getC(secondKey));

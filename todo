@@ -1,0 +1,34 @@
+|----------------------------------------------------------------------|
+#Version 1.6.2
+|----------------------------------------------------------------------|
+#Pre Publish TODO List
+1. change changelog.md
+2. change package.json
+|----------------------------------------------------------------------|
+
+TODO* Vue Support (medium Priority)
+TODO? add color picker (Low Priority)
+TODO? live Preview (Low Priority)
+
+SASS Tree stuff
+|----------------------------------------------------------------------|
+§? add replace from selection 
+|----------------------------------------------------------------------|
+SASS Completions
+|----------------------------------------------------------------------|
+// #4 (Improvement) Support autocomplete in Vue template files
+TODO check wether the currentWord is in a mixin if in Mixin only show mixin variables. (mixin variable completion)
+TODO? add @keyframes completions (Low Priority)
+|----------------------------------------------------------------------|
+SASS Emmet Replacement
+|----------------------------------------------------------------------|
+TODO*Replace Emmet completion ordering. (medium Priority)
+|----------------------------------------------------------------------|
+SASS Abbreviations
+|----------------------------------------------------------------------|
+TODO '"/!' only add missing html classes and ids 
+|----------------------------------------------------------------------|
+SASS Formatter
+|----------------------------------------------------------------------|
+// set space between property and value (prop: val)
+|----------------------------------------------------------------------|

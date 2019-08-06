@@ -9,8 +9,9 @@ export function getCharInfo(char: string, space: string): { text: string; lines:
       return {
         text: `${space}// g = background, u = bottom, s = box-shadow, z = box-sizing
 ${space}// ${directionSuggestions('border')}
-${space}// d = box-decoration-break, a = border-radius, f = backface-visibility`,
-        lines: 3
+${space}// d = box-decoration-break, a = border-radius, f = backface-visibility
+${space}// Border Radius Directions, r = top-right, t = top-left, f = bottom-left, g = bottom-right`,
+        lines: 4
       };
     case 'c':
       return {
