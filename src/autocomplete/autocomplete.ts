@@ -26,7 +26,7 @@ import { sassAt } from './schemas/autocomplete.at';
 import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
 import { Abbreviations } from '../abbreviations/abbreviations';
-import { autocompleteUtilities as Utility } from './autocomplete.utility';
+import { AutocompleteUtilities as Utility } from './autocomplete.utility';
 import { Scanner } from './scan/autocomplete.scan';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
 import { isPath } from '../utility/utility.regex';
@@ -59,19 +59,23 @@ class SassCompletion implements CompletionItemProvider {
     // also get current file from the workspace State.
     imports.push(path.basename(document.fileName));
 
+    if (document.languageId === 'vue') {
+      block = Utility.isInVueStyleBlock(start, document);
+    }
+
     let completions: CompletionItem[] = [];
 
-    if (currentWord.startsWith('?')) {
+    if (currentWord.startsWith('?') && !block) {
       Abbreviations(document, start, currentWordUT);
       return;
     }
 
-    if (/^@import/.test(currentWord)) {
+    if (/^@import/.test(currentWord) && !block) {
       completions = Utility.getImportFromCurrentWord(document, currentWord);
       block = true;
     }
 
-    if (currentWord.startsWith('&')) {
+    if (currentWord.startsWith('&') && !block) {
       completions = sassPseudo(config.get('sass.andStared'));
       block = true;
     }
@@ -79,7 +83,7 @@ class SassCompletion implements CompletionItemProvider {
     if (isNumber(currentWordUT) && !disableUnitCompletion && !block) {
       Units = Utility.getUnits(currentWord);
     }
-    if (currentWord.startsWith('/')) {
+    if (currentWord.startsWith('/') && !block) {
       completions = sassCommentCompletions();
       block = true;
     }

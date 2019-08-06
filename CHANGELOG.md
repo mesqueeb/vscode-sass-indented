@@ -2,6 +2,7 @@
 
 | Version | Date       | Changelog                                                            |
 | ------- | ---------- | -------------------------------------------------------------------- |
+| 1.6.0   | 17.06.2019 | 1.6.0, added Formatter, sass snippets and abbreviations              |
 | 1.5.1   | 17.06.2019 | Add variable completion                                              |
 | 1.5.1   | 24.12.2018 | Add configuration option to disable automatic indentation            |
 | 1.4.9   | 15.04.2018 | Restrict language services to local files                            |
