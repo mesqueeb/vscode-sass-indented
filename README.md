@@ -23,7 +23,7 @@ ___
 > Abbreviations and Sass Snippets, are experiments, i might remove them.
 
 ### 1.6.2 New Additions
-* the formatter now set the space between a property and its value.
+* the formatter now sets the space between a property and its value.
 
 >Note: The snippets have been removed if you still want to use them, you can get them [here](https://github.com/TheRealSyler/vscode-sass-indented/blob/a3ffc7a005c2ccd82e7c50ccf391ba5d22afee13/snippets/sass.json).
 

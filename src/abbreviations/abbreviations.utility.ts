@@ -2,18 +2,18 @@ import { TextDocument, WorkspaceEdit, workspace, window, Range, Position, Snippe
 import { normalize, join, basename, resolve, relative } from 'path';
 import { readdirSync, readFileSync, existsSync } from 'fs';
 import { replaceWithOffset } from '../format/format.utility';
-import { isVoidHtmlTag } from '../utility/utility.regex';
+import { isVoidHtmlTag, isClassOrId } from '../utility/utility.regex';
 
-export const abbreviationsUtility = {
-  getTabs(chars: number) {
+export class AbbreviationsUtility {
+  static getTabs(chars: number) {
     let tabs = '';
     for (let i = 0; i < chars; i++) {
       tabs = tabs.concat(' ');
     }
     return tabs;
-  },
+  }
 
-  propRegex(firstLetter: string, secondary?: string, tertiary?: string) {
+  static propRegex(firstLetter: string, secondary?: string, tertiary?: string) {
     let additional = '';
     if (secondary !== undefined) {
       additional = additional.concat(`[${secondary}]?`);
@@ -22,11 +22,51 @@ export const abbreviationsUtility = {
       additional = additional.concat(`[${tertiary}]?`);
     }
     return new RegExp(`^ ?${firstLetter}{1}${additional}`);
-  },
-  getHtmlStructure(document: TextDocument) {
+  }
+
+  static htmlCommand(document: TextDocument, start: Position, endLine: number, previousText: string, tabSize) {
+    const edit = new WorkspaceEdit();
+    edit.replace(document.uri, new Range(start, new Position(endLine, previousText.length)), '');
+    workspace
+      .applyEdit(edit)
+      .then(() =>
+        window.activeTextEditor.insertSnippet(
+          new SnippetString(AbbreviationsUtility._CREATE_HTML_SNIPPET_TEXT(AbbreviationsUtility._GET_HTML_STRUCTURE(document), tabSize)),
+          start
+        )
+      );
+  }
+  static angularInit(document: TextDocument) {
+    for (let i = 0; i < workspace.workspaceFolders.length; i++) {
+      const path = workspace.workspaceFolders[i];
+      if (existsSync(join(path.uri.fsPath, '/src/styles.sass'))) {
+        const importPath = relative(join(document.uri.fsPath, '../'), join(path.uri.fsPath, 'src/styles.sass'));
+        const rep = importPath.replace(/\\/g, '/');
+        setTimeout(() => {
+          if (document.lineAt(0).text !== `@import ${importPath.startsWith('.') ? rep : './'.concat(rep)}`) {
+            const edit = new WorkspaceEdit();
+            edit.insert(document.uri, new Position(0, 0), `@import ${importPath.startsWith('.') ? rep : './'.concat(rep)}\n`);
+            workspace.applyEdit(edit);
+          }
+        }, 50);
+      }
+    }
+  }
+  static getDocumentClassesAndIds(document: TextDocument) {
+    const classesAndIds: string[] = [];
+    for (let i = 0; i < document.lineCount; i++) {
+      const line = document.lineAt(i);
+      if (isClassOrId(line.text)) {
+        classesAndIds.push(line.text.trim());
+      }
+    }
+    return classesAndIds;
+  }
+
+  private static _GET_HTML_STRUCTURE(document: TextDocument) {
     const path = normalize(join(document.fileName, '../', './'));
     const dir = readdirSync(path);
-
+    const classesAndIds = this.getDocumentClassesAndIds(document);
     let tagArr: boolean[] = [];
     let previousResLength = 0;
     const res: { name: string; indentation: number }[] = [];
@@ -41,7 +81,7 @@ export const abbreviationsUtility = {
           for (let i = 0; i < tagParts.length; i++) {
             const tagPart = tagParts[i];
             const tagPartName = tagPart.split(' ')[0].replace('>', '');
-            const regex = /class="(\w*)"|id="(\w*)"/g;
+            const regex = /class="([\w ]*)"|id="(\w*)"/g;
             if (tagPart.trim() !== '' && !tagPart.startsWith('/')) {
               let m;
               while ((m = regex.exec(tagPart)) !== null) {
@@ -52,9 +92,15 @@ export const abbreviationsUtility = {
                   if (groupIndex !== 0 && match !== undefined) {
                     if (groupIndex === 1) {
                       const classes = match.split(' ');
-                      classes.forEach(className => res.push({ name: '.'.concat(className), indentation: indentation }));
+                      classes.forEach(className => {
+                        if (classesAndIds.find(value => value === '.'.concat(className)) === undefined) {
+                          res.push({ name: '.'.concat(className), indentation: indentation });
+                        }
+                      });
                     } else {
-                      res.push({ name: '#'.concat(match), indentation: indentation });
+                      if (classesAndIds.find(value => value === '#'.concat(match)) === undefined) {
+                        res.push({ name: '#'.concat(match), indentation: indentation });
+                      }
                     }
                   }
                 });
@@ -76,8 +122,8 @@ export const abbreviationsUtility = {
       }
     }
     return res;
-  },
-  createHtmlSnippetText(tags: { name: string; indentation: number }[], tabSize) {
+  }
+  private static _CREATE_HTML_SNIPPET_TEXT(tags: { name: string; indentation: number }[], tabSize) {
     let text = '';
     let pos = 0;
     for (let i = 0; i < tags.length; i++) {
@@ -90,31 +136,5 @@ export const abbreviationsUtility = {
       );
     }
     return text;
-  },
-  htmlCommand(document: TextDocument, start: Position, endLine: number, previousText: string, tabSize) {
-    const edit = new WorkspaceEdit();
-    edit.replace(document.uri, new Range(start, new Position(endLine, previousText.length)), '');
-    workspace
-      .applyEdit(edit)
-      .then(() =>
-        window.activeTextEditor.insertSnippet(
-          new SnippetString(abbreviationsUtility.createHtmlSnippetText(abbreviationsUtility.getHtmlStructure(document), tabSize)),
-          start
-        )
-      );
-  },
-  angularInit(document: TextDocument) {
-    for (let i = 0; i < workspace.workspaceFolders.length; i++) {
-      const path = workspace.workspaceFolders[i];
-      if (existsSync(join(path.uri.fsPath, '/src/styles.sass'))) {
-        const importPath = relative(join(document.uri.fsPath, '../'), join(path.uri.fsPath, 'src/styles.sass'));
-        const rep = importPath.replace(/\\/g, '/');
-        setTimeout(() => {
-          const edit = new WorkspaceEdit();
-          edit.insert(document.uri, new Position(0, 0), `@import ${importPath.startsWith('.') ? rep : './'.concat(rep)}\n`);
-          workspace.applyEdit(edit);
-        }, 50);
-      }
-    }
   }
-};
+}

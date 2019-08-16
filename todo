@@ -6,29 +6,35 @@
 2. change package.json
 |----------------------------------------------------------------------|
 
+TODO bundle extension: 'This extension consists of 771 separate files. For performance reasons, you should bundle your extension: https://aka.ms/vscode-bundle-extension. You should also exclude unnecessary files by adding them to your .vscodeignore: https://aka.ms/vscode-vscodeignore'
+
 TODO* Vue Support (medium Priority)
 TODO? add color picker (Low Priority)
-TODO? live Preview (Low Priority)
 
+SASS Live Preview
+|----------------------------------------------------------------------|
+TODO live Preview
+|----------------------------------------------------------------------|
 SASS Tree stuff
 |----------------------------------------------------------------------|
 §? add replace from selection 
 |----------------------------------------------------------------------|
 SASS Completions
 |----------------------------------------------------------------------|
+TODO add calc and repeat css functions (google them first)
 // #4 (Improvement) Support autocomplete in Vue template files
-TODO check wether the currentWord is in a mixin if in Mixin only show mixin variables. (mixin variable completion)
-TODO? add @keyframes completions (Low Priority)
+// check wether the currentWord is in a mixin if in Mixin only show mixin variables. (mixin variable completion)
 |----------------------------------------------------------------------|
 SASS Emmet Replacement
 |----------------------------------------------------------------------|
-TODO*Replace Emmet completion ordering. (medium Priority)
+TODO*Replace Emmet completion ordering. (medium Priority)?
 |----------------------------------------------------------------------|
 SASS Abbreviations
 |----------------------------------------------------------------------|
-TODO '"/!' only add missing html classes and ids 
+// '"/!' only add missing html classes and ids 
 |----------------------------------------------------------------------|
 SASS Formatter
 |----------------------------------------------------------------------|
+TODO convert scss to sass.
 // set space between property and value (prop: val)
 |----------------------------------------------------------------------|

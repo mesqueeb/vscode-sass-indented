@@ -3,7 +3,7 @@ import { getDistance } from '../utility/utility';
 import { generateSnippetText } from './abbreviations.getSnippetText';
 import { getCharInfo } from './abbreviations.info';
 import { charCompletion as CharComp } from './abbreviations.charCompletion';
-import { abbreviationsUtility as Utility } from './abbreviations.utility';
+import { AbbreviationsUtility as Utility } from './abbreviations.utility';
 // is active avoids that Abbreviations gets called twice in a row.
 let isActive = false;
 export function Abbreviations(document: TextDocument, start: Position, currentWord: string) {
