@@ -25,7 +25,6 @@ import { STATE } from '../extension';
 import { sassAt } from './schemas/autocomplete.at';
 import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
-import { Abbreviations } from '../abbreviations/abbreviations';
 import { AutocompleteUtilities as Utility } from './autocomplete.utility';
 import { Scanner } from './scan/autocomplete.scan';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
@@ -63,10 +62,10 @@ class SassCompletion implements CompletionItemProvider {
       block = Utility.isInVueStyleBlock(start, document);
     }
 
-    if (!block && currentWord.startsWith('?')) {
-      Abbreviations(document, start, currentWordUT);
-      return;
-    }
+    // if (!block && currentWord.startsWith('?')) {
+    //   Abbreviations(document, start, currentWordUT);
+    //   return;
+    // }
 
     if (!block && /^@import/.test(currentWord)) {
       completions = Utility.getImportSuggestionsForCurrentWord(document, currentWord);

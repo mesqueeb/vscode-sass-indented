@@ -5,7 +5,6 @@ import { CompletionItem, CompletionItemKind, SnippetString, TextDocument, Positi
 import sassSchemaUnits from './schemas/autocomplete.units';
 import { readdirSync, statSync, readFileSync } from 'fs';
 import { join, normalize, basename } from 'path';
-import { AbbreviationsUtility } from '../abbreviations/abbreviations.utility';
 
 export class AutocompleteUtilities {
   /**
@@ -162,7 +161,7 @@ export class AutocompleteUtilities {
   static getHtmlClassOrIdCompletions(document: TextDocument) {
     const path = normalize(join(document.fileName, '../', './'));
     const dir = readdirSync(path);
-    const classesAndIds = AbbreviationsUtility.getDocumentClassesAndIds(document);
+    const classesAndIds = this.getDocumentClassesAndIds(document);
     const res: CompletionItem[] = [];
     const addedClasses: string[] = [];
     const regex = /class="([\w ]*)"|id="(\w*)"/g;
@@ -254,5 +253,15 @@ export class AutocompleteUtilities {
       }
     }
     return false;
+  }
+  static getDocumentClassesAndIds(document: TextDocument) {
+    const classesAndIds: string[] = [];
+    for (let i = 0; i < document.lineCount; i++) {
+      const line = document.lineAt(i);
+      if (isClassOrId(line.text)) {
+        classesAndIds.push(line.text.trim());
+      }
+    }
+    return classesAndIds;
   }
 }

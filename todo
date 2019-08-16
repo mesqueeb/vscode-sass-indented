@@ -11,14 +11,6 @@ TODO bundle extension: 'This extension consists of 771 separate files. For perfo
 TODO* Vue Support (medium Priority)
 TODO? add color picker (Low Priority)
 
-SASS Live Preview
-|----------------------------------------------------------------------|
-TODO live Preview
-|----------------------------------------------------------------------|
-SASS Tree stuff
-|----------------------------------------------------------------------|
-§? add replace from selection 
-|----------------------------------------------------------------------|
 SASS Completions
 |----------------------------------------------------------------------|
 TODO add calc and repeat css functions (google them first)
@@ -28,10 +20,6 @@ TODO add calc and repeat css functions (google them first)
 SASS Emmet Replacement
 |----------------------------------------------------------------------|
 TODO*Replace Emmet completion ordering. (medium Priority)?
-|----------------------------------------------------------------------|
-SASS Abbreviations
-|----------------------------------------------------------------------|
-// '"/!' only add missing html classes and ids 
 |----------------------------------------------------------------------|
 SASS Formatter
 |----------------------------------------------------------------------|
