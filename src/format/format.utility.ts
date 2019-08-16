@@ -40,3 +40,18 @@ export function isKeyframePoint(text: string, isAtKeyframe: boolean) {
   }
   return /^ *\d+%/.test(text) || /^ *from|to/.test(text);
 }
+/**
+ * if the prop: value space is none or more that one, this function return false, else true;
+ */
+export function getPropertyValueSpace(text: string) {
+  const split = text.split(':');
+  return split[1] === undefined
+    ? true
+    : split[1][0] === undefined
+    ? true
+    : split[1].startsWith(' ')
+    ? split[1][1] === undefined
+      ? true
+      : !split[1][1].startsWith(' ')
+    : false;
+}

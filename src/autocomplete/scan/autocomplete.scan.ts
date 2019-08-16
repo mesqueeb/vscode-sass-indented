@@ -72,7 +72,7 @@ export class Scanner {
    * handles finding the variables in a file.
    */
   private scanFileHandleGetVars(text: string, pathBasename: string, variables: STATE) {
-    const varRegex = /\${1}\S*:/g;
+    const varRegex = /^ *\${1}\S*:/gm;
     let varMatches: RegExpExecArray;
     while ((varMatches = varRegex.exec(text)) !== null) {
       if (varMatches.index === varRegex.lastIndex) {
@@ -88,7 +88,7 @@ export class Scanner {
    * handles finding the mixins in a file.
    */
   private scanFileHandleGetMixin(text: string, pathBasename: string, variables: STATE) {
-    const mixinRegex = /@mixin ?\S+ ?\(?.*\)?/g;
+    const mixinRegex = /^ *@mixin ?\S+ ?\(?.*\)?/gm;
     let mixinMatches: RegExpExecArray;
     while ((mixinMatches = mixinRegex.exec(text)) !== null) {
       if (mixinMatches.index === mixinRegex.lastIndex) {

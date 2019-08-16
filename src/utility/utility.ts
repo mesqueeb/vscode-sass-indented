@@ -28,3 +28,6 @@ export function getDistanceReversed(text: string, checkAgainstChar: string = ' '
   }
   return count;
 }
+export function escapeRegExp(string: string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}

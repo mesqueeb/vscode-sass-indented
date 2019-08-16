@@ -24,7 +24,13 @@ import {
   isSassSpace,
   isElse
 } from '../utility/utility.regex';
-import { getCLassOrIdIndentationOffset, replaceWithOffset, getIndentationOffset, isKeyframePoint } from './format.utility';
+import {
+  getCLassOrIdIndentationOffset,
+  replaceWithOffset,
+  getIndentationOffset,
+  isKeyframePoint,
+  getPropertyValueSpace
+} from './format.utility';
 import { getDistanceReversed } from '../utility/utility';
 class FormattingProvider implements DocumentFormattingEditProvider {
   context: ExtensionContext;
@@ -67,14 +73,12 @@ class FormattingProvider implements DocumentFormattingEditProvider {
 
         const ResetTabs = isReset(line.text);
         const isAnd_ = isAnd(line.text);
-        // if (isAnd_) {
-        //   tabs = currentTabs;
-        // }
+        const isProp = isProperty(line.text);
         const indentation = getIndentationOffset(line.text, tabs);
         if (isSassSpace(line.text)) {
           AllowSpace = true;
         }
-        //####### Classes, id and other stuff. #######
+        //####### Block Header #######
         if (
           isClassOrId(line.text) ||
           isMixin(line.text) ||
@@ -115,34 +119,43 @@ class FormattingProvider implements DocumentFormattingEditProvider {
             currentTabs = tabs;
           }
         }
-        // ####### properties and other stuff #######
-        else if (isProperty(line.text) || isInclude(line.text) || isKeyframesPointCheck || isIfOrElseAProp) {
+        // ####### Properties #######
+        else if (isProp || isInclude(line.text) || isKeyframesPointCheck || isIfOrElseAProp) {
+          let lineText = line.text;
+          let setSpace = false;
+          if (!getPropertyValueSpace(line.text) && isProp && config.get('setPropertySpace')) {
+            lineText = lineText.replace(/(^ *[\$\w-]+:) */, '$1 ');
+            setSpace = true;
+          }
           if (indentation.offset !== 0) {
             if (enableDebug) {
-              console.log('MOVE', 'Offset:', indentation.offset, 'Row:', i + 1);
+              console.log('MOVE', 'Offset:', indentation.offset, 'Row:', i + 1, 'space', setSpace);
             }
 
-            result.push(new TextEdit(line.range, replaceWithOffset(line.text, indentation.offset).trimRight()));
+            result.push(new TextEdit(line.range, replaceWithOffset(lineText, indentation.offset).trimRight()));
           } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
             if (enableDebug) {
-              console.log('TRAIL', i + 1);
+              console.log('TRAIL', i + 1, 'space', setSpace);
             }
 
-            result.push(new TextEdit(line.range, line.text.trimRight()));
+            result.push(new TextEdit(line.range, lineText.trimRight()));
+          } else if (setSpace) {
+            if (enableDebug) {
+              console.log('SPACE', i + 1);
+            }
+            result.push(new TextEdit(line.range, lineText));
           }
+
           if (isAtKeyframes && isKeyframesPointCheck) {
             tabs = Math.max(0, keyframesTabs + options.tabSize);
           }
-          // if (isAnd_) {
-          //   tabs += options.tabSize;
-          // } else
           if (isIfOrElseAProp && isAtKeyframes) {
             tabs = keyframesTabs + options.tabSize * 2;
           } else if (isIfOrElseAProp && !isAtKeyframes) {
             tabs = currentTabs;
           }
         }
-        // ####### Empty  Space (and Delete)  #######
+        // ####### Empty Line #######
         else if (line.isEmptyOrWhitespace) {
           let pass = true;
           if (document.lineCount - 1 > i) {

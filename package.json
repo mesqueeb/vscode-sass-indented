@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -40,8 +40,8 @@
         },
         "sass.format.enabled": {
           "type": "boolean",
-          "default": false,
-          "description": "disables the sass formatter."
+          "default": true,
+          "description": "enables the sass formatter."
         },
         "sass.format.deleteWhitespace": {
           "type": "boolean",
@@ -53,6 +53,11 @@
           "default": true,
           "description": "removes empty rows."
         },
+        "sass.format.setPropertySpace": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true space between the property: value, is always set to 1."
+        },
         "sass.format.deleteCompact": {
           "type": "boolean",
           "default": true,
@@ -62,11 +67,6 @@
           "type": "boolean",
           "default": false,
           "description": "enables debug mode."
-        },
-        "sass.snippets.path": {
-          "type": "string",
-          "default": "none",
-          "description": "path for the global snippets file."
         },
         "sass.andStared": {
           "type": "array",
@@ -79,293 +79,6 @@
           "description": "items in this array will be at the top of the completion list (only for items that show after the & sign)"
         }
       }
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "sass",
-          "title": "Sass",
-          "icon": "resources/images/Sass_Logo_Color.svg"
-        }
-      ]
-    },
-    "views": {
-      "sass": [
-        {
-          "id": "snippets",
-          "name": "Snippets"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "sass.tree.refreshEntry",
-        "title": "Refresh",
-        "icon": {
-          "light": "resources/light/refresh.svg",
-          "dark": "resources/dark/refresh.svg"
-        },
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.addFromSelection",
-        "title": "Add Snippet From Selection",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.delete",
-        "title": "Delete",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.edit",
-        "title": "Edit",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.addFolder",
-        "title": "Add Folder",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.moveUp",
-        "title": "⯅ Move Up",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.moveDown",
-        "title": "⯆ Move Down",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.copy",
-        "title": "Copy",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.cut",
-        "title": "Cut",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.paste",
-        "title": "Paste",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.insert",
-        "title": "Insert",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.insertFolder",
-        "title": "Insert Folder",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.openFile",
-        "title": "Open File",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.recalculatePosition",
-        "title": "Recalculate Positions",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.addFromFileMixins",
-        "title": "Add Mixin Snippets From File ",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.addFromFileVariables",
-        "title": "Add Variable Snippets From File",
-        "category": "Sass"
-      },
-      {
-        "command": "sass.tree.addFromFile",
-        "title": "Add Snippets From File",
-        "category": "Sass"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "sass.tree.addFromSelection",
-        "key": "shift+alt+d",
-        "mac": "shift+alt+d",
-        "when": "resourceExtname == .sass && editorHasSelection"
-      }
-    ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "sass.tree.refreshEntry",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.addFromSelection",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.delete",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.edit",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.addFolder",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.moveUp",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.moveDown",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.copy",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.cut",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.paste",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.insert",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.insertFolder",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.openFile",
-          "when": "false"
-        },
-        {
-          "command": "sass.tree.recalculatePosition",
-          "when": "false"
-        }
-      ],
-      "view/title": [
-        {
-          "command": "sass.tree.refreshEntry",
-          "when": "view == snippets",
-          "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "sass.tree.addFromSelection",
-          "group": "0_below_nav",
-          "when": "viewItem != snippet"
-        },
-        {
-          "command": "sass.tree.insert",
-          "group": "navigation",
-          "when": "viewItem == snippet"
-        },
-        {
-          "command": "sass.tree.insertFolder",
-          "group": "navigation",
-          "when": "viewItem != snippet"
-        },
-        {
-          "command": "sass.tree.delete",
-          "group": "2_edit",
-          "when": "viewItem != root"
-        },
-        {
-          "command": "sass.tree.edit",
-          "group": "2_edit",
-          "when": "viewItem != root"
-        },
-        {
-          "command": "sass.tree.addFolder",
-          "group": "0_below_nav",
-          "when": "viewItem != snippet"
-        },
-        {
-          "command": "sass.tree.moveUp",
-          "group": "4_move",
-          "when": "viewItem != root"
-        },
-        {
-          "command": "sass.tree.moveDown",
-          "group": "4_move",
-          "when": "viewItem != root"
-        },
-        {
-          "command": "sass.tree.cut",
-          "group": "2_copyPaste",
-          "when": "viewItem != root"
-        },
-        {
-          "command": "sass.tree.copy",
-          "group": "2_copyPaste",
-          "when": "viewItem != root"
-        },
-        {
-          "command": "sass.tree.paste",
-          "group": "2_copyPaste",
-          "when": "viewItem != snippet"
-        },
-        {
-          "command": "sass.tree.openFile",
-          "group": "navigation",
-          "when": "viewItem == root"
-        },
-        {
-          "command": "sass.tree.recalculatePosition",
-          "group": "4_pos",
-          "when": "viewItem != snippet"
-        },
-        {
-          "command": "sass.tree.addFromFile",
-          "group": "0_below_nav",
-          "when": "viewItem != snippet"
-        },
-        {
-          "command": "sass.tree.addFromFileMixins",
-          "group": "1_addFrom",
-          "when": "viewItem!= snippet"
-        },
-        {
-          "command": "sass.tree.addFromFileVariables",
-          "group": "1_addFrom",
-          "when": "viewItem != snippet"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "sass.tree.addFromSelection",
-          "group": "navigation",
-          "when": "resourceExtname == .sass && editorHasSelection"
-        },
-        {
-          "command": "sass.tree.addFromFile",
-          "group": "4_addFrom",
-          "when": "resourceExtname == .sass"
-        },
-        {
-          "command": "sass.tree.addFromFileMixins",
-          "group": "5_addFrom",
-          "when": "resourceExtname == .sass"
-        },
-        {
-          "command": "sass.tree.addFromFileVariables",
-          "group": "5_addFrom",
-          "when": "resourceExtname == .sass"
-        }
-      ]
     },
     "languages": [
       {
@@ -401,5 +114,6 @@
     "vscode": "^1.1.26",
     "tslint": "^5.8.0",
     "@types/node": "^8.10.25"
-  }
+  },
+  "dependencies": {}
 }

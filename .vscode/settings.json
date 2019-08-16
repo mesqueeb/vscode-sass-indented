@@ -30,6 +30,7 @@
     "fbdoghrlaksjtyvw",
     "fieldset",
     "figcaption",
+    "focusout",
     "focusring",
     "fparucoswyx",
     "fparucoswyxw",
@@ -38,6 +39,7 @@
     "keyframes",
     "lcsi",
     "lostirc",
+    "lrbo",
     "lrtbg",
     "lrtbgf",
     "lrtbgv",
@@ -67,10 +69,12 @@
     "textfield",
     "tfoot",
     "thead",
+    "trfg",
     "uuid",
     "vmax",
     "vmin",
-    "vsce"
+    "vsce",
+    "vscodeignore"
   ],
   "cSpell.enabledLanguageIds": [
     "asciidoc",

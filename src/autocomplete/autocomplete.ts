@@ -25,7 +25,6 @@ import { STATE } from '../extension';
 import { sassAt } from './schemas/autocomplete.at';
 import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
-import { Abbreviations } from '../abbreviations/abbreviations';
 import { AutocompleteUtilities as Utility } from './autocomplete.utility';
 import { Scanner } from './scan/autocomplete.scan';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
@@ -44,106 +43,110 @@ class SassCompletion implements CompletionItemProvider {
     const currentWord = document.getText(range).trim();
     const currentWordUT = document.getText(range);
     const text = document.getText();
-    const value = Utility.isValue(cssSchema, currentWord);
+    const isValue = Utility.isValue(cssSchema, currentWord);
     const config = workspace.getConfiguration();
     const disableUnitCompletion: boolean = config.get('sass.disableUnitCompletion');
     let block = false;
+    let isInMixinBlock: CompletionItem[] | false = false;
     let atRules = [];
     let Units = [],
       properties = [],
       values = [],
       classesAndIds = [],
       functions = [],
-      imports = Utility.getImports(text),
       variables: CompletionItem[] = [];
-    // also get current file from the workspace State.
-    imports.push(path.basename(document.fileName));
 
+    let completions: CompletionItem[] = [];
 
     if (document.languageId === 'vue') {
       block = Utility.isInVueStyleBlock(start, document);
     }
 
-    let completions: CompletionItem[] = [];
+    // if (!block && currentWord.startsWith('?')) {
+    //   Abbreviations(document, start, currentWordUT);
+    //   return;
+    // }
 
-    if (currentWord.startsWith('?') && !block) {
-      Abbreviations(document, start, currentWordUT);
-      return;
-    }
-
-
-    if (/^@import/.test(currentWord) && !block) {
-
-      completions = Utility.getImportFromCurrentWord(document, currentWord);
+    if (!block && /^@import/.test(currentWord)) {
+      completions = Utility.getImportSuggestionsForCurrentWord(document, currentWord);
       block = true;
     }
 
-    if (currentWord.startsWith('&') && !block) {
-
+    if (!block && currentWord.startsWith('&')) {
       completions = sassPseudo(config.get('sass.andStared'));
       block = true;
     }
 
-    if (isNumber(currentWordUT) && !disableUnitCompletion && !block) {
+    if (!block && !disableUnitCompletion && isNumber(currentWordUT)) {
       Units = Utility.getUnits(currentWord);
     }
 
-    if (currentWord.startsWith('/') && !block) {
+    if (!block && currentWord.startsWith('/')) {
       completions = sassCommentCompletions();
       block = true;
     }
     if (!block && isPath(currentWord)) {
       block = true;
     }
+
     if (!block) {
+      let imports = Utility.getImports(text);
+      // also get current file from the workspace State.
+      imports.push(path.basename(document.fileName));
+      isInMixinBlock = Utility.isInMixinBlock(start, document);
       this.scan.scanFile(document);
-    }
 
-    if (value && !block) {
-      values = Utility.getValues(cssSchema, currentWord);
-      imports.forEach(item => {
-        const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
-        if (state) {
-          for (const key in state) {
-            if (state.hasOwnProperty(key)) {
-              const element = state[key];
-              if (element.type === 'Variable') {
-                const completionItem = new CompletionItem(element.item.title);
-                completionItem.insertText = element.item.insert;
-                completionItem.detail = element.item.detail;
-                completionItem.kind = element.item.kind;
-                variables.push(completionItem);
+      if (isValue) {
+        values = Utility.getValues(cssSchema, currentWord);
+        if (isInMixinBlock === false) {
+          imports.forEach(item => {
+            const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
+            if (state) {
+              for (const key in state) {
+                if (state.hasOwnProperty(key)) {
+                  const element = state[key];
+                  if (element.type === 'Variable') {
+                    const completionItem = new CompletionItem(element.item.title);
+                    completionItem.insertText = element.item.insert;
+                    completionItem.detail = element.item.detail;
+                    completionItem.kind = element.item.kind;
+                    variables.push(completionItem);
+                  }
+                }
+              }
+            }
+          });
+        } else {
+          variables = isInMixinBlock;
+        }
+
+        functions = sassSchema;
+      } else {
+        variables = [];
+
+        imports.forEach(item => {
+          const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
+          if (state) {
+            for (const key in state) {
+              if (state.hasOwnProperty(key)) {
+                const element = state[key];
+                if (element.type === 'Mixin') {
+                  const completionItem = new CompletionItem(element.item.title);
+                  completionItem.insertText = new SnippetString(element.item.insert);
+                  completionItem.detail = element.item.detail;
+                  completionItem.kind = element.item.kind;
+                  variables.push(completionItem);
+                }
               }
             }
           }
-        }
-      });
-      functions = sassSchema;
-    } else if (!block) {
-      variables = [];
-      imports.forEach(item => {
-        const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
-        if (state) {
-          for (const key in state) {
-            if (state.hasOwnProperty(key)) {
-              const element = state[key];
-              if (element.type === 'Mixin') {
-                const completionItem = new CompletionItem(element.item.title);
-                completionItem.insertText = new SnippetString(element.item.insert);
-                completionItem.detail = element.item.detail;
-                completionItem.kind = element.item.kind;
-                variables.push(completionItem);
-              }
-            }
-          }
-        }
-      });
+        });
 
-      classesAndIds = Utility.getHtmlClassOrIdCompletions(document);
-      atRules = sassAt;
-      properties = Utility.getProperties(cssSchema, currentWord);
-    }
-    if (!block) {
+        classesAndIds = Utility.getHtmlClassOrIdCompletions(document);
+        atRules = sassAt;
+        properties = Utility.getProperties(cssSchema, currentWord);
+      }
+
       completions = [].concat(properties, values, functions, Units, variables, atRules, classesAndIds);
     }
 
