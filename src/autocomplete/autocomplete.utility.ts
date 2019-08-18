@@ -5,6 +5,7 @@ import { CompletionItem, CompletionItemKind, SnippetString, TextDocument, Positi
 import sassSchemaUnits from './schemas/autocomplete.units';
 import { readdirSync, statSync, readFileSync } from 'fs';
 import { join, normalize, basename } from 'path';
+import { BasicRawCompletion } from './autocomplete.interfaces';
 
 export class AutocompleteUtilities {
   /**
@@ -38,7 +39,7 @@ export class AutocompleteUtilities {
    * @param {String} property
    * @return {Object}
    */
-  static findPropertySchema(cssSchema, property: string) {
+  static findPropertySchema(cssSchema, property: string): BasicRawCompletion {
     return cssSchema.data.css.properties.find(item => item.name === property);
   }
 

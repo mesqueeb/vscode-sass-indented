@@ -6,14 +6,11 @@
 2. change package.json
 |----------------------------------------------------------------------|
 
-TODO bundle extension: 'This extension consists of 771 separate files. For performance reasons, you should bundle your extension: https://aka.ms/vscode-bundle-extension. You should also exclude unnecessary files by adding them to your .vscodeignore: https://aka.ms/vscode-vscodeignore'
-
+TODO figure out why folding isn't working
 TODO* Vue Support (medium Priority)
-TODO? add color picker (Low Priority)
 
 SASS Completions
 |----------------------------------------------------------------------|
-TODO add calc and repeat css functions (google them first)
 // #4 (Improvement) Support autocomplete in Vue template files
 // check wether the currentWord is in a mixin if in Mixin only show mixin variables. (mixin variable completion)
 |----------------------------------------------------------------------|
@@ -23,6 +20,10 @@ TODO*Replace Emmet completion ordering. (medium Priority)?
 |----------------------------------------------------------------------|
 SASS Formatter
 |----------------------------------------------------------------------|
-TODO convert scss to sass.
+// convert scss to sass.
 // set space between property and value (prop: val)
+|----------------------------------------------------------------------|
+SASS Linter
+|----------------------------------------------------------------------|
+TODO  Lint all open windows.
 |----------------------------------------------------------------------|

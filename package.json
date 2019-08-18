@@ -15,8 +15,7 @@
   },
   "activationEvents": [
     "onLanguage:sass",
-    "onLanguage:vue",
-    "onView:snippets"
+    "onLanguage:vue"
   ],
   "main": "./out/extension",
   "categories": [
@@ -58,6 +57,11 @@
           "default": true,
           "description": "If true space between the property: value, is always set to 1."
         },
+        "sass.format.convert": {
+          "type": "boolean",
+          "default": true,
+          "description": "Convert scss/css to sass."
+        },
         "sass.format.deleteCompact": {
           "type": "boolean",
           "default": true,
@@ -67,6 +71,11 @@
           "type": "boolean",
           "default": false,
           "description": "enables debug mode."
+        },
+        "sass.lint.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enables sass lint."
         },
         "sass.andStared": {
           "type": "array",
@@ -115,5 +124,8 @@
     "tslint": "^5.8.0",
     "@types/node": "^8.10.25"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@types/color": "^3.0.0",
+    "color": "^3.1.2"
+  }
 }

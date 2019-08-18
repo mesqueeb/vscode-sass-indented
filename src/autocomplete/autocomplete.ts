@@ -14,7 +14,9 @@ import {
   TextDocument,
   workspace,
   ExtensionContext,
-  SnippetString
+  SnippetString,
+  extensions,
+  commands
 } from 'vscode';
 
 import * as cssSchema from './schemas/autocomplete.cssSchema';
@@ -62,10 +64,9 @@ class SassCompletion implements CompletionItemProvider {
       block = Utility.isInVueStyleBlock(start, document);
     }
 
-    // if (!block && currentWord.startsWith('?')) {
-    //   Abbreviations(document, start, currentWordUT);
-    //   return;
-    // }
+    if (!block && extensions.getExtension('syler.sass-next') !== undefined && currentWord.startsWith('?')) {
+      commands.executeCommand('sass.abbreviations').then(() => '', err => console.log('[Sass Abbreviations Error]: ', err));
+    }
 
     if (!block && /^@import/.test(currentWord)) {
       completions = Utility.getImportSuggestionsForCurrentWord(document, currentWord);

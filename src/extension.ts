@@ -1,10 +1,12 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import FormattingProvider from './format/format.provider';
 import { Scanner } from './autocomplete/scan/autocomplete.scan';
 import SassCompletion from './autocomplete/autocomplete';
+import { SassHoverProvider } from './languageFeatures/hover/hover.provider';
+import { SassColorProvider } from './languageFeatures/color/color.provider';
+import { basename } from 'path';
+import { DiagnosticsProvider } from './diagnostics/diagnostics.provider';
 
 export interface STATE {
   [name: string]: { item: STATEItem; type: 'Mixin' | 'Variable' };
@@ -12,7 +14,8 @@ export interface STATE {
 export type STATEItem = { title: string; insert: string; detail: string; kind: vscode.CompletionItemKind };
 
 export function activate(context: vscode.ExtensionContext) {
-  setSassLanguageConfiguration();
+  const config = vscode.workspace.getConfiguration();
+  setSassLanguageConfiguration(config);
   const SassFormatter = new FormattingProvider(context);
   const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
     [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
@@ -21,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Events
   const scan = new Scanner(context);
-  // const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => setTimeout(() => scan.scanLine(l), 0));
+
   // const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
   let previousDocument: vscode.TextDocument = vscode.window.activeTextEditor.document;
   const activeDisposable = vscode.window.onDidChangeActiveTextEditor(editor => {
@@ -33,6 +36,23 @@ export function activate(context: vscode.ExtensionContext) {
       scan.scanFile(editor.document);
     }
   });
+
+  const hover = new SassHoverProvider();
+  const hoverDisposable = vscode.languages.registerHoverProvider(
+    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
+    {
+      provideHover: hover.provideHover
+    }
+  );
+
+  const color = new SassColorProvider();
+  const colorDisposable = vscode.languages.registerColorProvider(
+    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
+    {
+      provideColorPresentations: color.provideColorPresentations,
+      provideDocumentColors: color.provideDocumentColors
+    }
+  );
 
   const sassCompletion = new SassCompletion(context);
   const sassCompletionDisposable = vscode.languages.registerCompletionItemProvider(
@@ -61,24 +81,58 @@ export function activate(context: vscode.ExtensionContext) {
     '&'
   );
 
+  const diagnostics = new DiagnosticsProvider();
+  const diagnosticsCollection = vscode.languages.createDiagnosticCollection('sass');
+
+  if (vscode.window.activeTextEditor) {
+    if (config.get('sass.lint.enable')) {
+      diagnostics.update(vscode.window.activeTextEditor.document, diagnosticsCollection);
+    }
+  }
+
+  const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => {
+    if (config.get('sass.lint.enable')) {
+      // diagnostics.updateLine(l.document, l.contentChanges, diagnosticsCollection)
+
+      diagnostics.update(l.document, diagnosticsCollection);
+    }
+  });
+
   context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration((config: vscode.ConfigurationChangeEvent) => {
-      if (config.affectsConfiguration('sass')) {
-        setSassLanguageConfiguration();
+    vscode.window.onDidChangeActiveTextEditor(editor => {
+      if (editor) {
+        if (config.get('sass.lint.enable')) {
+          diagnostics.update(editor.document, diagnosticsCollection);
+        }
       }
     })
   );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((configEvent: vscode.ConfigurationChangeEvent) => {
+      if (configEvent.affectsConfiguration('sass')) {
+        setSassLanguageConfiguration(config, diagnosticsCollection);
+      }
+    })
+  );
+
+  context.subscriptions.push(changeDisposable);
+
+  context.subscriptions.push(hoverDisposable);
+  context.subscriptions.push(colorDisposable);
   context.subscriptions.push(sassCompletionDisposable);
   context.subscriptions.push(SassFormatterRegister);
   context.subscriptions.push(activeDisposable);
 
-  // context.subscriptions.push(changeDisposable);
   // context.subscriptions.push(saveDisposable);
 }
 
-function setSassLanguageConfiguration() {
-  const config = vscode.workspace.getConfiguration();
+function setSassLanguageConfiguration(config: vscode.WorkspaceConfiguration, diagnosticsCollection?: vscode.DiagnosticCollection) {
   const disableAutoIndent: boolean = config.get('sass.disableAutoIndent');
+
+  if (!config.get('sass.lint.enable') && diagnosticsCollection !== undefined) {
+    diagnosticsCollection.clear();
+  }
 
   vscode.languages.setLanguageConfiguration('sass', {
     wordPattern: /(#?-?\d*\.\d\w*%?)|([$@#!.:]?[\w-?]+%?)|[$@#!.]/g,
@@ -93,5 +147,4 @@ function setSassLanguageConfiguration() {
   });
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}

@@ -22,14 +22,20 @@ import {
   isIfOrElse,
   isReset,
   isSassSpace,
-  isElse
+  isElse,
+  isScssOrCss,
+  isBracketSelector,
+  isComment,
+  isBlockCommentStart,
+  isBlockCommentEnd
 } from '../utility/utility.regex';
 import {
   getCLassOrIdIndentationOffset,
   replaceWithOffset,
   getIndentationOffset,
   isKeyframePoint,
-  getPropertyValueSpace
+  hasPropertyValueSpace,
+  convertScssOrCss
 } from './format.utility';
 import { getDistanceReversed } from '../utility/utility';
 class FormattingProvider implements DocumentFormattingEditProvider {
@@ -46,156 +52,224 @@ class FormattingProvider implements DocumentFormattingEditProvider {
       }
       let result: ProviderResult<TextEdit[]> = [];
       let tabs = 0;
-      let keyframesTabs = 0;
       let currentTabs = 0;
-      let isAtKeyframes = false;
+      let keyframes_tabs = 0;
+      let keyframes_is = false;
       let AllowSpace = false;
+      let convert_additionalTabs = 0;
+      let convert_lastSelector = '';
+      let convert = false;
+      let convert_wasLastLineCss = false;
+      let isInBlockComment = false;
       for (let i = 0; i < document.lineCount; i++) {
         const line = document.lineAt(i);
-        const isKeyframesPointCheck = isKeyframePoint(line.text, isAtKeyframes);
-        if (isAtKeyframes && isKeyframesPointCheck) {
-          tabs = Math.max(0, keyframesTabs);
+        const keyframes_isPointCheck = isKeyframePoint(line.text, keyframes_is);
+        if (keyframes_is && keyframes_isPointCheck) {
+          tabs = Math.max(0, keyframes_tabs);
         }
         const isKeyframesCheck = isKeyframes(line.text);
 
         let isIfOrElse_ = isIfOrElse(line.text);
-        let isIfOrElseAProp = false;
-        if (isAtKeyframes && isIfOrElse_) {
+        let keyframes_isIfOrElseAProp = false;
+        if (keyframes_is && isIfOrElse_) {
           isIfOrElse_ = false;
-          isIfOrElseAProp = true;
-          tabs = keyframesTabs + options.tabSize;
+          keyframes_isIfOrElseAProp = true;
+          tabs = keyframes_tabs + options.tabSize;
         }
-        if (isIfOrElse_ && !isAtKeyframes && isElse(line.text)) {
-          isIfOrElseAProp = true;
+        if (isIfOrElse_ && !keyframes_is && isElse(line.text)) {
+          keyframes_isIfOrElseAProp = true;
           isIfOrElse_ = false;
           tabs = Math.max(0, currentTabs - options.tabSize);
         }
-
+        convert_additionalTabs = 0;
+        convert = false;
         const ResetTabs = isReset(line.text);
         const isAnd_ = isAnd(line.text);
         const isProp = isProperty(line.text);
         const indentation = getIndentationOffset(line.text, tabs);
+        const isClassOrIdSelector = isClassOrId(line.text);
         if (isSassSpace(line.text)) {
           AllowSpace = true;
         }
-        //####### Block Header #######
-        if (
-          isClassOrId(line.text) ||
-          isMixin(line.text) ||
-          isHtmlTag(line.text.trim()) ||
-          isStar(line.text) ||
-          isIfOrElse_ ||
-          ResetTabs ||
-          isAnd_ ||
-          isPseudo(line.text) ||
-          isKeyframesCheck
-        ) {
-          const offset = getCLassOrIdIndentationOffset(indentation.distance, options.tabSize, currentTabs, ResetTabs);
-
-          isAtKeyframes = isKeyframesCheck || isKeyframesPointCheck;
-
-          AllowSpace = false;
-
-          if (offset !== 0) {
-            if (enableDebug) {
-              console.log('NEW TAB', i + 1);
-            }
-
-            result.push(new TextEdit(line.range, replaceWithOffset(line.text, offset).trimRight()));
-          } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
-            if (enableDebug) {
-              console.log('TRAIL', i + 1);
-            }
-            result.push(new TextEdit(line.range, line.text.trimRight()));
-          }
-          if (isKeyframesCheck) {
-            keyframesTabs = Math.max(0, indentation.distance + offset + options.tabSize);
-          }
-          if (ResetTabs) {
-            tabs = Math.max(0, indentation.distance + offset);
-            currentTabs = tabs;
-          } else {
-            tabs = Math.max(0, indentation.distance + offset + options.tabSize);
-            currentTabs = tabs;
-          }
+        if (isBlockCommentStart(line.text)) {
+          isInBlockComment = true;
         }
-        // ####### Properties #######
-        else if (isProp || isInclude(line.text) || isKeyframesPointCheck || isIfOrElseAProp) {
-          let lineText = line.text;
-          let setSpace = false;
-          if (!getPropertyValueSpace(line.text) && isProp && config.get('setPropertySpace')) {
-            lineText = lineText.replace(/(^ *[\$\w-]+:) */, '$1 ');
-            setSpace = true;
+        if (isBlockCommentEnd(line.text)) {
+          isInBlockComment = false;
+        }
+        if (!isInBlockComment) {
+          //####### Block Header #######
+          if (
+            isClassOrIdSelector ||
+            isMixin(line.text) ||
+            isHtmlTag(line.text.trim().split(' ')[0]) ||
+            isStar(line.text) ||
+            isIfOrElse_ ||
+            ResetTabs ||
+            isAnd_ ||
+            isBracketSelector(line.text) ||
+            isPseudo(line.text) ||
+            isKeyframesCheck
+          ) {
+            const offset = getCLassOrIdIndentationOffset(indentation.distance, options.tabSize, currentTabs, ResetTabs);
+
+            keyframes_is = isKeyframesCheck || keyframes_isPointCheck;
+
+            AllowSpace = false;
+            let lineText = line.text;
+
+            if (config.get('convert') && isScssOrCss(line.text, convert_wasLastLineCss) && !isComment(line.text)) {
+              const convert_Res = convertScssOrCss(lineText, options.tabSize, convert_lastSelector);
+              convert_lastSelector = convert_Res.lastSelector;
+              if (convert_Res.increaseTabSize) {
+                convert_additionalTabs = options.tabSize;
+              }
+              lineText = convert_Res.text;
+              convert = true;
+            }
+            if (!convert && isClassOrIdSelector) {
+              convert_lastSelector = '';
+            }
+
+            if (offset !== 0) {
+              if (enableDebug) {
+                console.log('NEW TAB', i + 1, 'CONVERT', convert);
+              }
+              result.push(new TextEdit(line.range, replaceWithOffset(lineText, offset).trimRight()));
+            } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
+              if (enableDebug) {
+                console.log('TRAIL', i + 1, 'CONVERT', convert);
+              }
+              result.push(new TextEdit(line.range, lineText.trimRight()));
+            } else if (convert) {
+              if (enableDebug) {
+                console.log('CONVERT', i + 1);
+              }
+              result.push(new TextEdit(line.range, lineText));
+            }
+            //§ set Tabs
+            if (isKeyframesCheck) {
+              keyframes_tabs = Math.max(0, indentation.distance + offset + options.tabSize);
+            }
+            if (ResetTabs) {
+              tabs = Math.max(0, indentation.distance + offset);
+              currentTabs = tabs;
+            } else {
+              tabs = Math.max(0, indentation.distance + offset + options.tabSize + convert_additionalTabs);
+              currentTabs = tabs;
+            }
           }
-          if (indentation.offset !== 0) {
-            if (enableDebug) {
-              console.log('MOVE', 'Offset:', indentation.offset, 'Row:', i + 1, 'space', setSpace);
+          // ####### Properties #######
+          else if (isProp || isInclude(line.text) || keyframes_isPointCheck || keyframes_isIfOrElseAProp) {
+            let lineText = line.text;
+            let setSpace = false;
+            if (!hasPropertyValueSpace(line.text) && isProp && config.get('setPropertySpace')) {
+              lineText = lineText.replace(/(^ *[\$\w-]+:) */, '$1 ');
+              setSpace = true;
             }
-
-            result.push(new TextEdit(line.range, replaceWithOffset(lineText, indentation.offset).trimRight()));
-          } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
-            if (enableDebug) {
-              console.log('TRAIL', i + 1, 'space', setSpace);
+            if (config.get('convert') && isScssOrCss(line.text, convert_wasLastLineCss) && !isComment(line.text)) {
+              const convert_Res = convertScssOrCss(lineText, options.tabSize, convert_lastSelector);
+              lineText = convert_Res.text;
+              convert = true;
             }
+            if (indentation.offset !== 0 && !isComment(line.text)) {
+              if (enableDebug) {
+                console.log('MOVE', 'Offset:', indentation.offset, 'Row:', i + 1, 'space', setSpace, 'CONVERT', convert);
+              }
 
-            result.push(new TextEdit(line.range, lineText.trimRight()));
-          } else if (setSpace) {
+              result.push(new TextEdit(line.range, replaceWithOffset(lineText, indentation.offset).trimRight()));
+            } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
+              if (enableDebug) {
+                console.log('TRAIL', i + 1, 'space', setSpace, 'CONVERT', convert);
+              }
+
+              result.push(new TextEdit(line.range, lineText.trimRight()));
+            } else if (setSpace) {
+              if (enableDebug) {
+                console.log('SPACE', i + 1, 'CONVERT', convert);
+              }
+              result.push(new TextEdit(line.range, lineText));
+            } else if (convert) {
+              if (enableDebug) {
+                console.log('CONVERT', i + 1);
+              }
+              result.push(new TextEdit(line.range, lineText));
+            }
+            // § set Tabs
+            if (keyframes_is && keyframes_isPointCheck) {
+              tabs = Math.max(0, keyframes_tabs + options.tabSize);
+            }
+            if (keyframes_isIfOrElseAProp && keyframes_is) {
+              tabs = keyframes_tabs + options.tabSize * 2;
+            } else if (keyframes_isIfOrElseAProp && !keyframes_is) {
+              tabs = currentTabs;
+            }
+          }
+          // ####### Convert #######
+          else if (config.get('convert') && isScssOrCss(line.text, convert_wasLastLineCss) && !isComment(line.text)) {
+            let lineText = line.text;
+            const convert_Res = convertScssOrCss(lineText, options.tabSize, convert_lastSelector);
+            lineText = convert_Res.text;
+            convert = true;
             if (enableDebug) {
-              console.log('SPACE', i + 1);
+              console.log('CONVERT', i + 1);
             }
             result.push(new TextEdit(line.range, lineText));
           }
+          // ####### Empty Line #######
+          else if (line.isEmptyOrWhitespace) {
+            let pass = true;
+            if (document.lineCount - 1 > i) {
+              const nextLine = document.lineAt(i + 1);
+              const compact = config.get('deleteCompact') ? true : !isProperty(nextLine.text);
+              if (
+                !isClassOrId(nextLine.text) &&
+                !isAtRule(nextLine.text) &&
+                compact &&
+                !isAnd(nextLine.text) &&
+                !isHtmlTag(nextLine.text.trim().split(' ')[0]) &&
+                !isStar(nextLine.text) &&
+                !isBracketSelector(nextLine.text) &&
+                !AllowSpace &&
+                !isComment(nextLine.text) &&
+                !isPseudo(nextLine.text) &&
+                config.get('deleteEmptyRows')
+              ) {
+                if (enableDebug) {
+                  console.log('DEL', i + 1);
+                }
 
-          if (isAtKeyframes && isKeyframesPointCheck) {
-            tabs = Math.max(0, keyframesTabs + options.tabSize);
-          }
-          if (isIfOrElseAProp && isAtKeyframes) {
-            tabs = keyframesTabs + options.tabSize * 2;
-          } else if (isIfOrElseAProp && !isAtKeyframes) {
-            tabs = currentTabs;
-          }
-        }
-        // ####### Empty Line #######
-        else if (line.isEmptyOrWhitespace) {
-          let pass = true;
-          if (document.lineCount - 1 > i) {
-            const nextLine = document.lineAt(i + 1);
-            const compact = config.get('deleteCompact') ? true : !isProperty(nextLine.text);
-            if (
-              !isClassOrId(nextLine.text) &&
-              !isAtRule(nextLine.text) &&
-              compact &&
-              !isAnd(nextLine.text) &&
-              !isHtmlTag(nextLine.text.trim()) &&
-              !isStar(nextLine.text) &&
-              !AllowSpace &&
-              !isPseudo(nextLine.text) &&
-              config.get('deleteEmptyRows')
-            ) {
+                pass = false;
+                result.push(new TextEdit(new Range(line.range.start, nextLine.range.start), ''));
+              }
+            }
+            if (line.text.length > 0 && pass && config.get('deleteWhitespace')) {
               if (enableDebug) {
-                console.log('DEL', i + 1);
+                console.log('WHITESPACE', i + 1);
               }
 
-              pass = false;
-              result.push(new TextEdit(new Range(line.range.start, nextLine.range.start), ''));
+              result.push(new TextEdit(line.range, ''));
             }
-          }
-          if (line.text.length > 0 && pass && config.get('deleteWhitespace')) {
+          } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
+            let lineText = line.text;
+
+            if (config.get('convert') && isScssOrCss(line.text, convert_wasLastLineCss) && !isComment(line.text)) {
+              const convert_Res = convertScssOrCss(lineText, options.tabSize, convert_lastSelector);
+              lineText = convert_Res.text;
+              convert = true;
+            }
+
             if (enableDebug) {
-              console.log('WHITESPACE', i + 1);
+              console.log('TRAIL', i + 1, 'CONVERT', convert);
             }
 
-            result.push(new TextEdit(line.range, ''));
+            result.push(new TextEdit(line.range, lineText.trimRight()));
           }
-        } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
-          if (enableDebug) {
-            console.log('TRAIL', i + 1);
-          }
-
-          result.push(new TextEdit(line.range, line.text.trimRight()));
+        }
+        if (!line.isEmptyOrWhitespace) {
+          convert_wasLastLineCss = convert;
         }
       }
-
       return result;
     } else {
       return [];

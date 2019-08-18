@@ -28,6 +28,11 @@ export function getDistanceReversed(text: string, checkAgainstChar: string = ' '
   }
   return count;
 }
-export function escapeRegExp(string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/**
+ *
+ */
+export function splitOnce(text: string, splitter: string) {
+  const split = text.split(splitter);
+  const key = split.shift();
+  return { body: (split.length > 0 ? splitter : '') + split.join(splitter), key };
 }

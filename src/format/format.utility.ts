@@ -1,4 +1,14 @@
-import { getDistance } from '../utility/utility';
+import { getDistance, splitOnce } from '../utility/utility';
+import {
+  isCssPseudo,
+  isCssOneLiner,
+  escapeRegExp,
+  isBracketSelector,
+  isPseudoWithParenthesis,
+  isClassOrId,
+  isMoreThanOneClassOrId
+} from '../utility/utility.regex';
+import { randomBytes } from 'crypto';
 
 /**
  * returns the relative distance that the class or id should be at.
@@ -34,16 +44,19 @@ export function getIndentationOffset(text: string, indentation: number): { offse
   let distance = getDistance(text);
   return { offset: indentation - distance, distance };
 }
+/**
+ *
+ */
 export function isKeyframePoint(text: string, isAtKeyframe: boolean) {
   if (isAtKeyframe === false) {
     return false;
   }
-  return /^ *\d+%/.test(text) || /^ *from|to/.test(text);
+  return /^ *\d+%/.test(text) || /^ *from|^ *to/.test(text);
 }
 /**
- * if the prop: value space is none or more that one, this function return false, else true;
+ * if the Property Value Space is none or more that one, this function returns false, else true;
  */
-export function getPropertyValueSpace(text: string) {
+export function hasPropertyValueSpace(text: string) {
   const split = text.split(':');
   return split[1] === undefined
     ? true
@@ -54,4 +67,64 @@ export function getPropertyValueSpace(text: string) {
       ? true
       : !split[1][1].startsWith(' ')
     : false;
+}
+/**
+ * converts scss/css to sass.
+ */
+export function convertScssOrCss(
+  text: string,
+  tabSize: number,
+  lastSelector: string
+): { text: string; increaseTabSize: boolean; lastSelector: string } {
+  const isMultiple = isMoreThanOneClassOrId(text);
+  if (lastSelector && new RegExp('^.*' + escapeRegExp(lastSelector)).test(text)) {
+    let newText = text.replace(lastSelector, '');
+    if (isPseudoWithParenthesis(text)) {
+      newText = newText.split('(')[0].trim() + '(&' + ')';
+    } else if (text.trim().startsWith(lastSelector)) {
+      newText = text.replace(lastSelector, '&');
+    } else {
+      newText = newText.replace(/ /g, '') + ' &';
+    }
+    return {
+      lastSelector,
+      increaseTabSize: true,
+      text: replaceWithOffset(removeInvalidChars(newText).trimRight(), tabSize)
+    };
+  } else if (isCssOneLiner(text)) {
+    const split = text.split('{');
+    return {
+      increaseTabSize: false,
+      lastSelector: split[0].trim(),
+      text: removeInvalidChars(split[0].trim().concat('\n', replaceWithOffset(split[1].trim(), tabSize))).trimRight()
+    };
+  } else if (isCssPseudo(text) && !isMultiple) {
+    const split = text.split(':');
+    return {
+      increaseTabSize: true,
+      lastSelector: split[0].trim(),
+      text: removeInvalidChars(split[0].trim().concat('\n', replaceWithOffset('&:' + split[1].trim(), tabSize))).trimRight()
+    };
+  } else if (isClassOrId(text)) {
+    lastSelector = removeInvalidChars(text).trimRight();
+  }
+  return { text: removeInvalidChars(text).trimRight(), increaseTabSize: false, lastSelector };
+}
+
+function removeInvalidChars(text: string) {
+  let newText = '';
+  let isInQuotes = false;
+  let isInComment = false;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (!isInQuotes && char === '/' && text[i + 1] === '/') {
+      isInComment = true;
+    } else if (/['"]/.test(char)) {
+      isInQuotes = !isInQuotes;
+    }
+    if (!/[;\{\}]/.test(char) || isInQuotes || isInComment) {
+      newText += char;
+    }
+  }
+  return newText;
 }

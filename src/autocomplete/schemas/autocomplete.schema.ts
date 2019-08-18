@@ -197,6 +197,11 @@ const sassSchema: BasicRawCompletion[] = [
     desc: 'ceil($number) - Rounds a number up to the next whole number.'
   },
   {
+    name: 'calc()',
+    body: 'calc( $1 ${2|-,+,*,/|} $3 )',
+    desc: 'calc(...$numbers) lets you perform calculations when specifying CSS property values'
+  },
+  {
     name: 'floor()',
     body: 'floor($1)',
     desc: 'floor($number) - Rounds a number down to the next whole number.'

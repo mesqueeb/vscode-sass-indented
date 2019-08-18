@@ -20,22 +20,25 @@ export function isStar(text: string): boolean {
  * Check whether text is class, id or placeholder
  */
 export function isClassOrId(text: string): boolean {
-  return /^ *?#/.test(text) || /^ *\./.test(text) || /^ *%/.test(text);
+  return /^ *[#\.%]/.test(text);
 }
 /**
  * Check whether text is a property
  */
-export function isProperty(text: string): boolean {
-  return /^ *.*:/.test(text);
+export function isProperty(text: string, empty?: boolean): boolean {
+  if (empty) {
+    return !/^ *[\w\-]+: *\S+/.test(text);
+  }
+  return /^ *[\w\-]+:/.test(text);
 }
 /**
- * Check whether text is a property
+ * Check whether text is a include
  */
 export function isInclude(text: string): boolean {
   return /^ *@include/.test(text);
 }
 /**
- * Check whether text is a property
+ * Check whether text is a keyframe
  */
 export function isKeyframes(text: string): boolean {
   return /^ *@keyframes/.test(text);
@@ -57,6 +60,12 @@ export function isAnd(text: string): boolean {
  */
 export function isAtRule(text: string): boolean {
   return /^ *@/.test(text);
+}
+/**
+ * Check whether text is bracket selector
+ */
+export function isBracketSelector(text: string): boolean {
+  return /^ *\[[\w=\- ]*\]/.test(text);
 }
 /**
  * checks if text last char is a number
@@ -99,7 +108,7 @@ export function isVoidHtmlTag(text: string) {
  * Check whether text starts with ::.
  */
 export function isPseudo(text: string) {
-  return /^ *::/.test(text);
+  return /^ *::?/.test(text);
 }
 /**
  * Check whether text starts with @if.
@@ -130,4 +139,61 @@ export function isSassSpace(text: string) {
  */
 export function isPath(text: string) {
   return /^.*['"]\.?[\.\/]$/.test(text);
+}
+/**
+ *
+ */
+export function isScssOrCss(text: string, wasLastLineCss: boolean = false) {
+  if (wasLastLineCss && text.endsWith(',') && isClassOrId(text)) {
+    return true;
+  }
+  return /[;\{\}] *(\/\/.*)?$/.test(text);
+}
+/**
+ *
+ */
+export function isCssPseudo(text: string) {
+  return /^ *[&.#%].*:/.test(text);
+}
+/**
+ *
+ */
+export function isCssOneLiner(text: string) {
+  return /^ *[&.#%].*\{.*[;\}]$/.test(text);
+}
+/**
+ *
+ */
+export function isPseudoWithParenthesis(text: string) {
+  return /^ *::?[\w\-]+\(.*\)/.test(text);
+}
+/**
+ *
+ */
+export function isComment(text: string) {
+  return /^ *\/\//.test(text);
+}
+/**
+ *
+ */
+export function isBlockCommentStart(text: string) {
+  return /^ *(\/\*)/.test(text);
+}
+/**
+ *
+ */
+export function isBlockCommentEnd(text: string) {
+  return / *\*\/|(?=^[a-zA-Z0-9#.%$@\\[=*+])/.test(text);
+}
+/**
+ *
+ */
+export function isMoreThanOneClassOrId(text: string) {
+  return /^ *[\.#%].* ?, *[\.#%].*/.test(text);
+}
+/**
+ *
+ */
+export function hasColor(text: string) {
+  return /^.*#[a-fA-F\d]{3,8}|rgba?\([\w,. ]+\)/.test(text);
 }
