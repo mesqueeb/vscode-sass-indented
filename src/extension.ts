@@ -5,7 +5,6 @@ import { Scanner } from './autocomplete/scan/autocomplete.scan';
 import SassCompletion from './autocomplete/autocomplete';
 import { SassHoverProvider } from './languageFeatures/hover/hover.provider';
 import { SassColorProvider } from './languageFeatures/color/color.provider';
-import { basename } from 'path';
 import { DiagnosticsProvider } from './diagnostics/diagnostics.provider';
 
 export interface STATE {

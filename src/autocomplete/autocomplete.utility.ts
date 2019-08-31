@@ -213,7 +213,7 @@ export class AutocompleteUtilities {
   static isInVueStyleBlock(start: Position, document: TextDocument) {
     for (let i = start.line; i > 0; i--) {
       const line = document.lineAt(i);
-      if (/^ *<[\w"'= ]*lang="sass"[\w"'= ]*>/.test(line.text)) {
+      if (/^ *<[\w"'= ]*lang=['"]sass['"][\w"'= ]*>/.test(line.text)) {
         if (!(i === start.line)) {
           return false;
         }

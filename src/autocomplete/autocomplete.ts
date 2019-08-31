@@ -65,6 +65,7 @@ class SassCompletion implements CompletionItemProvider {
     }
 
     if (!block && extensions.getExtension('syler.sass-next') !== undefined && currentWord.startsWith('?')) {
+      console.log('a');
       commands.executeCommand('sass.abbreviations').then(() => '', err => console.log('[Sass Abbreviations Error]: ', err));
     }
 

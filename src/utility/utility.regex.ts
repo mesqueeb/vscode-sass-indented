@@ -171,7 +171,7 @@ export function isPseudoWithParenthesis(text: string) {
  *
  */
 export function isComment(text: string) {
-  return /^ *\/\//.test(text);
+  return /^ *\/\/|^ *\/\*/.test(text);
 }
 /**
  *
@@ -195,5 +195,5 @@ export function isMoreThanOneClassOrId(text: string) {
  *
  */
 export function hasColor(text: string) {
-  return /^.*#[a-fA-F\d]{3,8}|rgba?\([\w,. ]+\)/.test(text);
+  return /^.*#[a-fA-F\d]{3,4}\b|^.*#[a-fA-F\d]{6}\b|^.*#[a-fA-F\d]{8}\b|rgba?\([\w. ]+,[\w. ]+,[\w. ]+(,[\w. ]+)?\)/.test(text);
 }

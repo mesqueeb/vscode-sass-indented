@@ -9,9 +9,7 @@ import {
   Position
 } from 'vscode';
 import { hasColor } from '../../utility/utility.regex';
-
-import ColorMeme = require('color');
-
+import { ColorUtilities as Utils } from './color.utils';
 export class SassColorProvider implements DocumentColorProvider {
   constructor() {}
   provideColorPresentations(
@@ -19,11 +17,9 @@ export class SassColorProvider implements DocumentColorProvider {
     context: { document: TextDocument; range: Range },
     token: CancellationToken
   ): ColorPresentation[] {
-    const rgba = ColorMeme.rgb([color.red * 255, color.green * 255, color.blue * 255, color.alpha]);
     return [
-      //@ts-ignore
-      new ColorPresentation(rgba.hexa().toLowerCase()),
-      new ColorPresentation(rgba.rgb().toString())
+      new ColorPresentation(Utils.convertColorToString(color, 'hex')),
+      new ColorPresentation(Utils.convertColorToString(color, 'rgb'))
     ];
   }
   provideDocumentColors(document: TextDocument, token: CancellationToken): ColorInformation[] {
@@ -34,13 +30,10 @@ export class SassColorProvider implements DocumentColorProvider {
         const colorsPositions = SassColorProvider._GET_COLOR_POS(line.text);
         for (let j = 0; j < colorsPositions.length; j++) {
           const colorPos = colorsPositions[j];
-          const rgba = ColorMeme(colorPos.text)
-            .rgb()
-            .unitArray();
           colors.push(
             new ColorInformation(
               new Range(new Position(line.range.start.line, colorPos.start), new Position(line.range.start.line, colorPos.end)),
-              new Color(rgba[0], rgba[1], rgba[2], rgba[3] !== undefined ? rgba[3] : 1)
+              Utils.convertStringToColor(colorPos.text)
             )
           );
         }
@@ -48,6 +41,9 @@ export class SassColorProvider implements DocumentColorProvider {
     }
     return colors;
   }
+  /**
+   * **assumes that the input is valid**
+   */
   private static _GET_COLOR_POS(text: string) {
     let colors: { text: string; start: number; end: number }[] = [];
     let add = false;
