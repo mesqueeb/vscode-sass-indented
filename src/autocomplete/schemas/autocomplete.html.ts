@@ -95,6 +95,7 @@ export const htmlTags = [
   'sub',
   'summary',
   'sup',
+  'svg',
   'table',
   'tbody',
   'td',

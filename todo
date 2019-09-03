@@ -1,9 +1,10 @@
 |----------------------------------------------------------------------|
-#Version 1.6.3
+# TODO for Version 1.6.4
 |----------------------------------------------------------------------|
 #Pre Publish TODO List
 1. change changelog.md
-2. change package.json
+2. Update README.md
+3. change package.json
 |----------------------------------------------------------------------|
 
 TODO figure out why folding isn't working
@@ -26,4 +27,5 @@ SASS Formatter
 SASS Linter
 |----------------------------------------------------------------------|
 TODO  Lint all open windows.
+TODO Fix #16
 |----------------------------------------------------------------------|

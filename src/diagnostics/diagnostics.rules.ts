@@ -8,7 +8,7 @@ import {
   Location,
   TextDocument
 } from 'vscode';
-import { isProperty, isScssOrCss, isVar } from '../utility/utility.regex';
+import { isProperty, isScssOrCss, isVar, isHtmlTag } from '../utility/utility.regex';
 import { DiagnosticUtility as utility } from './diagnostics.utility';
 import { hasPropertyValueSpace } from '../format/format.utility';
 import { splitOnce } from '../utility/utility';
@@ -24,7 +24,8 @@ export class DiagnosticRules {
   check(line: TextLine) {
     const diagnostics: Diagnostic[] = [];
     const range = new Range(new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex), line.range.end);
-    if (isProperty(line.text)) {
+    if (isProperty(line.text) && !isHtmlTag(line.text)) {
+      console.log('PROP', line.text);
       diagnostics.push(...this._CHECK_PROPERTY(line, range));
     } else if (isVar(line.text)) {
       diagnostics.push(...this._CHECK_VAR(line, range));
@@ -42,6 +43,7 @@ export class DiagnosticRules {
       warning.source = 'Sass ';
       diagnostics.push(warning);
     }
+
     if (!hasPropertyValueSpace(line.text)) {
       const warning = new Diagnostic(utility.getPropertySpaceRange(line.text, range), utility.ruleMessages.property[1], Severity.Warning);
       warning.code = 'Property: 1';

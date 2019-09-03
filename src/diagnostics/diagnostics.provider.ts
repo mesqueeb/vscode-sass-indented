@@ -1,17 +1,24 @@
 import { TextDocument, DiagnosticCollection, Diagnostic, TextDocumentContentChangeEvent } from 'vscode';
 import { DiagnosticRules } from './diagnostics.rules';
+import { isIgnore } from '../utility/utility.regex';
 
 export class DiagnosticsProvider {
   constructor(public rules = new DiagnosticRules()) {}
 
   update(document: TextDocument, collection: DiagnosticCollection): void {
     const diagnostics: Diagnostic[] = [];
-
+    let ignoreLine = false;
     if (document.languageId === 'sass') {
       this.rules.reset(document);
       for (let i = 0; i < document.lineCount; i++) {
         const line = document.lineAt(i);
-        diagnostics.push(...this.rules.check(line));
+        if (isIgnore(line.text)) {
+          ignoreLine = true;
+        } else if (ignoreLine) {
+          ignoreLine = false;
+        } else {
+          diagnostics.push(...this.rules.check(line));
+        }
       }
 
       collection.set(document.uri, diagnostics);

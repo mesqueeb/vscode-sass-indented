@@ -23,11 +23,10 @@ ext install sass-indented
 
 > [Formatter](#formatter)
 
-#### 1.6.2 new additions
+#### 1.6.3 new additions
 
-> Added vscode Color Picker Integration
-> Added Linter, feel free to suggest new rules right now there are only a handful.
-> Added Hover info for some css properties.
+> Fixed some formatter issues
+> Added The formatter ignores the next line with this comment `///I`
 
 ---
 
@@ -37,10 +36,11 @@ ext install sass-indented
 
 ### **Formatter**
 
-There are two special character sequences that give commands to the formatter.
+##### Commands
 
 1. `///S` The formatter ignores empty lines until the next class, id or mixin.
 2. `///R` The formatter uses the beginning of the command as the current indentation level.
+3. `///I` The formatter ignores the next line.
 
 Options can be set in the [Configuration](#Configuration)
 
@@ -54,7 +54,7 @@ Configuration options can be set in the `Sass (Indented)` section of VSCode sett
 
 | Option                       | Type    | Default                                     | Description                                                                                               |
 | ---------------------------- | ------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `sass.lint.enable`           | boolean | true                                        | Enables sass lint.                                                                                        |
+| `sass.lint.enable`           | boolean | false                                       | Enables sass lint.                                                                                        |
 | `sass.disableAutoIndent`     | boolean | false                                       | Stop the extension from automatically indenting when pressing Enter                                       |
 | `sass.disableUnitCompletion` | boolean | true                                        | adds units to the intellisense completions if false.                                                      |
 | `sass.andStared`             | array   | `["active", "focus", "hover", "nth-child"]` | items in this array will be at the top of the completion list (only for items that show after the & sign) |

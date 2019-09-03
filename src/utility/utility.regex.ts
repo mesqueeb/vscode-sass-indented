@@ -1,5 +1,3 @@
-import { htmlTags, voidHtmlTags } from '../autocomplete/schemas/autocomplete.html';
-
 export function escapeRegExp(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
@@ -8,7 +6,7 @@ export function escapeRegExp(text) {
  * Check whether text is a variable.
  */
 export function isVar(text: string): boolean {
-  return /^ *?\$.*:.*/.test(text);
+  return /^ *?\$[\w-]+:[\w\-%"']*/.test(text);
 }
 /**
  * Check whether text is a *
@@ -50,6 +48,12 @@ export function isMixin(text: string): boolean {
   return /^ *@mixin/.test(text);
 }
 /**
+ * Check whether text is a each
+ */
+export function isEach(text: string): boolean {
+  return /^ *@each/.test(text);
+}
+/**
  * Check whether text starts with &
  */
 export function isAnd(text: string): boolean {
@@ -65,7 +69,7 @@ export function isAtRule(text: string): boolean {
  * Check whether text is bracket selector
  */
 export function isBracketSelector(text: string): boolean {
-  return /^ *\[[\w=\- ]*\]/.test(text);
+  return /^ *\[[\w=\-*"' ]*\]/.test(text);
 }
 /**
  * checks if text last char is a number
@@ -81,12 +85,12 @@ export function isNumber(text: string): boolean {
  */
 export function isHtmlTag(text: string) {
   let isTag = false;
-  for (let i = 0; i < htmlTags.length; i++) {
-    const tag = htmlTags[i];
-    if (new RegExp(`^ *${tag}$|^ *${tag}\\[.*\\].*$`).test(text)) {
-      isTag = true;
-      break;
-    }
+  if (
+    /^ *(a|abbr|address|area|article|aside|audio|b|base|bdi|bdo|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|data|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figure|footer|form|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|keygen|label|legend|li|link|main|map|mark|menu|menuitem|meta|meter|nav|noscript|object|ol|optgroup|option|output|p|param|pre|progress|q|rb|rp|rt|rtc|ruby|s|samp|script|section|select|small|source|span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|title|tr|track|u|ul|var|video|wbr)(:|::|,|\.|#)[:$#{}()\w\-\[\]='",\.# ]*$/.test(
+      text
+    )
+  ) {
+    isTag = true;
   }
   return isTag;
 }
@@ -95,15 +99,16 @@ export function isHtmlTag(text: string) {
  */
 export function isVoidHtmlTag(text: string) {
   let isTag = false;
-  for (let i = 0; i < voidHtmlTags.length; i++) {
-    const tag = voidHtmlTags[i];
-    if (new RegExp(`^ *${tag}$|^ *${tag}\\[.*\\].*$`).test(text)) {
-      isTag = true;
-      break;
-    }
+  if (
+    /^ *(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr|command|keygen|menuitem)(:|::|,|\.|#)[:$#{}()\w\-\[\]='",\.# ]*$/.test(
+      text
+    )
+  ) {
+    isTag = true;
   }
   return isTag;
 }
+
 /**
  * Check whether text starts with ::.
  */
@@ -129,6 +134,12 @@ export function isReset(text: string) {
   return /^ *\/?\/\/ *R *$/.test(text);
 }
 /**
+ * Check whether text starts with //I.
+ */
+export function isIgnore(text: string) {
+  return /^ *\/?\/\/ *I *$/.test(text);
+}
+/**
  * Check whether text starts with //S.
  */
 export function isSassSpace(text: string) {
@@ -147,6 +158,8 @@ export function isScssOrCss(text: string, wasLastLineCss: boolean = false) {
   if (wasLastLineCss && text.endsWith(',') && isClassOrId(text)) {
     return true;
   }
+
+  // comments get handled somewhere else.
   return /[;\{\}] *(\/\/.*)?$/.test(text);
 }
 /**
@@ -159,7 +172,7 @@ export function isCssPseudo(text: string) {
  *
  */
 export function isCssOneLiner(text: string) {
-  return /^ *[&.#%].*\{.*[;\}]$/.test(text);
+  return /^ *[&.#%][\w-]*(?!#)\{.*[;\}]$/.test(text);
 }
 /**
  *
@@ -195,5 +208,5 @@ export function isMoreThanOneClassOrId(text: string) {
  *
  */
 export function hasColor(text: string) {
-  return /^.*#[a-fA-F\d]{3,4}\b|^.*#[a-fA-F\d]{6}\b|^.*#[a-fA-F\d]{8}\b|rgba?\([\w. ]+,[\w. ]+,[\w. ]+(,[\w. ]+)?\)/.test(text);
+  return /^.*#[a-fA-F\d]{3,4}\b|^.*#[a-fA-F\d]{6}\b|^.*#[a-fA-F\d]{8}\b|rgba?\([\d. ]+,[\d. ]+,[\d. ]+(,[\d. ]+)?\)/.test(text);
 }

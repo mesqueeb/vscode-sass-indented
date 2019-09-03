@@ -24,7 +24,7 @@
       ]
     },
     {
-      "begin": "^ */?// *[SR] *$",
+      "begin": "^ */?// *[SRI] *$",
       "end": "(?=\\n|\\()",
       "name": "keyword.other.sass.formatter.action"
     },

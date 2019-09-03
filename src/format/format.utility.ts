@@ -1,14 +1,12 @@
-import { getDistance, splitOnce } from '../utility/utility';
+import { getDistance } from '../utility/utility';
 import {
   isCssPseudo,
   isCssOneLiner,
   escapeRegExp,
-  isBracketSelector,
   isPseudoWithParenthesis,
   isClassOrId,
   isMoreThanOneClassOrId
 } from '../utility/utility.regex';
-import { randomBytes } from 'crypto';
 
 /**
  * returns the relative distance that the class or id should be at.
@@ -74,10 +72,15 @@ export function hasPropertyValueSpace(text: string) {
 export function convertScssOrCss(
   text: string,
   tabSize: number,
-  lastSelector: string
+  lastSelector: string,
+  enableDebug: boolean
 ): { text: string; increaseTabSize: boolean; lastSelector: string } {
   const isMultiple = isMoreThanOneClassOrId(text);
+  console.log('TEXT', text);
   if (lastSelector && new RegExp('^.*' + escapeRegExp(lastSelector)).test(text)) {
+    if (enableDebug) {
+      console.log('+  LAST SELECTOR');
+    }
     let newText = text.replace(lastSelector, '');
     if (isPseudoWithParenthesis(text)) {
       newText = newText.split('(')[0].trim() + '(&' + ')';
@@ -92,6 +95,9 @@ export function convertScssOrCss(
       text: replaceWithOffset(removeInvalidChars(newText).trimRight(), tabSize)
     };
   } else if (isCssOneLiner(text)) {
+    if (enableDebug) {
+      console.log('+  ONE LINER', text);
+    }
     const split = text.split('{');
     return {
       increaseTabSize: false,
@@ -99,14 +105,22 @@ export function convertScssOrCss(
       text: removeInvalidChars(split[0].trim().concat('\n', replaceWithOffset(split[1].trim(), tabSize))).trimRight()
     };
   } else if (isCssPseudo(text) && !isMultiple) {
-    const split = text.split(':');
+    if (enableDebug) {
+      console.log('+  PSEUDO');
+    }
     return {
-      increaseTabSize: true,
-      lastSelector: split[0].trim(),
-      text: removeInvalidChars(split[0].trim().concat('\n', replaceWithOffset('&:' + split[1].trim(), tabSize))).trimRight()
+      increaseTabSize: false,
+      lastSelector,
+      text: removeInvalidChars(text).trimRight()
     };
   } else if (isClassOrId(text)) {
+    if (enableDebug) {
+      console.log('+  CLASS OR ID');
+    }
     lastSelector = removeInvalidChars(text).trimRight();
+  }
+  if (enableDebug) {
+    console.log('+  DEFAULT');
   }
   return { text: removeInvalidChars(text).trimRight(), increaseTabSize: false, lastSelector };
 }
@@ -115,14 +129,19 @@ function removeInvalidChars(text: string) {
   let newText = '';
   let isInQuotes = false;
   let isInComment = false;
+  let isInVarSelector = false;
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     if (!isInQuotes && char === '/' && text[i + 1] === '/') {
       isInComment = true;
     } else if (/['"]/.test(char)) {
       isInQuotes = !isInQuotes;
+    } else if (/#/.test(char) && /{/.test(text[i + 1])) {
+      isInVarSelector = true;
+    } else if (isInVarSelector && /}/.test(text[i - 1])) {
+      isInVarSelector = false;
     }
-    if (!/[;\{\}]/.test(char) || isInQuotes || isInComment) {
+    if (!/[;\{\}]/.test(char) || isInQuotes || isInComment || isInVarSelector) {
       newText += char;
     }
   }

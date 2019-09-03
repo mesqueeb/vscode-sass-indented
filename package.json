@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -74,7 +74,7 @@
         },
         "sass.lint.enable": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Enables sass lint."
         },
         "sass.andStared": {
@@ -112,17 +112,21 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "vscode:prepublish": "npm run compile && npm run test",
+    "compile": "tsc -b",
     "watch": "tsc -watch -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'"
+    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
+    "test": "jest"
   },
   "devDependencies": {
-    "typescript": "^3.2.2",
-    "vscode": "^1.1.26",
+    "@types/jest": "^24.0.18",
+    "@types/node": "^8.10.25",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.0.2",
     "tslint": "^5.8.0",
-    "@types/node": "^8.10.25"
+    "typescript": "^3.2.2",
+    "vscode": "^1.1.26"
   },
   "dependencies": {}
 }
