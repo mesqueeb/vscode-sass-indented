@@ -17,7 +17,8 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
+If you add screen shots of code, please also paste the code as text so that i can just copy the code and reproduce the bug.
+
 
 **Desktop (please complete the following information):**
  - OS: [e.g. windows 10]
