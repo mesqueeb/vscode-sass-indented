@@ -8,4 +8,5 @@ test('isHtmlTag', () => {
   expect(isHtmlTag('svg, h1, h2, h3')).toEqual(true);
   expect(isHtmlTag('   i.test#{$test}')).toEqual(true);
   expect(isHtmlTag('   i:not(:first-child),')).toEqual(true);
+  expect(isHtmlTag('b')).toEqual(true);
 });

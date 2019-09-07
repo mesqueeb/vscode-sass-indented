@@ -25,7 +25,6 @@ export class DiagnosticRules {
     const diagnostics: Diagnostic[] = [];
     const range = new Range(new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex), line.range.end);
     if (isProperty(line.text) && !isHtmlTag(line.text)) {
-      console.log('PROP', line.text);
       diagnostics.push(...this._CHECK_PROPERTY(line, range));
     } else if (isVar(line.text)) {
       diagnostics.push(...this._CHECK_VAR(line, range));

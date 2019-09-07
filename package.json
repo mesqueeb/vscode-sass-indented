@@ -67,6 +67,11 @@
           "default": true,
           "description": "also removes empty rows that are near a property."
         },
+        "sass.format.replaceSpacesOrTabs": {
+          "type": "boolean",
+          "default": true,
+          "description": "replace spaces or tabs to the opposite based on the selected preference(indent Using Spaces/Tabs)."
+        },
         "sass.format.debug": {
           "type": "boolean",
           "default": false,
@@ -128,5 +133,5 @@
     "typescript": "^3.2.2",
     "vscode": "^1.1.26"
   },
-  "dependencies": {}
+  "license": "MIT"
 }

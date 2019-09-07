@@ -18,11 +18,8 @@ import {
   isStar,
   isHtmlTag,
   isPseudo,
-  isKeyframes,
-  isIfOrElse,
   isReset,
   isSassSpace,
-  isElse,
   isScssOrCss,
   isBracketSelector,
   isComment,
@@ -31,15 +28,38 @@ import {
   isEach,
   isIgnore
 } from '../utility/utility.regex';
-import {
-  getCLassOrIdIndentationOffset,
-  replaceWithOffset,
-  getIndentationOffset,
-  isKeyframePoint,
-  hasPropertyValueSpace,
-  convertScssOrCss
-} from './format.utility';
+import { getCLassOrIdIndentationOffset, getIndentationOffset, convertScssOrCss, LogFormatInfo } from './format.utility';
 import { getDistanceReversed } from '../utility/utility';
+import { FormatHandleBlockHeader, FormatHandleProperty, FormatHandleLocalContext } from './format.handlers';
+
+export interface FormatContext {
+  convert: {
+    lastSelector: string;
+    wasLastLineCss: boolean;
+  };
+  keyframes: {
+    is: boolean;
+    tabs: number;
+  };
+  tabs: number;
+  currentTabs: number;
+  // lastHeader: { offset: number; endedWithComma: boolean };
+}
+export interface FormatLocalContext {
+  ResetTabs: boolean;
+  isAnd_: boolean;
+  isProp: boolean;
+  indentation: {
+    offset: number;
+    distance: number;
+  };
+  isClassOrIdSelector: boolean;
+  isIfOrElse: boolean;
+  isIfOrElseAProp: boolean;
+  isKeyframes: boolean;
+  isKeyframesPoint: boolean;
+}
+
 class FormattingProvider implements DocumentFormattingEditProvider {
   context: ExtensionContext;
   constructor(context: ExtensionContext) {
@@ -49,238 +69,166 @@ class FormattingProvider implements DocumentFormattingEditProvider {
     const config = workspace.getConfiguration('sass.format');
     if (config.get('enabled') === true) {
       let enableDebug: boolean = config.get('debug');
-
       if (enableDebug) {
         console.log('FORMAT');
       }
       let result: ProviderResult<TextEdit[]> = [];
-      let tabs = 0;
-      let currentTabs = 0;
-      let keyframes_tabs = 0;
-      let keyframes_is = false;
+
       let AllowSpace = false;
-      let convert_additionalTabs = 0;
-      let convert_lastSelector = '';
-      let convert = false;
-      let convert_wasLastLineCss = false;
       let isInBlockComment = false;
       let ignoreLine = false;
+
+      let Context: FormatContext = {
+        convert: {
+          lastSelector: '',
+          wasLastLineCss: false
+        },
+        keyframes: {
+          is: false,
+          tabs: 0
+        },
+        tabs: 0,
+        currentTabs: 0
+        // lastHeader: { endedWithComma: false, offset: 0 }
+      };
       for (let i = 0; i < document.lineCount; i++) {
         const line = document.lineAt(i);
 
-        if (ignoreLine) {
+        if (isBlockCommentStart(line.text)) {
+          isInBlockComment = true;
+        }
+        if (isBlockCommentEnd(line.text)) {
+          isInBlockComment = false;
+        }
+
+        if (ignoreLine || isInBlockComment) {
           ignoreLine = false;
         } else {
           if (isIgnore(line.text)) {
             ignoreLine = true;
           } else {
-            const keyframes_isPointCheck = isKeyframePoint(line.text, keyframes_is);
-            if (keyframes_is && keyframes_isPointCheck) {
-              tabs = Math.max(0, keyframes_tabs);
-            }
-            const isKeyframesCheck = isKeyframes(line.text);
-
-            let isIfOrElse_ = isIfOrElse(line.text);
-            let keyframes_isIfOrElseAProp = false;
-            if (keyframes_is && isIfOrElse_) {
-              isIfOrElse_ = false;
-              keyframes_isIfOrElseAProp = true;
-              tabs = keyframes_tabs + options.tabSize;
-            }
-            if (isIfOrElse_ && !keyframes_is && isElse(line.text)) {
-              keyframes_isIfOrElseAProp = true;
-              isIfOrElse_ = false;
-              tabs = Math.max(0, currentTabs - options.tabSize);
-            }
-            convert_additionalTabs = 0;
-            convert = false;
-            const ResetTabs = isReset(line.text);
-            const isAnd_ = isAnd(line.text);
-            const isProp = isProperty(line.text);
-            const indentation = getIndentationOffset(line.text, tabs);
-            const isClassOrIdSelector = isClassOrId(line.text);
             if (isSassSpace(line.text)) {
               AllowSpace = true;
             }
-            if (isBlockCommentStart(line.text)) {
-              isInBlockComment = true;
-            }
-            if (isBlockCommentEnd(line.text)) {
-              isInBlockComment = false;
-            }
 
-            if (!isInBlockComment) {
+            // ####### Empty Line #######
+            if (line.isEmptyOrWhitespace) {
+              // Context.lastHeader.endedWithComma = false;
+              let pass = true; // its not useless, trust me.
+              if (document.lineCount - 1 > i) {
+                const nextLine = document.lineAt(i + 1);
+                const compact = config.get('deleteCompact') ? true : !isProperty(nextLine.text);
+                if (
+                  config.get('deleteEmptyRows') &&
+                  !isClassOrId(nextLine.text) &&
+                  !isAtRule(nextLine.text) &&
+                  compact &&
+                  !isAnd(nextLine.text) &&
+                  !isHtmlTag(nextLine.text) &&
+                  !isStar(nextLine.text) &&
+                  !isBracketSelector(nextLine.text) &&
+                  !AllowSpace &&
+                  !isComment(nextLine.text) &&
+                  !isPseudo(nextLine.text)
+                ) {
+                  if (enableDebug) {
+                    LogFormatInfo(enableDebug, line.lineNumber, { title: 'DELETE' });
+                  }
+
+                  pass = false;
+                  result.push(new TextEdit(new Range(line.range.start, nextLine.range.start), ''));
+                }
+              }
+              if (line.text.length > 0 && pass && config.get('deleteWhitespace')) {
+                LogFormatInfo(enableDebug, line.lineNumber, { title: 'WHITESPACE' });
+
+                result.push(new TextEdit(line.range, ''));
+              }
+            } else {
+              const LocalContext: FormatLocalContext = {
+                ...FormatHandleLocalContext(line, Context, options),
+                ResetTabs: isReset(line.text),
+                isAnd_: isAnd(line.text),
+                isProp: isProperty(line.text),
+                indentation: getIndentationOffset(line.text, Context.tabs, options.tabSize),
+                isClassOrIdSelector: isClassOrId(line.text)
+              };
               //####### Block Header #######
               if (
-                isClassOrIdSelector ||
+                LocalContext.isClassOrIdSelector ||
                 isMixin(line.text) ||
                 isHtmlTag(line.text.trim().split(' ')[0]) ||
                 isStar(line.text) ||
-                isIfOrElse_ ||
-                ResetTabs ||
-                isAnd_ ||
+                LocalContext.isIfOrElse ||
+                LocalContext.ResetTabs ||
+                LocalContext.isAnd_ ||
                 isBracketSelector(line.text) ||
                 isPseudo(line.text) ||
-                isKeyframesCheck ||
+                LocalContext.isKeyframes ||
                 isEach(line.text)
               ) {
-                const offset = getCLassOrIdIndentationOffset(indentation.distance, options.tabSize, currentTabs, ResetTabs);
+                const offset = getCLassOrIdIndentationOffset(
+                  LocalContext.indentation.distance,
+                  options.tabSize,
+                  Context.currentTabs,
+                  LocalContext.ResetTabs
+                );
 
-                keyframes_is = isKeyframesCheck || keyframes_isPointCheck;
-
+                Context.keyframes.is = LocalContext.isKeyframes || LocalContext.isKeyframesPoint;
                 AllowSpace = false;
-                let lineText = line.text;
 
-                if (config.get('convert') && isScssOrCss(line.text, convert_wasLastLineCss) && !isComment(line.text)) {
-                  const convert_Res = convertScssOrCss(lineText, options.tabSize, convert_lastSelector, enableDebug);
-                  convert_lastSelector = convert_Res.lastSelector;
-                  if (convert_Res.increaseTabSize) {
-                    convert_additionalTabs = options.tabSize;
-                  }
-                  lineText = convert_Res.text;
-                  convert = true;
+                const formatRes = FormatHandleBlockHeader({
+                  line,
+                  options,
+                  config,
+                  enableDebug,
+                  LocalContext,
+                  offset,
+                  Context
+                });
+                if (formatRes.edit !== null) {
+                  result.push(formatRes.edit);
                 }
-                if (!convert && isClassOrIdSelector) {
-                  convert_lastSelector = '';
-                }
-
-                if (offset !== 0) {
-                  if (enableDebug) {
-                    console.log('NEW TAB', i + 1, 'CONVERT', convert);
-                  }
-                  result.push(new TextEdit(line.range, replaceWithOffset(lineText, offset).trimRight()));
-                } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
-                  if (enableDebug) {
-                    console.log('TRAIL', i + 1, 'CONVERT', convert);
-                  }
-                  result.push(new TextEdit(line.range, lineText.trimRight()));
-                } else if (convert) {
-                  if (enableDebug) {
-                    console.log('CONVERT', i + 1);
-                  }
-                  result.push(new TextEdit(line.range, lineText));
-                }
-                //§ set Tabs
-                if (isKeyframesCheck) {
-                  keyframes_tabs = Math.max(0, indentation.distance + offset + options.tabSize);
-                }
-                if (ResetTabs) {
-                  tabs = Math.max(0, indentation.distance + offset);
-                  currentTabs = tabs;
-                } else {
-                  tabs = Math.max(0, indentation.distance + offset + options.tabSize + convert_additionalTabs);
-                  currentTabs = tabs;
-                }
+                Context = formatRes.context;
               }
               // ####### Properties #######
-              else if (isProp || isInclude(line.text) || keyframes_isPointCheck || keyframes_isIfOrElseAProp) {
-                let lineText = line.text;
-                let setSpace = false;
-                if (!isHtmlTag && !hasPropertyValueSpace(line.text) && isProp && config.get('setPropertySpace')) {
-                  lineText = lineText.replace(/(^ *[\$\w-]+:) */, '$1 ');
-                  setSpace = true;
+              else if (LocalContext.isProp || isInclude(line.text) || LocalContext.isKeyframesPoint || LocalContext.isIfOrElseAProp) {
+                const formatRes = FormatHandleProperty({
+                  config,
+                  enableDebug,
+                  LocalContext,
+                  Context,
+                  line,
+                  options
+                });
+                if (formatRes.edit !== null) {
+                  result.push(formatRes.edit);
                 }
-                if (config.get('convert') && isScssOrCss(line.text, convert_wasLastLineCss) && !isComment(line.text)) {
-                  const convert_Res = convertScssOrCss(lineText, options.tabSize, convert_lastSelector, enableDebug);
-                  lineText = convert_Res.text;
-                  convert = true;
-                }
-                if (indentation.offset !== 0 && !isComment(line.text)) {
-                  if (enableDebug) {
-                    console.log('MOVE', 'Offset:', indentation.offset, 'Row:', i + 1, 'space', setSpace, 'CONVERT', convert);
-                  }
-
-                  result.push(new TextEdit(line.range, replaceWithOffset(lineText, indentation.offset).trimRight()));
-                } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
-                  if (enableDebug) {
-                    console.log('TRAIL', i + 1, 'space', setSpace, 'CONVERT', convert);
-                  }
-
-                  result.push(new TextEdit(line.range, lineText.trimRight()));
-                } else if (setSpace) {
-                  if (enableDebug) {
-                    console.log('SPACE', i + 1, 'CONVERT', convert);
-                  }
-                  result.push(new TextEdit(line.range, lineText));
-                } else if (convert) {
-                  if (enableDebug) {
-                    console.log('CONVERT', i + 1, 'SET SPACE', setSpace);
-                  }
-                  result.push(new TextEdit(line.range, lineText));
-                }
-                // § set Tabs
-                if (keyframes_is && keyframes_isPointCheck) {
-                  tabs = Math.max(0, keyframes_tabs + options.tabSize);
-                }
-                if (keyframes_isIfOrElseAProp && keyframes_is) {
-                  tabs = keyframes_tabs + options.tabSize * 2;
-                } else if (keyframes_isIfOrElseAProp && !keyframes_is) {
-                  tabs = currentTabs;
-                }
+                Context = formatRes.context;
               }
               // ####### Convert #######
-              else if (config.get('convert') && isScssOrCss(line.text, convert_wasLastLineCss) && !isComment(line.text)) {
+              else if (config.get('convert') && isScssOrCss(line.text, Context.convert.wasLastLineCss) && !isComment(line.text)) {
+                const convertRes = convertScssOrCss(line.text, options, Context.convert.lastSelector);
+                // Set Context Vars
+                // Context.lastHeader.endedWithComma = false;
+                Context.convert.wasLastLineCss = true;
+                LogFormatInfo(enableDebug, line.lineNumber, { title: 'CONVERT', convert: true });
+                result.push(new TextEdit(line.range, convertRes.text));
+              } else if (getDistanceReversed(line.text, options.tabSize) > 0 && config.get('deleteWhitespace')) {
                 let lineText = line.text;
-                const convert_Res = convertScssOrCss(lineText, options.tabSize, convert_lastSelector, enableDebug);
-                lineText = convert_Res.text;
-                convert = true;
-                if (enableDebug) {
-                  console.log('CONVERT', i + 1);
-                }
-                result.push(new TextEdit(line.range, lineText));
-              }
-              // ####### Empty Line #######
-              else if (line.isEmptyOrWhitespace) {
-                let pass = true;
-                if (document.lineCount - 1 > i) {
-                  const nextLine = document.lineAt(i + 1);
-                  const compact = config.get('deleteCompact') ? true : !isProperty(nextLine.text);
-                  if (
-                    config.get('deleteEmptyRows') &&
-                    !isClassOrId(nextLine.text) &&
-                    !isAtRule(nextLine.text) &&
-                    compact &&
-                    !isAnd(nextLine.text) &&
-                    !isHtmlTag(nextLine.text) &&
-                    !isStar(nextLine.text) &&
-                    !isBracketSelector(nextLine.text) &&
-                    !AllowSpace &&
-                    !isComment(nextLine.text) &&
-                    !isPseudo(nextLine.text)
-                  ) {
-                    if (enableDebug) {
-                      console.log('DEL', i + 1);
-                    }
-
-                    pass = false;
-                    result.push(new TextEdit(new Range(line.range.start, nextLine.range.start), ''));
-                  }
-                }
-                if (line.text.length > 0 && pass && config.get('deleteWhitespace')) {
-                  if (enableDebug) {
-                    console.log('WHITESPACE', i + 1);
-                  }
-
-                  result.push(new TextEdit(line.range, ''));
-                }
-              } else if (getDistanceReversed(line.text) > 0 && config.get('deleteWhitespace')) {
-                let lineText = line.text;
-
-                if (config.get('convert') && isScssOrCss(line.text, convert_wasLastLineCss) && !isComment(line.text)) {
-                  const convert_Res = convertScssOrCss(lineText, options.tabSize, convert_lastSelector, enableDebug);
+                let convert = false;
+                if (config.get('convert') && isScssOrCss(line.text, Context.convert.wasLastLineCss) && !isComment(line.text)) {
+                  const convert_Res = convertScssOrCss(lineText, options, Context.convert.lastSelector);
                   lineText = convert_Res.text;
                   convert = true;
                 }
-
-                if (enableDebug) {
-                  console.log('TRAIL', i + 1, 'CONVERT', convert);
-                }
+                // Set Context Vars
+                // Context.lastHeader.endedWithComma = false;
+                Context.convert.wasLastLineCss = convert;
+                LogFormatInfo(enableDebug, line.lineNumber, { title: 'TRAIL', convert });
 
                 result.push(new TextEdit(line.range, lineText.trimRight()));
               }
-            }
-            if (!line.isEmptyOrWhitespace) {
-              convert_wasLastLineCss = convert;
             }
           }
         }

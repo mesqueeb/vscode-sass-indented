@@ -7,6 +7,7 @@ import {
   isClassOrId,
   isMoreThanOneClassOrId
 } from '../utility/utility.regex';
+import { FormattingOptions } from 'vscode';
 
 /**
  * returns the relative distance that the class or id should be at.
@@ -23,23 +24,22 @@ export function getCLassOrIdIndentationOffset(distance: number, tabSize: number,
 /**
  * adds or removes whitespace based on the given offset, a positive value adds whitespace a negative value removes it.
  */
-export function replaceWithOffset(text: string, offset: number) {
+export function replaceWithOffset(text: string, offset: number, options: FormattingOptions) {
   if (offset < 0) {
-    text = text.replace(new RegExp(`^ {${Math.abs(offset)}}`), '');
-  } else {
-    let space = '';
-    for (let i = 0; i < offset; i++) {
-      space = space.concat(' ');
+    text = text.replace(/\t/g, ' '.repeat(options.tabSize)).replace(new RegExp(`^ {${Math.abs(offset)}}`), '');
+    if (!options.insertSpaces) {
+      text = replaceSpacesOrTabs(text, false, options.tabSize);
     }
-    text = text.replace(/^/, space);
+  } else {
+    text = text.replace(/^/, options.insertSpaces ? ' '.repeat(offset) : '\t'.repeat(offset / options.tabSize));
   }
   return text;
 }
 /**
  * returns the difference between the current indentation and the indentation of the given text.
  */
-export function getIndentationOffset(text: string, indentation: number): { offset: number; distance: number } {
-  let distance = getDistance(text);
+export function getIndentationOffset(text: string, indentation: number, tabSize: number): { offset: number; distance: number } {
+  let distance = getDistance(text, tabSize);
   return { offset: indentation - distance, distance };
 }
 /**
@@ -49,7 +49,7 @@ export function isKeyframePoint(text: string, isAtKeyframe: boolean) {
   if (isAtKeyframe === false) {
     return false;
   }
-  return /^ *\d+%/.test(text) || /^ *from|^ *to/.test(text);
+  return /^[\t ]*\d+%/.test(text) || /^[\t ]*from|^[\t ]*to/.test(text);
 }
 /**
  * if the Property Value Space is none or more that one, this function returns false, else true;
@@ -71,16 +71,14 @@ export function hasPropertyValueSpace(text: string) {
  */
 export function convertScssOrCss(
   text: string,
-  tabSize: number,
-  lastSelector: string,
-  enableDebug: boolean
+  options: FormattingOptions,
+  lastSelector: string
 ): { text: string; increaseTabSize: boolean; lastSelector: string } {
   const isMultiple = isMoreThanOneClassOrId(text);
-  console.log('TEXT', text);
+  StoreConvertInfo('CSS CONVERT');
+  StoreConvertInfo(` TEXT: ${text}`);
   if (lastSelector && new RegExp('^.*' + escapeRegExp(lastSelector)).test(text)) {
-    if (enableDebug) {
-      console.log('+  LAST SELECTOR');
-    }
+    StoreConvertInfo(' +  LAST SELECTOR');
     let newText = text.replace(lastSelector, '');
     if (isPseudoWithParenthesis(text)) {
       newText = newText.split('(')[0].trim() + '(&' + ')';
@@ -92,36 +90,28 @@ export function convertScssOrCss(
     return {
       lastSelector,
       increaseTabSize: true,
-      text: replaceWithOffset(removeInvalidChars(newText).trimRight(), tabSize)
+      text: replaceWithOffset(removeInvalidChars(newText).trimRight(), options.tabSize, options)
     };
   } else if (isCssOneLiner(text)) {
-    if (enableDebug) {
-      console.log('+  ONE LINER', text);
-    }
+    StoreConvertInfo(' +  ONE LINER');
     const split = text.split('{');
     return {
       increaseTabSize: false,
       lastSelector: split[0].trim(),
-      text: removeInvalidChars(split[0].trim().concat('\n', replaceWithOffset(split[1].trim(), tabSize))).trimRight()
+      text: removeInvalidChars(split[0].trim().concat('\n', replaceWithOffset(split[1].trim(), options.tabSize, options))).trimRight()
     };
   } else if (isCssPseudo(text) && !isMultiple) {
-    if (enableDebug) {
-      console.log('+  PSEUDO');
-    }
+    StoreConvertInfo(' +  PSEUDO');
     return {
       increaseTabSize: false,
       lastSelector,
       text: removeInvalidChars(text).trimRight()
     };
   } else if (isClassOrId(text)) {
-    if (enableDebug) {
-      console.log('+  CLASS OR ID');
-    }
+    StoreConvertInfo(' +  CLASS OR ID');
     lastSelector = removeInvalidChars(text).trimRight();
   }
-  if (enableDebug) {
-    console.log('+  DEFAULT');
-  }
+  StoreConvertInfo(' END/DEFAULT');
   return { text: removeInvalidChars(text).trimRight(), increaseTabSize: false, lastSelector };
 }
 
@@ -146,4 +136,48 @@ function removeInvalidChars(text: string) {
     }
   }
   return newText;
+}
+
+export function replaceSpacesOrTabs(text: string, useSpaces: boolean, tabSize: number) {
+  if (useSpaces) {
+    return text.replace(/\t/g, ' '.repeat(tabSize));
+  } else {
+    return text.replace(new RegExp(' '.repeat(tabSize), 'g'), '\t');
+  }
+}
+interface LogFormatInfo {
+  title: string;
+  setSpace?: boolean;
+  convert?: boolean;
+  offset?: number;
+  replaceSpaceOrTabs?: boolean;
+}
+export function LogFormatInfo(enableDebug: boolean, lineNumber: number, info: LogFormatInfo) {
+  if (enableDebug) {
+    console.log(
+      ' ',
+      info.title,
+      'Row:',
+      lineNumber + 1,
+      info.offset !== undefined ? `Offset: ${info.offset}` : '',
+      '\n    ',
+      'PROPERTY SPACE : ',
+      info.setSpace !== undefined ? info.setSpace : 'not provided',
+      '\n    ',
+      'CONVERT        : ',
+      info.convert !== undefined ? info.convert : 'not provided',
+      '\n    ',
+      'REPLACE        : ',
+      info.replaceSpaceOrTabs !== undefined ? info.replaceSpaceOrTabs : 'not provided',
+      StoreCssConvertLog.log.length > 0 ? '\n' : '',
+      StoreCssConvertLog.log.join('\n')
+    );
+    StoreCssConvertLog.log = [];
+  }
+}
+function StoreConvertInfo(title: string) {
+  StoreCssConvertLog.log.push(`      ${title}`);
+}
+class StoreCssConvertLog {
+  static log: string[] = [];
 }
