@@ -23,10 +23,7 @@ ext install sass-indented
 
 > [Formatter](#formatter)
 
-#### 1.6.3 new additions
-
-> Fixed some formatter issues
-> Added The formatter ignores the next line with this comment `///I`
+<!-- #### 1.6.3 new additions -->
 
 ---
 
