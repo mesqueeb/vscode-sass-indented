@@ -22,7 +22,7 @@ If you add screen shots of code, please also paste the code as text so that i ca
 
 **Desktop (please complete the following information):**
  - OS: [e.g. windows 10]
- - Version [e.g. 1.6]
+ - Version (of the extension) [e.g. 1.6]
 
 **Additional context**
 Add any other context about the problem here.
