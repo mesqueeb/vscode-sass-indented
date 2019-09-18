@@ -1,10 +1,10 @@
 import { TextDocument, Position, CancellationToken, Range, HoverProvider, ProviderResult, Hover, TextLine, MarkdownString } from 'vscode';
-import { isProperty } from '../../utility/utility.regex';
 
 import * as cssSchema from '../../autocomplete/schemas/autocomplete.cssSchema';
 
 import { AutocompleteUtilities } from '../../autocomplete/autocomplete.utility';
 import { BasicRawCompletion } from '../../autocomplete/autocomplete.interfaces';
+import { isProperty } from 'suf-regex';
 
 export class SassHoverProvider implements HoverProvider {
   constructor() {}

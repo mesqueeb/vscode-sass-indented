@@ -1,6 +1,6 @@
 import { TextDocument, DiagnosticCollection, Diagnostic, TextDocumentContentChangeEvent } from 'vscode';
 import { DiagnosticRules } from './diagnostics.rules';
-import { isIgnore } from '../utility/utility.regex';
+import { isIgnore } from 'suf-regex';
 
 export class DiagnosticsProvider {
   constructor(public rules = new DiagnosticRules()) {}

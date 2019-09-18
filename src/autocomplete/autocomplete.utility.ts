@@ -1,11 +1,10 @@
-import { isClassOrId, isAtRule } from '../utility/utility.regex';
-
 import { CompletionItem, CompletionItemKind, SnippetString, TextDocument, Position } from 'vscode';
 
 import sassSchemaUnits from './schemas/autocomplete.units';
 import { readdirSync, statSync, readFileSync } from 'fs';
 import { join, normalize, basename } from 'path';
 import { BasicRawCompletion } from './autocomplete.interfaces';
+import { isClassOrId, isAtRule } from 'suf-regex';
 
 export class AutocompleteUtilities {
   /**

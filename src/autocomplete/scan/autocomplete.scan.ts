@@ -1,7 +1,7 @@
 import { STATE, STATEItem } from '../../extension';
 import { CompletionItemKind, ExtensionContext, TextDocumentChangeEvent, TextDocument } from 'vscode';
 import { normalize, basename } from 'path';
-import { escapeRegExp } from '../../utility/utility.regex';
+import { escapeRegExp } from 'suf-regex';
 
 export class Scanner {
   context: ExtensionContext;

@@ -8,8 +8,8 @@ import {
   ColorInformation,
   Position
 } from 'vscode';
-import { hasColor } from '../../utility/utility.regex';
 import { ColorUtilities as Utils } from './color.utils';
+import { hasColor } from 'suf-regex';
 export class SassColorProvider implements DocumentColorProvider {
   constructor() {}
   provideColorPresentations(

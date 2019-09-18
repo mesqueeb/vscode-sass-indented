@@ -8,10 +8,9 @@ import {
   Location,
   TextDocument
 } from 'vscode';
-import { isProperty, isScssOrCss, isVar, isHtmlTag } from '../utility/utility.regex';
+
 import { DiagnosticUtility as utility } from './diagnostics.utility';
-import { hasPropertyValueSpace } from '../format/format.utility';
-import { splitOnce } from '../utility/utility';
+import { isProperty, isHtmlTag, isVar, hasPropertyValueSpace, isScssOrCss, splitOnce } from 'suf-regex';
 
 export class DiagnosticRules {
   private _VARS: { [key: string]: { range: Range } } = {};

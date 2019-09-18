@@ -30,7 +30,7 @@ import { isNumber } from 'util';
 import { AutocompleteUtilities as Utility } from './autocomplete.utility';
 import { Scanner } from './scan/autocomplete.scan';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
-import { isPath } from '../utility/utility.regex';
+import { isPath } from 'suf-regex';
 
 class SassCompletion implements CompletionItemProvider {
   context: ExtensionContext;
