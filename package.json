@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -121,8 +121,7 @@
     "compile": "tsc -b",
     "watch": "tsc -watch -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
-    "test": "jest"
+    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'"
   },
   "devDependencies": {
     "@types/node": "^8.10.25",
@@ -132,7 +131,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "sass-formatter": "0.0.3",
-    "suf-regex": "0.0.1"
+    "sass-formatter": "^0.0.6",
+    "suf-regex": "^0.0.4"
   }
 }
