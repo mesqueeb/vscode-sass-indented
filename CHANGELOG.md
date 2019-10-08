@@ -2,8 +2,9 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
-| 1.6.6   | 26.9.2019  | minor fix                                                                      |
-| 1.6.5   | 25.9.2019  | minor fix (formatter)                                                          |
+| 1.6.7   | 8.10.2019  | updated formatter dependency                                                   |
+| 1.6.6   | 26.9.2019  | minor fixes                                                                    |
+| 1.6.5   | 25.9.2019  | minor fixes (formatter)                                                        |
 | 1.6.4   | 10.09.2019 | Added tab support (formatter)                                                  |
 | 1.6.3   | 31.08.2019 | Fixed some formatter issues added `///I` (ignore next line)                    |
 | 1.6.2   | 31.08.2019 | removed abbreviations and sass snippets, adedd color picker and Linter         |

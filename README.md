@@ -23,9 +23,8 @@ ext install sass-indented
 
 > [Formatter](#formatter)
 
-<!-- #### 1.6.3 new additions -->
+<!-- #### 1.6.7 new additions -->
 
----
 
 > Note: abbreviations and sass snippets have been moved to a separate [extension](https://marketplace.visualstudio.com/items?itemName=syler.sass-next).
 
@@ -68,11 +67,16 @@ Configuration options can be set in the `Sass (Indented)` section of VSCode sett
 
 ## **Bugs**
 
+
 If you encounter any bugs please [open a new issue](https://github.com/TheRealSyler/vscode-sass-indented/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=).
+
+> Note: if the bug is related to the formatter please open the issue in the formatter [repo](https://github.com/TheRealSyler/sass-formatter/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=).
 
 ## **Contributing**
 
 The source for this extension is available on [github](https://github.com/TheRealSyler/vscode-sass-indented). If anyone feels that there is something missing or would like to suggest improvements please [open a new issue](https://github.com/TheRealSyler/vscode-sass-indented/issues/new?assignees=TheRealSyler&labels=enhancement&template=feature_request.md&title=) or send a pull request! Instructions for running/debugging extensions locally [here](https://code.visualstudio.com/docs/extensions/overview).
+
+> Note: if you want to contribute to the formatter go to this [repo](https://github.com/TheRealSyler/sass-formatter), there is no documentation at the moment, i should probably add it since kinda forgetting how the formatter works myself, so if you want to know how to change something open a new issue and i can probably explain what you need to do.
 
 ## **Credits**
 
