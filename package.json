@@ -124,15 +124,16 @@
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts'"
   },
   "devDependencies": {
-    "@types/node": "^8.10.25",
+    "@types/node": "^8.10.55",
     "tslint": "^5.8.0",
-    "typescript": "^3.2.2",
+    "typescript": "^3.6.4",
     "vscode": "^1.1.26"
   },
   "license": "MIT",
   "dependencies": {
-    "tslib": "^1.10.0",
+    "s.color": "0.0.10",
     "sass-formatter": "^0.0.8",
-    "suf-regex": "^0.0.7"
+    "suf-regex": "^0.0.7",
+    "tslib": "^1.10.0"
   }
 }

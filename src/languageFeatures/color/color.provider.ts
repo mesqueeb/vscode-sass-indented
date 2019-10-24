@@ -10,6 +10,7 @@ import {
 } from 'vscode';
 import { ColorUtilities as Utils } from './color.utils';
 import { hasColor } from 'suf-regex';
+import { StringToRGB } from 's.color';
 export class SassColorProvider implements DocumentColorProvider {
   constructor() {}
   provideColorPresentations(
@@ -29,11 +30,13 @@ export class SassColorProvider implements DocumentColorProvider {
       if (hasColor(line.text)) {
         const colorsPositions = SassColorProvider._GET_COLOR_POS(line.text);
         for (let j = 0; j < colorsPositions.length; j++) {
-          const colorPos = colorsPositions[j];
+          const color = colorsPositions[j];
+          const { r, g, b, a } = StringToRGB(color.text);
+          console.log(new Color(r, g, b, a));
           colors.push(
             new ColorInformation(
-              new Range(new Position(line.range.start.line, colorPos.start), new Position(line.range.start.line, colorPos.end)),
-              Utils.convertStringToColor(colorPos.text)
+              new Range(new Position(line.range.start.line, color.start), new Position(line.range.start.line, color.end)),
+              new Color(r, g, b, a)
             )
           );
         }
