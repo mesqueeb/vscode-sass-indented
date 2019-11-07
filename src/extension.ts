@@ -7,10 +7,15 @@ import { SassHoverProvider } from './languageFeatures/hover/hover.provider';
 import { SassColorProvider } from './languageFeatures/color/color.provider';
 import { DiagnosticsProvider } from './diagnostics/diagnostics.provider';
 
-export interface STATE {
-  [name: string]: { item: STATEItem; type: 'Mixin' | 'Variable' };
+export interface State {
+  [name: string]: StateElement;
 }
-export type STATEItem = { title: string; insert: string; detail: string; kind: vscode.CompletionItemKind };
+export interface StateElement {
+  item: StateItem;
+  type: 'Mixin' | 'Variable';
+}
+
+export type StateItem = { title: string; insert: string; detail: string; kind: vscode.CompletionItemKind };
 
 export function activate(context: vscode.ExtensionContext) {
   const config = vscode.workspace.getConfiguration();
@@ -126,7 +131,10 @@ export function activate(context: vscode.ExtensionContext) {
   // context.subscriptions.push(saveDisposable);
 }
 
-function setSassLanguageConfiguration(config: vscode.WorkspaceConfiguration, diagnosticsCollection?: vscode.DiagnosticCollection) {
+function setSassLanguageConfiguration(
+  config: vscode.WorkspaceConfiguration,
+  diagnosticsCollection?: vscode.DiagnosticCollection
+) {
   const disableAutoIndent: boolean = config.get('sass.disableAutoIndent');
 
   if (!config.get('sass.lint.enable') && diagnosticsCollection !== undefined) {

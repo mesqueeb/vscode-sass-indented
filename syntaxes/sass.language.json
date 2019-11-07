@@ -8,7 +8,6 @@
       "match": "(css property)",
       "name": "keyword.other.sass.hover.info"
     },
-
     {
       "begin": "^(/\\*)",
       "end": "\\*/|(?=^[a-zA-Z0-9#.%$@\\[=*+])",
@@ -154,6 +153,35 @@
       }
     },
     {
+      "begin": "^@use(.*?)( as(.*))?$",
+      "end": "(?=\\n)",
+      "name": "keyword.control.at-rule.use",
+      "captures": {
+        "1": {
+          "name": "constant.character"
+        },
+        "2": {
+          "name": "support.type"
+        },
+        "3": {
+          "name": "constant.character"
+        }
+      }
+    },
+    {
+      "begin": "^@import(.*?)( as.*)?$",
+      "end": "(?=\\n)",
+      "name": "keyword.control.at-rule.use",
+      "captures": {
+        "1": {
+          "name": "constant.character"
+        },
+        "2": {
+          "name": "invalid"
+        }
+      }
+    },
+    {
       "begin": "@mixin|^=|@function",
       "end": "$\\n?|(?=\\()",
       "name": "support.function.name.sass.no-completions",
@@ -164,14 +192,10 @@
       },
       "patterns": [
         {
-          "match": "[a-zA-Z0-9_-]+",
+          "match": "[[\\w-]+",
           "name": "entity.name.function"
         }
       ]
-    },
-    {
-      "match": "(?<=@import)\\s[a-zA-Z0-9_/.*-]+",
-      "name": "string.quoted.double.css.sass"
     },
     {
       "begin": "@",
@@ -224,6 +248,26 @@
     {
       "match": "(?<=\\]|\\)|not\\(|\\*|>|>\\s):[a-z:-]+|(::|:-)[a-z:-]+",
       "name": "entity.other.attribute-name.pseudo-class.css.sass"
+    },
+    {
+      "match": "([\\w-]*?)(\\.)",
+      "name": "constant.character",
+      "captures": {
+        "1": {
+          "name": "constant.character"
+        },
+        "2": {
+          "name": "constant.numeric"
+        }
+      }
+    },
+    {
+      "match": "[\\w-]*\\(",
+      "name": "entity.name.function"
+    },
+    {
+      "match": "\\)",
+      "name": "entity.name.function"
     },
     {
       "begin": ":",
@@ -284,6 +328,26 @@
         },
         {
           "include": "#property-value"
+        },
+        {
+          "match": " *([\\w-]*?)(\\.)",
+          "name": "constant.character",
+          "captures": {
+            "1": {
+              "name": "constant.character"
+            },
+            "2": {
+              "name": "constant.numeric"
+            }
+          }
+        },
+        {
+          "match": "[\\w-]*\\(",
+          "name": "entity.name.function"
+        },
+        {
+          "match": "\\)",
+          "name": "entity.name.function"
         }
       ]
     },

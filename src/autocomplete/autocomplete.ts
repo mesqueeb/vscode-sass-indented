@@ -22,8 +22,8 @@ import {
 import * as cssSchema from './schemas/autocomplete.cssSchema';
 import sassSchema from './schemas/autocomplete.schema';
 
-import * as path from 'path';
-import { STATE } from '../extension';
+// import * as path from 'path';
+import { State } from '../extension';
 import { sassAt } from './schemas/autocomplete.at';
 import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
@@ -31,6 +31,7 @@ import { AutocompleteUtilities as Utility } from './autocomplete.utility';
 import { Scanner } from './scan/autocomplete.scan';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
 import { isPath } from 'suf-regex';
+import { basename } from 'path';
 
 class SassCompletion implements CompletionItemProvider {
   context: ExtensionContext;
@@ -51,12 +52,12 @@ class SassCompletion implements CompletionItemProvider {
     let block = false;
     let isInMixinBlock: CompletionItem[] | false = false;
     let atRules = [];
-    let Units = [],
-      properties = [],
-      values = [],
-      classesAndIds = [],
-      functions = [],
-      variables: CompletionItem[] = [];
+    let Units = [];
+    let properties = [];
+    let values = [];
+    let classesAndIds = [];
+    let functions = [];
+    let variables: CompletionItem[] = [];
 
     let completions: CompletionItem[] = [];
 
@@ -65,11 +66,17 @@ class SassCompletion implements CompletionItemProvider {
     }
 
     if (!block && extensions.getExtension('syler.sass-next') !== undefined && currentWord.startsWith('?')) {
-      console.log('a');
-      commands.executeCommand('sass.abbreviations').then(() => '', err => console.log('[Sass Abbreviations Error]: ', err));
+      commands
+        .executeCommand('sass.abbreviations')
+        .then(() => '', err => console.log('[Sass Abbreviations Error]: ', err));
     }
 
     if (!block && /^@import/.test(currentWord)) {
+      completions = Utility.getImportSuggestionsForCurrentWord(document, currentWord);
+      block = true;
+    }
+
+    if (!block && /^@use/.test(currentWord)) {
       completions = Utility.getImportSuggestionsForCurrentWord(document, currentWord);
       block = true;
     }
@@ -92,55 +99,38 @@ class SassCompletion implements CompletionItemProvider {
     }
 
     if (!block) {
-      let imports = Utility.getImports(text);
+      let { imports, varScopeModules, globalScopeModules } = Utility.getImports(text);
       // also get current file from the workspace State.
-      imports.push(path.basename(document.fileName));
+      imports.push({ path: basename(document.fileName), namespace: undefined });
       isInMixinBlock = Utility.isInMixinBlock(start, document);
       this.scan.scanFile(document);
 
       if (isValue) {
         values = Utility.getValues(cssSchema, currentWord);
         if (isInMixinBlock === false) {
-          imports.forEach(item => {
-            const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
-            if (state) {
-              for (const key in state) {
-                if (state.hasOwnProperty(key)) {
-                  const element = state[key];
-                  if (element.type === 'Variable') {
-                    const completionItem = new CompletionItem(element.item.title);
-                    completionItem.insertText = element.item.insert;
-                    completionItem.detail = element.item.detail;
-                    completionItem.kind = element.item.kind;
-                    variables.push(completionItem);
-                  }
-                }
-              }
+          Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
+            if (element.type === 'Variable') {
+              const completionItem = new CompletionItem(Utility.mergeNamespace(element.item.title, namespace));
+              completionItem.insertText = new SnippetString(Utility.mergeNamespace(element.item.insert, namespace));
+              completionItem.detail = element.item.detail;
+              completionItem.kind = element.item.kind;
+              variables.push(completionItem);
             }
           });
         } else {
           variables = isInMixinBlock;
         }
-
         functions = sassSchema;
       } else {
+        varScopeModules = [];
         variables = [];
-
-        imports.forEach(item => {
-          const state: STATE = this.context.workspaceState.get(path.normalize(path.join(document.fileName, '../', item)));
-          if (state) {
-            for (const key in state) {
-              if (state.hasOwnProperty(key)) {
-                const element = state[key];
-                if (element.type === 'Mixin') {
-                  const completionItem = new CompletionItem(element.item.title);
-                  completionItem.insertText = new SnippetString(element.item.insert);
-                  completionItem.detail = element.item.detail;
-                  completionItem.kind = element.item.kind;
-                  variables.push(completionItem);
-                }
-              }
-            }
+        Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
+          if (element.type === 'Mixin') {
+            const completionItem = new CompletionItem(Utility.mergeNamespace(element.item.title, namespace));
+            completionItem.insertText = new SnippetString(Utility.mergeNamespace(element.item.insert, namespace));
+            completionItem.detail = element.item.detail;
+            completionItem.kind = element.item.kind;
+            variables.push(completionItem);
           }
         });
 
@@ -149,7 +139,17 @@ class SassCompletion implements CompletionItemProvider {
         properties = Utility.getProperties(cssSchema, currentWord);
       }
 
-      completions = [].concat(properties, values, functions, Units, variables, atRules, classesAndIds);
+      completions = [].concat(
+        properties,
+        values,
+        functions,
+        Units,
+        variables,
+        atRules,
+        classesAndIds,
+        varScopeModules,
+        globalScopeModules
+      );
     }
 
     return completions;

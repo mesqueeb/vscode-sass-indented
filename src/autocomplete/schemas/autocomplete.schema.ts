@@ -36,7 +36,8 @@ const sassSchema: BasicRawCompletion[] = [
   {
     name: 'hsla()',
     body: 'hsla($1, $2, $3, $4)$0',
-    desc: 'hsl($hue, $saturation, $lightness, $alpha) - Creates a color from hue, saturation, lightness and alpha values.'
+    desc:
+      'hsl($hue, $saturation, $lightness, $alpha) - Creates a color from hue, saturation, lightness and alpha values.'
   },
   {
     name: 'hue()',
@@ -213,12 +214,12 @@ const sassSchema: BasicRawCompletion[] = [
   },
   {
     name: 'min()',
-    body: 'min($1)',
+    body: 'min($1...)',
     desc: 'min($numbers...) - Finds the minimum of several numbers.'
   },
   {
     name: 'max()',
-    body: 'max($1)',
+    body: 'max($1...)',
     desc: 'max($numbers...) - Finds the maximum of several numbers.'
   },
   {
@@ -308,6 +309,5 @@ export default sassSchema.map(item => {
   completionItem.insertText = new SnippetString(item.body);
   completionItem.detail = item.desc;
   completionItem.kind = CompletionItemKind.Function;
-
   return completionItem;
 });

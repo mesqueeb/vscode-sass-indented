@@ -2,6 +2,7 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.6.8   | 6.11.2019  | added @use Support and fixed color decorators.                                 |
 | 1.6.7   | 8.10.2019  | updated formatter dependency                                                   |
 | 1.6.6   | 26.9.2019  | minor fixes                                                                    |
 | 1.6.5   | 25.9.2019  | minor fixes (formatter)                                                        |

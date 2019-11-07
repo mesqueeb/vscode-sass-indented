@@ -1,10 +1,17 @@
-import { CompletionItem, CompletionItemKind, SnippetString, TextDocument, Position } from 'vscode';
+import { CompletionItem, CompletionItemKind, SnippetString, TextDocument, Position, ExtensionContext } from 'vscode';
 
 import sassSchemaUnits from './schemas/autocomplete.units';
 import { readdirSync, statSync, readFileSync } from 'fs';
 import { join, normalize, basename } from 'path';
 import { BasicRawCompletion } from './autocomplete.interfaces';
 import { isClassOrId, isAtRule } from 'suf-regex';
+import { StateElement, State } from '../extension';
+import { getSassModule } from './schemas/autocomplete.builtInModules';
+
+interface ImportsItem {
+  path: string;
+  namespace: string | undefined;
+}
 
 export class AutocompleteUtilities {
   /**
@@ -93,27 +100,56 @@ export class AutocompleteUtilities {
    */
 
   static getImports(text: string) {
-    const regex = /\/?\/? {0,}@import{1}.*/g; //
+    const regex = /\/?\/? {0,}(@import|@use){1}.*/g; //
     let m: RegExpExecArray;
-    const imports = [];
-
+    const imports: ImportsItem[] = [];
+    const varScopeModules: any[] = [];
+    const globalScopeModules: any[] = [];
     while ((m = regex.exec(text)) !== null) {
       if (m.index === regex.lastIndex) {
         regex.lastIndex++;
       }
       m.forEach((match: string) => {
+        // prevent commented lines from being imported.
         if (!match.startsWith('//')) {
-          let rep = match.replace('@import', '').trim();
-          const rEndsWithSass = /.sass$/;
-          if (!rEndsWithSass.test(rep)) {
-            rep = rep.concat('.sass');
-          }
+          let path = match.replace(/^(@import|@use) *['"]?(.*?)['"]? *( as.*)?$/, '$2');
+          let namespace = match.replace(/(.*?as |@use) *['"]?.*?([\w-]*?)['"]? *$/, '$2').trim();
+          namespace = namespace === '*' || match.startsWith('@import') ? undefined : namespace;
+          if (/sass:(math|color|string|list|map|selector|meta)/.test(path)) {
+            switch (path) {
+              case 'sass:math':
+                varScopeModules.push(...getSassModule('MATH', namespace));
+                break;
+              case 'sass:color':
+                varScopeModules.push(...getSassModule('COLOR', namespace));
+                break;
+              case 'sass:string':
+                varScopeModules.push(...getSassModule('STRING', namespace));
+                break;
+              case 'sass:list':
+                varScopeModules.push(...getSassModule('LIST', namespace));
+                break;
+              case 'sass:map':
+                varScopeModules.push(...getSassModule('MAP', namespace));
+                break;
+              case 'sass:selector':
+                globalScopeModules.push(...getSassModule('SELECTOR', namespace));
+                break;
+              case 'sass:meta':
+                varScopeModules.push(...getSassModule('META', namespace));
+                break;
+            }
+          } else {
+            if (!/\.sass$/.test(path)) {
+              path = path.concat('.sass');
+            }
 
-          imports.push(rep);
+            imports.push({ path, namespace });
+          }
         }
       });
     }
-    return imports;
+    return { imports, varScopeModules, globalScopeModules };
   }
 
   /**
@@ -137,7 +173,9 @@ export class AutocompleteUtilities {
 
   static getImportSuggestionsForCurrentWord(document: TextDocument, currentWord: string): CompletionItem[] {
     const suggestions: CompletionItem[] = [];
-    const path = normalize(join(document.fileName, '../', currentWord.replace('@import', '').trim()));
+    const path = normalize(
+      join(document.fileName, '../', currentWord.replace(/(@import|@use) *['"]?([\w-]*)['"]?/, '$2').trim())
+    );
 
     const dir = readdirSync(path);
     for (const file of dir) {
@@ -158,6 +196,7 @@ export class AutocompleteUtilities {
     }
     return suggestions;
   }
+
   static getHtmlClassOrIdCompletions(document: TextDocument) {
     const path = normalize(join(document.fileName, '../', './'));
     const dir = readdirSync(path);
@@ -263,5 +302,31 @@ export class AutocompleteUtilities {
       }
     }
     return classesAndIds;
+  }
+
+  static ImportsLoop(
+    imports: ImportsItem[],
+    document: TextDocument,
+    context: ExtensionContext,
+    callback: (element: StateElement, namespace: string | undefined) => void
+  ) {
+    imports.forEach(item => {
+      let importPath = item.path;
+      // support previously saved states.
+      if (typeof item === 'string') {
+        importPath = item;
+      }
+      const state: State = context.workspaceState.get(normalize(join(document.fileName, '../', importPath)));
+      if (state) {
+        for (const key in state) {
+          if (state.hasOwnProperty(key)) {
+            callback(state[key], item.namespace);
+          }
+        }
+      }
+    });
+  }
+  static mergeNamespace(text: string, namespace: string | undefined) {
+    return `${namespace ? namespace.concat('.') : ''}${text}`;
   }
 }

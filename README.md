@@ -19,14 +19,14 @@ ext install sass-indented
 
 > Syntax Highlighting
 
-> AutoCompletions
+> AutoCompletions / Intellisense
 
 > [Formatter](#formatter)
 
-<!-- #### 1.6.7 new additions -->
+#### 1.6.8 new additions
 
-
-> Note: abbreviations and sass snippets have been moved to a separate [extension](https://marketplace.visualstudio.com/items?itemName=syler.sass-next).
+> Added `@use` support. Note: the `meta` module is not implemented, if you want it now you can add it yourself write me an email or open an issue. its just copy and pasting stuff, not very difficult, im done copy and pasting for today.
+> also some syntax highlighting changes, if find something wrong with it please open a new issue.
 
 > Note: The snippets have been removed if you still want to use them, you can get them [here](https://github.com/TheRealSyler/vscode-sass-indented/blob/a3ffc7a005c2ccd82e7c50ccf391ba5d22afee13/snippets/sass.json).
 
@@ -66,7 +66,6 @@ Configuration options can be set in the `Sass (Indented)` section of VSCode sett
 | `sass.format.setPropertySpace` | boolean | true    | If true space between the property: value, is always set to 1. |
 
 ## **Bugs**
-
 
 If you encounter any bugs please [open a new issue](https://github.com/TheRealSyler/vscode-sass-indented/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=).
 

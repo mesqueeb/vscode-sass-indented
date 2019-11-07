@@ -1,4 +1,4 @@
-import { STATE, STATEItem } from '../../extension';
+import { State, StateItem } from '../../extension';
 import { CompletionItemKind, ExtensionContext, TextDocumentChangeEvent, TextDocument } from 'vscode';
 import { normalize, basename } from 'path';
 import { escapeRegExp } from 'suf-regex';
@@ -20,14 +20,14 @@ export class Scanner {
       const pathBasename = basename(document.fileName);
       const varRegex = /\${1}\S*:/;
       const mixinRegex = /@mixin ?\S+ ?\(?.*\)?/;
-      let variables: STATE = {};
+      let variables: State = {};
       for (const change of listener.contentChanges) {
         const start = change.range.start;
         const end = change.range.end;
         for (let i = start.line; i <= end.line && i < document.lineCount; i++) {
           const line = document.lineAt(i);
           const isVar = varRegex.test(line.text);
-          let currentItem: { state: STATE; current: { line: number; namespace: string } };
+          let currentItem: { state: State; current: { line: number; namespace: string } };
           if (isVar) {
             variables = this.context.workspaceState.get(normalize(document.fileName));
             currentItem = this.createVar(line.text, pathBasename, variables);
@@ -42,7 +42,10 @@ export class Scanner {
             variables = currentItem.state;
             this._previousVars.push(currentItem.current);
             previousVars.forEach((v, i) => {
-              if (currentItem.current.line === v.line || currentItem.current.namespace.match(escapeRegExp(v.namespace))) {
+              if (
+                currentItem.current.line === v.line ||
+                currentItem.current.namespace.match(escapeRegExp(v.namespace))
+              ) {
                 delete variables[v.namespace];
               }
             });
@@ -60,7 +63,7 @@ export class Scanner {
       const text = document.getText();
       const pathBasename = basename(document.fileName);
 
-      let variables: STATE = {};
+      let variables: State = {};
 
       variables = this.scanFileHandleGetVars(text, pathBasename, variables);
       variables = this.scanFileHandleGetMixin(text, pathBasename, variables);
@@ -71,7 +74,7 @@ export class Scanner {
   /**
    * handles finding the variables in a file.
    */
-  private scanFileHandleGetVars(text: string, pathBasename: string, variables: STATE) {
+  private scanFileHandleGetVars(text: string, pathBasename: string, variables: State) {
     const varRegex = /^ *\${1}\S*:/gm;
     let varMatches: RegExpExecArray;
     while ((varMatches = varRegex.exec(text)) !== null) {
@@ -87,7 +90,7 @@ export class Scanner {
   /**
    * handles finding the mixins in a file.
    */
-  private scanFileHandleGetMixin(text: string, pathBasename: string, variables: STATE) {
+  private scanFileHandleGetMixin(text: string, pathBasename: string, variables: State) {
     const mixinRegex = /^ *@mixin ?\S+ ?\(?.*\)?/gm;
     let mixinMatches: RegExpExecArray;
     while ((mixinMatches = mixinRegex.exec(text)) !== null) {
@@ -106,13 +109,13 @@ export class Scanner {
   private createMixin(
     match: string,
     pathBasename: string,
-    variables: STATE,
+    variables: State,
     line?: number
-  ): { state: STATE; current: { line: number; namespace: string } } {
+  ): { state: State; current: { line: number; namespace: string } } {
     let argNum = 0;
     const rep = match.replace('@mixin', '').trim();
     const namespace = `${pathBasename}/${rep}`;
-    const item: STATEItem = {
+    const item: StateItem = {
       title: `$${rep.split('(')[0]}`,
       insert: `@include ${rep
         .replace(/(\$\w*:? ?[\w-]*,?)/g, r => {
@@ -137,12 +140,12 @@ export class Scanner {
   private createVar(
     match: string,
     pathBasename: string,
-    variables: STATE,
+    variables: State,
     line?: number
-  ): { state: STATE; current: { line: number; namespace: string } } {
+  ): { state: State; current: { line: number; namespace: string } } {
     const rep = match.split(':')[0].replace(':', '');
     const namespace = `${pathBasename}/${rep}`;
-    const item: STATEItem = {
+    const item: StateItem = {
       title: rep,
       insert: rep,
       detail: `(${rep.replace('$', '')}) - ${pathBasename} Variable.`,

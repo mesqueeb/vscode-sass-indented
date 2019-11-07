@@ -49,7 +49,16 @@ export const sassAtArr = [
   {
     name: '@import',
     body: '@import ${1:filePath}',
-    desc: 'Includes content of another file.'
+    desc: 'Includes content of another file, will be depreciated in the future use @use instead. '
+  },
+  {
+    name: '@use',
+    body: "@use ${1|file,'sass:math','sass:color','sass:string','sass:list','sass:map','sass:selector','sass:meta'|}",
+    desc: `Includes content of another file or loads a built in module.
+
+Note: Only Dart Sass currently supports loading built-in modules with @use. Users of other implementations must call functions using their global names instead.
+
+November 2019, this will change in the future check the sass-lang.com website for more up to Date info`
   },
   {
     name: '@media',

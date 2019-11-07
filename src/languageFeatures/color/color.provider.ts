@@ -32,10 +32,12 @@ export class SassColorProvider implements DocumentColorProvider {
         for (let j = 0; j < colorsPositions.length; j++) {
           const color = colorsPositions[j];
           const { r, g, b, a } = StringToRGB(color.text);
-          console.log(new Color(r, g, b, a));
           colors.push(
             new ColorInformation(
-              new Range(new Position(line.range.start.line, color.start), new Position(line.range.start.line, color.end)),
+              new Range(
+                new Position(line.range.start.line, color.start),
+                new Position(line.range.start.line, color.end)
+              ),
               new Color(r, g, b, a)
             )
           );
