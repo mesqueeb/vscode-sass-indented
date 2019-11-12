@@ -1,9 +1,4 @@
-[![](https://vsmarketplacebadge.apphb.com/version-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented)
-[![](https://vsmarketplacebadge.apphb.com/rating-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented)
-[![](https://vsmarketplacebadge.apphb.com/installs-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented)
-[![GitHub stars](https://img.shields.io/github/stars/TheRealSyler/vscode-sass-indented.svg?style=social&label=Star%20on%20Github)](https://github.com/TheRealSyler/vscode-sass-indented)
-[![GitHub issues](https://img.shields.io/github/issues-raw/TheRealSyler/vscode-sass-indented?color=%232a2)](https://github.com/TheRealSyler/vscode-sass-indented)
-[![Maintenance](https://img.shields.io/maintenance/yes/2019.svg)](https://GitHub.com/TheRealSyler/vscode-sass-indented/graphs/commit-activity)
+[![](https://vsmarketplacebadge.apphb.com/version-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![](https://vsmarketplacebadge.apphb.com/rating-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![](https://vsmarketplacebadge.apphb.com/installs-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![GitHub stars](https://img.shields.io/github/stars/TheRealSyler/vscode-sass-indented.svg?style=social&label=Star%20on%20Github)](https://github.com/TheRealSyler/vscode-sass-indented) [![GitHub issues](https://img.shields.io/github/issues-raw/TheRealSyler/vscode-sass-indented?color=%232a2)](https://github.com/TheRealSyler/vscode-sass-indented) [![Maintenance](https://img.shields.io/maintenance/yes/2019.svg)](https://GitHub.com/TheRealSyler/vscode-sass-indented/graphs/commit-activity)
 
 # _Indented Sass syntax highlighting, autocomplete & Formatter for VSCode_
 
@@ -22,6 +17,10 @@ ext install sass-indented
 > AutoCompletions / Intellisense
 
 > [Formatter](#formatter)
+
+#### 1.6.9 new additions
+
+> Added different data for the property completions, enabled by setting `sass.autocomplete.useExperimentalData` to `true`, the old data will be removed in the future.
 
 #### 1.6.8 new additions
 

@@ -22,8 +22,6 @@ import {
 import * as cssSchema from './schemas/autocomplete.cssSchema';
 import sassSchema from './schemas/autocomplete.schema';
 
-// import * as path from 'path';
-import { State } from '../extension';
 import { sassAt } from './schemas/autocomplete.at';
 import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
@@ -66,9 +64,10 @@ class SassCompletion implements CompletionItemProvider {
     }
 
     if (!block && extensions.getExtension('syler.sass-next') !== undefined && currentWord.startsWith('?')) {
-      commands
-        .executeCommand('sass.abbreviations')
-        .then(() => '', err => console.log('[Sass Abbreviations Error]: ', err));
+      commands.executeCommand('sass.abbreviations').then(
+        () => '',
+        err => console.log('[Sass Abbreviations Error]: ', err)
+      );
     }
 
     if (!block && /^@import/.test(currentWord)) {
@@ -106,7 +105,7 @@ class SassCompletion implements CompletionItemProvider {
       this.scan.scanFile(document);
 
       if (isValue) {
-        values = Utility.getValues(cssSchema, currentWord);
+        values = Utility.getPropertyValues(cssSchema, currentWord);
         if (isInMixinBlock === false) {
           Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
             if (element.type === 'Variable') {

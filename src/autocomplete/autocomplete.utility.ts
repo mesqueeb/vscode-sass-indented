@@ -1,4 +1,12 @@
-import { CompletionItem, CompletionItemKind, SnippetString, TextDocument, Position, ExtensionContext } from 'vscode';
+import {
+  CompletionItem,
+  CompletionItemKind,
+  SnippetString,
+  TextDocument,
+  Position,
+  ExtensionContext,
+  workspace
+} from 'vscode';
 
 import sassSchemaUnits from './schemas/autocomplete.units';
 import { readdirSync, statSync, readFileSync } from 'fs';
@@ -7,6 +15,8 @@ import { BasicRawCompletion } from './autocomplete.interfaces';
 import { isClassOrId, isAtRule } from 'suf-regex';
 import { StateElement, State } from '../extension';
 import { getSassModule } from './schemas/autocomplete.builtInModules';
+import { dataProps } from './schemas/generatedData/autocomplete.data.dataProps';
+import { generatedData } from './schemas/autocomplete.generatedData';
 
 interface ImportsItem {
   path: string;
@@ -23,6 +33,9 @@ export class AutocompleteUtilities {
 
   static isValue(cssSchema, currentWord: string): boolean {
     const property = AutocompleteUtilities.getPropertyName(currentWord);
+    if (workspace.getConfiguration('sass').get('autocomplete.useExperimentalData') === true) {
+      return property && !!dataProps[property];
+    }
     return property && Boolean(AutocompleteUtilities.findPropertySchema(cssSchema, property));
   }
 
@@ -45,7 +58,10 @@ export class AutocompleteUtilities {
    * @param {String} property
    * @return {Object}
    */
-  static findPropertySchema(cssSchema, property: string): BasicRawCompletion {
+  static findPropertySchema(cssSchema, property: string): BasicRawCompletion | any {
+    if (workspace.getConfiguration('sass').get('autocomplete.useExperimentalData') === true) {
+      return dataProps[property];
+    }
     return cssSchema.data.css.properties.find(item => item.name === property);
   }
 
@@ -58,6 +74,9 @@ export class AutocompleteUtilities {
   static getProperties(cssSchema, currentWord: string): CompletionItem[] {
     if (isClassOrId(currentWord) || isAtRule(currentWord)) {
       return [];
+    }
+    if (workspace.getConfiguration('sass').get('autocomplete.useExperimentalData') === true) {
+      return generatedData;
     }
     return cssSchema.data.css.properties.map(property => {
       const completionItem = new CompletionItem(property.name);
@@ -76,7 +95,7 @@ export class AutocompleteUtilities {
    * @param {String} currentWord
    * @return {CompletionItem}
    */
-  static getValues(cssSchema, currentWord: string): CompletionItem[] {
+  static getPropertyValues(cssSchema, currentWord: string): CompletionItem[] {
     const property = AutocompleteUtilities.getPropertyName(currentWord);
     const values = AutocompleteUtilities.findPropertySchema(cssSchema, property).values;
 

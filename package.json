@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.6.8",
+  "version": "1.6.9",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -11,7 +11,7 @@
   },
   "bugs": "https://github.com/TheRealSyler/vscode-sass-indented/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=",
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "^1.40.0"
   },
   "activationEvents": [
     "onLanguage:sass",
@@ -36,6 +36,11 @@
           "type": "boolean",
           "default": true,
           "description": "adds units to the intellisense completions if false."
+        },
+        "sass.autocomplete.useExperimentalData": {
+          "type": "boolean",
+          "default": false,
+          "description": "uses auto generated data."
         },
         "sass.format.enabled": {
           "type": "boolean",
@@ -117,9 +122,10 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run getData && npm run compile",
     "compile": "tsc -b",
     "watch": "tsc -watch -p ./",
+    "getData": "gcp --outPath './src/autocomplete/schemas/generatedData' --prefix 'autocomplete.data' --fileType ts --ignore 'allProps,standardProps,noDataProps'",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts'"
   },
@@ -131,6 +137,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "get-css-props": "^1.0.0",
     "s.color": "0.0.10",
     "sass-formatter": "^0.0.8",
     "suf-regex": "^0.0.7",

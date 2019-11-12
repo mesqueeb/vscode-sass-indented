@@ -22,7 +22,10 @@ export function activate(context: vscode.ExtensionContext) {
   setSassLanguageConfiguration(config);
   const SassFormatter = new FormattingProvider(context);
   const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
-    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
+    [
+      { language: 'sass', scheme: 'file' },
+      { language: 'sass', scheme: 'untitled' }
+    ],
     SassFormatter
   );
 
@@ -43,7 +46,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   const hover = new SassHoverProvider();
   const hoverDisposable = vscode.languages.registerHoverProvider(
-    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
+    [
+      { language: 'sass', scheme: 'file' },
+      { language: 'sass', scheme: 'untitled' }
+    ],
     {
       provideHover: hover.provideHover
     }
@@ -51,7 +57,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   const color = new SassColorProvider();
   const colorDisposable = vscode.languages.registerColorProvider(
-    [{ language: 'sass', scheme: 'file' }, { language: 'sass', scheme: 'untitled' }],
+    [
+      { language: 'sass', scheme: 'file' },
+      { language: 'sass', scheme: 'untitled' }
+    ],
     {
       provideColorPresentations: color.provideColorPresentations,
       provideDocumentColors: color.provideDocumentColors
