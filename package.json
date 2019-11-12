@@ -17,7 +17,7 @@
     "onLanguage:sass",
     "onLanguage:vue"
   ],
-  "main": "./out/extension",
+  "main": "./dist/extension",
   "categories": [
     "Programming Languages",
     "Formatters"
@@ -122,7 +122,7 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run getData && npm run compile",
+    "vscode:prepublish": "npm run getData && npm run compile && webpack --mode production",
     "compile": "tsc -b",
     "watch": "tsc -watch -p ./",
     "getData": "gcp --outPath './src/autocomplete/schemas/generatedData' --prefix 'autocomplete.data' --fileType ts --ignore 'allProps,standardProps,noDataProps'",
@@ -131,9 +131,12 @@
   },
   "devDependencies": {
     "@types/node": "^8.10.55",
+    "ts-loader": "^6.2.1",
     "tslint": "^5.8.0",
     "typescript": "^3.6.4",
-    "vscode": "^1.1.26"
+    "vscode": "^1.1.26",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
   "license": "MIT",
   "dependencies": {
