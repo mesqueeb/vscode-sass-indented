@@ -1,7 +1,6 @@
-import { dataProps } from './generatedData/autocomplete.data.dataProps';
 import { CompletionItem, CompletionItemKind } from 'vscode';
 import { GetPropertyDescription } from '../../utilityFunctions';
-
+export const dataProps = require('./generatedData/autocomplete.data.dataProps.json');
 export const generatedData: CompletionItem[] = mapProps();
 
 function mapProps(): CompletionItem[] {

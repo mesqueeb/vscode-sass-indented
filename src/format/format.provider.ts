@@ -11,33 +11,6 @@ import {
 } from 'vscode';
 
 import { SassFormatter } from 'sass-formatter';
-export interface FormatContext {
-  convert: {
-    lastSelector: string;
-    wasLastLineCss: boolean;
-  };
-  keyframes: {
-    is: boolean;
-    tabs: number;
-  };
-  tabs: number;
-  currentTabs: number;
-  // lastHeader: { offset: number; endedWithComma: boolean };
-}
-export interface FormatLocalContext {
-  ResetTabs: boolean;
-  isAnd_: boolean;
-  isProp: boolean;
-  indentation: {
-    offset: number;
-    distance: number;
-  };
-  isClassOrIdSelector: boolean;
-  isIfOrElse: boolean;
-  isIfOrElseAProp: boolean;
-  isKeyframes: boolean;
-  isKeyframesPoint: boolean;
-}
 
 class FormattingProvider implements DocumentFormattingEditProvider {
   context: ExtensionContext;
@@ -46,7 +19,6 @@ class FormattingProvider implements DocumentFormattingEditProvider {
   }
   provideDocumentFormattingEdits(document: TextDocument, options: FormattingOptions): ProviderResult<TextEdit[]> {
     const config = workspace.getConfiguration('sass.format');
-
     return [
       new TextEdit(
         document.validateRange(new Range(new Position(0, 0), new Position(document.lineCount + 1, 10))),
@@ -58,7 +30,8 @@ class FormattingProvider implements DocumentFormattingEditProvider {
           deleteWhitespace: config.get('deleteWhitespace'),
           enabled: config.get('enabled'),
           replaceSpacesOrTabs: config.get('replaceSpacesOrTabs'),
-          setPropertySpace: config.get('setPropertySpace')
+          setPropertySpace: config.get('setPropertySpace'),
+          ignoreBackslash: config.get('ignoreBackslash')
         })
       )
     ];

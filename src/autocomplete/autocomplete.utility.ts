@@ -15,8 +15,7 @@ import { BasicRawCompletion } from './autocomplete.interfaces';
 import { isClassOrId, isAtRule } from 'suf-regex';
 import { StateElement, State } from '../extension';
 import { getSassModule } from './schemas/autocomplete.builtInModules';
-import { dataProps } from './schemas/generatedData/autocomplete.data.dataProps';
-import { generatedData } from './schemas/autocomplete.generatedData';
+import { generatedData, dataProps } from './schemas/autocomplete.generatedData';
 
 interface ImportsItem {
   path: string;

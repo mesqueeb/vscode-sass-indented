@@ -61,10 +61,10 @@
     {
       "begin": "\\$[a-zA-Z0-9_-]+(?=:)",
       "end": "$\\n?|(?=\\)\\s\\)|\\)\\n)",
-      "name": "sass-script-maps",
+      "name": "sass.script.maps",
       "captures": {
         "0": {
-          "name": "variable.other"
+          "name": "variable.other.name"
         }
       },
       "patterns": [
@@ -117,6 +117,9 @@
           "include": "#property-value"
         },
         {
+          "include": "#semicolon"
+        },
+        {
           "include": "#dotdotdot"
         }
       ]
@@ -153,20 +156,48 @@
       }
     },
     {
-      "begin": "^@use(.*?)( as(.*))?$",
+      "begin": "^(@use)",
       "end": "(?=\\n)",
-      "name": "keyword.control.at-rule.use",
+      "name": "sass.use",
       "captures": {
-        "1": {
-          "name": "constant.character"
-        },
-        "2": {
-          "name": "support.type"
-        },
-        "3": {
-          "name": "constant.character"
+        "0": {
+          "name": "keyword.control.at-rule.css.sass.use"
         }
-      }
+      },
+      "patterns": [
+        {
+          "match": "as|with",
+          "name": "support.type.css.sass"
+        },
+        {
+          "include": "#numeric"
+        },
+        {
+          "include": "#unit"
+        },
+        {
+          "include": "#variable-root"
+        },
+        {
+          "include": "#rgb-value"
+        },
+        {
+          "include": "#comma"
+        },
+        {
+          "include": "#parenthesis-open"
+        },
+        {
+          "include": "#parenthesis-close"
+        },
+        {
+          "include": "#colon"
+        },
+        {
+          "match": "[\"']?\\w+[\"']?",
+          "name": "constant.character.css.sass"
+        }
+      ]
     },
     {
       "begin": "^@import(.*?)( as.*)?$",
@@ -174,7 +205,7 @@
       "name": "keyword.control.at-rule.use",
       "captures": {
         "1": {
-          "name": "constant.character"
+          "name": "constant.character.css.sass"
         },
         "2": {
           "name": "invalid"
@@ -184,7 +215,7 @@
     {
       "begin": "@mixin|^=|@function",
       "end": "$\\n?|(?=\\()",
-      "name": "support.function.name.sass.no-completions",
+      "name": "support.function.name.sass",
       "captures": {
         "0": {
           "name": "keyword.control.at-rule.css.sass"
@@ -201,6 +232,19 @@
       "begin": "@",
       "end": "$\\n?|\\s(?!(all|braille|embossed|handheld|print|projection|screen|speech|tty|tv|if|only|not)(\\s|,))",
       "name": "keyword.control.at-rule.css.sass"
+    },
+    {
+      "begin": "(?<!\\-|\\()\\b(a|abbr|acronym|address|applet|area|article|aside|audio|b|base|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|eventsource|fieldset|figure|figcaption|footer|form|frame|frameset|(h[1-6])|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|map|mark|menu|meta|meter|nav|noframes|noscript|object|ol|optgroup|option|output|p|param|picture|pre|progress|q|samp|script|section|select|small|source|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|tt|ul|var|video|main|svg|rect|ruby|center|circle|ellipse|line|polyline|polygon|path|text|u|x)\\b(?!-|\\)|:\\s)|&",
+      "end": "$\\n?|(?=\\s|,|\\(|\\)|\\.|\\#|\\[|>|-|_)",
+      "name": "entity.name.tag.css.sass.symbol",
+      "patterns": [
+        {
+          "include": "#interpolation"
+        },
+        {
+          "include": "#pseudo-class"
+        }
+      ]
     },
     {
       "begin": "#",
@@ -251,13 +295,13 @@
     },
     {
       "match": "([\\w-]*?)(\\.)",
-      "name": "constant.character",
+      "name": "constant.character.module.imported",
       "captures": {
         "1": {
-          "name": "constant.character"
+          "name": "constant.character.module.imported.name"
         },
         "2": {
-          "name": "constant.numeric"
+          "name": "constant.numeric.module.imported.dot"
         }
       }
     },
@@ -267,16 +311,16 @@
     },
     {
       "match": "\\)",
-      "name": "entity.name.function"
+      "name": "entity.name.function.close"
     },
     {
       "begin": ":",
       "end": "$\\n?|(?=\\s\\(|and\\(|\\),)",
-      "name": "meta.property-list.css.sass",
+      "name": "meta.property-list.css.sass.prop",
       "patterns": [
         {
           "match": "(?<=:)[a-z-]+\\s",
-          "name": "support.type.property-name.css.sass"
+          "name": "support.type.property-name.css.sass.prop.name"
         },
         {
           "include": "#double-slash"
@@ -360,19 +404,7 @@
     {
       "include": "#function-content"
     },
-    {
-      "begin": "(?<!\\-|\\()\\b(a|abbr|acronym|address|applet|area|article|aside|audio|b|base|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|datalist|dd|del|details|dfn|dialog|div|dl|dt|em|embed|eventsource|fieldset|figure|figcaption|footer|form|frame|frameset|(h[1-6])|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|map|mark|menu|meta|meter|nav|noframes|noscript|object|ol|optgroup|option|output|p|param|picture|pre|progress|q|samp|script|section|select|small|source|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|tt|ul|var|video|main|svg|rect|ruby|center|circle|ellipse|line|polyline|polygon|path|text|u|x)\\b(?!-|\\)|:\\s)|&",
-      "end": "$\\n?|(?=\\s|,|\\(|\\)|\\.|\\#|\\[|>|-|_)",
-      "name": "entity.name.tag.css.sass.symbol",
-      "patterns": [
-        {
-          "include": "#interpolation"
-        },
-        {
-          "include": "#pseudo-class"
-        }
-      ]
-    },
+
     {
       "begin": "(?<=})(?!\\n|\\(|\\)|[a-zA-Z0-9_-]+:)",
       "end": "\\s|(?=,|\\.|\\[|\\)|\\n)",
@@ -391,7 +423,7 @@
     },
     {
       "match": "[a-z-]+((?=:|#{))",
-      "name": "support.type.property-name.css.sass"
+      "name": "support.type.property-name.css.sass.prop.name"
     },
     {
       "include": "#reserved-words"
@@ -458,6 +490,18 @@
       "end": ".(?=\\))",
       "name": "string.quoted.double.css.sass"
     },
+    "parenthesis-open": {
+      "match": "\\(",
+      "name": "entity.name.function.parenthesis.open"
+    },
+    "parenthesis-close": {
+      "match": "\\)",
+      "name": "entity.name.function.parenthesis.close"
+    },
+    "colon": {
+      "match": ":",
+      "name": "meta.property-list.css.sass.colon"
+    },
     "interpolation": {
       "begin": "#{",
       "end": "}",
@@ -505,7 +549,7 @@
     },
     "property-value": {
       "match": "[a-zA-Z0-9_-]+",
-      "name": "meta.property-value.css.sass, support.constant.property-value.css.sass"
+      "name": "meta.property-value.css.sass support.constant.property-value.css.sass"
     },
     "pseudo-class": {
       "match": ":[a-z:-]+",
