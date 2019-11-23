@@ -110,7 +110,7 @@ class SassCompletion implements CompletionItemProvider {
           Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
             if (element.type === 'Variable') {
               const completionItem = new CompletionItem(Utility.mergeNamespace(element.item.title, namespace));
-              completionItem.insertText = new SnippetString(Utility.mergeNamespace(element.item.insert, namespace));
+              completionItem.insertText = Utility.mergeNamespace(element.item.insert, namespace);
               completionItem.detail = element.item.detail;
               completionItem.kind = element.item.kind;
               variables.push(completionItem);
@@ -126,7 +126,7 @@ class SassCompletion implements CompletionItemProvider {
         Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
           if (element.type === 'Mixin') {
             const completionItem = new CompletionItem(Utility.mergeNamespace(element.item.title, namespace));
-            completionItem.insertText = new SnippetString(Utility.mergeNamespace(element.item.insert, namespace));
+            completionItem.insertText = Utility.mergeNamespace(element.item.insert, namespace);
             completionItem.detail = element.item.detail;
             completionItem.kind = element.item.kind;
             variables.push(completionItem);
