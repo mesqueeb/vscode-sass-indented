@@ -194,7 +194,7 @@
           "include": "#colon"
         },
         {
-          "match": "[\"']?\\w+[\"']?",
+          "match": "[\"']?\\.{0,2}[\\w/]+[\"']?",
           "name": "constant.character.css.sass"
         }
       ]

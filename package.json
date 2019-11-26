@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.6.9",
+  "version": "1.7.0",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -67,11 +67,6 @@
           "default": true,
           "description": "Convert scss/css to sass."
         },
-        "sass.format.ignoreBackslash": {
-          "type": "boolean",
-          "default": false,
-          "description": "ignores a backslash at the beginning of any pseudo selector"
-        },
         "sass.format.deleteCompact": {
           "type": "boolean",
           "default": true,
@@ -127,14 +122,15 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run getData && npm run compile",
+    "vscode:prepublish": "npm run getData && npm run compile && npm run generate:badges",
     "compile": "tsc -b && webpack --mode production",
     "watch": "tsc -watch -p ./ && && webpack --mode development",
     "getData": "gcp --outPath './src/autocomplete/schemas/generatedData' --prefix 'autocomplete.data' --ignore 'allProps,standardProps,noDataProps'",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
     "test": "ts-node tests/test.ts",
-    "test-dev": "nodemon tests/test.ts -- DEV_MODE"
+    "test-dev": "nodemon tests/test.ts -- DEV_MODE",
+    "generate:badges": "get-badges"
   },
   "devDependencies": {
     "@types/node": "^8.10.59",
@@ -145,14 +141,16 @@
     "vscode": "^1.1.26",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
-    "nodemon": "2.0.0"
+    "get-badges": "^0.1.1",
+    "nodemon": "2.0.0",
+    "tslib": "^1.10.0"
   },
   "license": "MIT",
   "dependencies": {
     "get-css-props": "^1.0.1",
     "s.color": "0.0.10",
-    "sass-formatter": "^0.1.0",
+    "sass-formatter": "^0.2.0",
     "suf-regex": "^0.0.7",
-    "tslib": "^1.10.0"
+    "test-grammar": "^1.0.0"
   }
 }

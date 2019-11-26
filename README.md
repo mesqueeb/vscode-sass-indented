@@ -1,4 +1,9 @@
-[![](https://vsmarketplacebadge.apphb.com/version-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![](https://vsmarketplacebadge.apphb.com/rating-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![](https://vsmarketplacebadge.apphb.com/installs-short/syler.sass-indented.svg)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![GitHub stars](https://img.shields.io/github/stars/TheRealSyler/vscode-sass-indented.svg?style=social&label=Star%20on%20Github)](https://github.com/TheRealSyler/vscode-sass-indented) [![GitHub issues](https://img.shields.io/github/issues-raw/TheRealSyler/vscode-sass-indented?color=%232a2)](https://github.com/TheRealSyler/vscode-sass-indented) [![Maintenance](https://img.shields.io/maintenance/yes/2019.svg)](https://GitHub.com/TheRealSyler/vscode-sass-indented/graphs/commit-activity)
+<span id="BADGE_GENERATION_MARKER_0"></span>
+[![vscV](https://img.shields.io/visual-studio-marketplace/v/syler.sass-indented)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![vscD](https://img.shields.io/visual-studio-marketplace/d/syler.sass-indented)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![vscI](https://img.shields.io/visual-studio-marketplace/i/syler.sass-indented)](https://marketplace.visualstudio.com/items?itemName=syler.sass-indented) [![githubLastCommit](https://img.shields.io/github/last-commit/TheRealSyler/vscode-sass-indented)](https://github.com/TheRealSyler/vscode-sass-indented) [![githubIssues](https://img.shields.io/github/issues/TheRealSyler/vscode-sass-indented?color=lightgrey)](https://github.com/TheRealSyler/vscode-sass-indented)
+<span id="BADGE_GENERATION_MARKER_1"></span>
+
+[![Tested With](https://img.shields.io/badge/Syntax Tested With-test--grammar-red?style=for-the-badge)](https://www.npmjs.com/package/test-grammar)
+[![Using](https://img.shields.io/badge/Using-sass--formatter-red?style=for-the-badge)](https://www.npmjs.com/package/sass-formatter)
 
 # _Indented Sass syntax highlighting, autocomplete & Formatter for VSCode_
 
@@ -18,16 +23,15 @@ ext install sass-indented
 
 > [Formatter](#formatter)
 
-#### 1.6.9 new additions
+#### 1.7.0 new additions
 
-> Added different data for the property completions, enabled by setting `sass.autocomplete.useExperimentalData` to `true`, the old data will be removed in the future.
+> Added unit testing for the grammar file with [test-grammar](https://www.npmjs.com/package/test-grammar), what this means for you is that i won't brake part of the syntax highlighting at every new release.
 
-#### 1.6.8 new additions
+> Comments will now also be formatted.
 
-> Added `@use` support. Note: the `meta` module is not implemented, if you want it now you can add it yourself write me an email or open an issue. its just copy and pasting stuff, not very difficult, im done copy and pasting for today.
-> also some syntax highlighting changes, if find something wrong with it please open a new issue.
+> The `useExperimentalData` is now enabled by default, let me know if you get any strange css property completions.
 
-> Note: The snippets have been removed if you still want to use them, you can get them [here](https://github.com/TheRealSyler/vscode-sass-indented/blob/a3ffc7a005c2ccd82e7c50ccf391ba5d22afee13/snippets/sass.json).
+> also a few minor bug fixes.
 
 ### **Formatter**
 
@@ -66,9 +70,9 @@ Configuration options can be set in the `Sass (Indented)` section of VSCode sett
 
 ## **Bugs**
 
-If you encounter any bugs please [open a new issue](https://github.com/TheRealSyler/vscode-sass-indented/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=).
+> **_IMPORTANT_**: if the bug is related to the formatter please open the issue in the formatter [repo](https://github.com/TheRealSyler/sass-formatter/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=).
 
-> Note: if the bug is related to the formatter please open the issue in the formatter [repo](https://github.com/TheRealSyler/sass-formatter/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=).
+If you encounter any bugs please [open a new issue](https://github.com/TheRealSyler/vscode-sass-indented/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=).
 
 ## **Contributing**
 

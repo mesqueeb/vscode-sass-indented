@@ -127,7 +127,7 @@ export class Scanner {
               .split(':')[0]
           }: \},`;
         })
-        .replace(/,\)$/, ')')}\n$0`,
+        .replace(/,\)$/, ')')}\n`,
       detail: `Include ${rep} - ${pathBasename} Mixin.`,
       kind: CompletionItemKind.Method
     };

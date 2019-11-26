@@ -30,8 +30,7 @@ class FormattingProvider implements DocumentFormattingEditProvider {
           deleteWhitespace: config.get('deleteWhitespace'),
           enabled: config.get('enabled'),
           replaceSpacesOrTabs: config.get('replaceSpacesOrTabs'),
-          setPropertySpace: config.get('setPropertySpace'),
-          ignoreBackslash: config.get('ignoreBackslash')
+          setPropertySpace: config.get('setPropertySpace')
         })
       )
     ];

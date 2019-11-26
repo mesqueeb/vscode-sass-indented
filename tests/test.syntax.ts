@@ -119,13 +119,15 @@ ${commentBlock}|${commentBlock}|${commentBlock}`
 @function name($property: 2fr)
 @include reset-list;
 @use 'buttons' as btn
-@use 'library' with ($black: #222)`,
+@use 'library' with ($black: #222)
+@use './sass'`,
       `${at}|${at}|${at}|${func}|${func}|${func}|${quote}|${quote}|${quote}|${funcClose}|${funcClose}
 ${atFunc}|${funcBase}|${atFuncName}|${func}|${varRoot}|${comma}||${varRoot}|${funcClose}
 ${atFunc}|${funcBase}|${atFuncName}|${func}|${varSSM} ${varSSMn}|${varSSM}|${varSSM} ${constNum}|${varSSM} ${unit}|${funcClose}
 ${atInclude} ${atIncludeName}|${atInclude}
 ${atUseBase} ${atUse}|${atUseBase}|${atUseBase} ${constChar}|${atUseBase}|${atUseBase} ${supType}|${atUseBase}|${atUseBase} ${constChar}
-${atUseBase} ${atUse}|${atUseBase}|${atUseBase} ${constChar}|${atUseBase}|${atUseBase} ${supType}|${atUseBase}|${atUseBase} ${parenOpen}|${atUseBase} ${varRoot}|${atUseBase} ${colon}|${atUseBase}|${atUseBase} ${color}|${atUseBase} ${parenClose}`
+${atUseBase} ${atUse}|${atUseBase}|${atUseBase} ${constChar}|${atUseBase}|${atUseBase} ${supType}|${atUseBase}|${atUseBase} ${parenOpen}|${atUseBase} ${varRoot}|${atUseBase} ${colon}|${atUseBase}|${atUseBase} ${color}|${atUseBase} ${parenClose}
+${atUseBase} ${atUse}|${atUseBase}|${atUseBase} ${constChar}`
     );
     run(
       'Variables',
