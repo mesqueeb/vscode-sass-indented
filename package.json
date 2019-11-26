@@ -122,8 +122,8 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run getData && npm run compile && npm run generate:badges",
-    "compile": "tsc -b && webpack --mode production",
+    "vscode:prepublish": "npm run getData && npm run build",
+    "build": "tsc -b && npm run generate:badges && webpack --mode production",
     "watch": "tsc -watch -p ./ && && webpack --mode development",
     "getData": "gcp --outPath './src/autocomplete/schemas/generatedData' --prefix 'autocomplete.data' --ignore 'allProps,standardProps,noDataProps'",
     "postinstall": "node ./node_modules/vscode/bin/install",
