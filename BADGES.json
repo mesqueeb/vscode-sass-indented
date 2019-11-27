@@ -5,6 +5,7 @@
   "out": "README.md",
   "vscode": "syler.sass-indented",
   "badges": [
+    "circleci circleci",
     "vscV vscode",
     "vscD vscode",
     "vscI vscode",
