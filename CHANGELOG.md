@@ -2,6 +2,8 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.7.1   | 28.11.2019 | Readme Update                                                                  |
+| 1.7.0   | 27.11.2019 | Added tests for sass language grammar, minor fixes                             |
 | 1.6.9   | 12.11.2019 | Added experimental data and fixed syntax highlighting.                         |
 | 1.6.8   | 6.11.2019  | Added @use Support and fixed color decorators.                                 |
 | 1.6.7   | 8.10.2019  | updated formatter dependency                                                   |
