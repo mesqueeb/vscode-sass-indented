@@ -3,7 +3,7 @@ export function RunSyntaxTests() {
   // process.argv.indexOf('DEV_MODE') !== -1
 
   // tslint:disable-next-line: no-unused-expression
-  new TestGrammar(`syntaxes/sass.language.json`, null, run => {
+  new TestGrammar(`syntaxes/sass.tmLanguage.json`, null, run => {
     const propName = 'support.type.property-name.css.sass.prop.name';
     const prop = 'meta.property-list.css.sass.prop';
     const propVal = 'meta.property-value.css.sass support.constant.property-value.css.sass';

@@ -117,19 +117,19 @@
       {
         "language": "sass",
         "scopeName": "source.sass",
-        "path": "./syntaxes/sass.language.json"
+        "path": "./syntaxes/sass.tmLanguage.json"
       }
     ]
   },
   "scripts": {
     "vscode:prepublish": "npm run getData && npm run build",
     "build": "tsc -b && npm run generate:badges && webpack --mode production",
-    "watch": "tsc -watch -p ./ && && webpack --mode development",
+    "watch": "tsc -watch -p ./ && webpack --mode development",
     "getData": "gcp --outPath './src/autocomplete/schemas/generatedData' --prefix 'autocomplete.data' --ignore 'allProps,standardProps,noDataProps'",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
-    "test": "ts-node tests/test.ts",
-    "test-dev": "nodemon tests/test.ts -- DEV_MODE",
+    "test": "ts-node src/test/test.ts",
+    "test:dev": "nodemon src/test/test.ts -- DEV_MODE",
     "generate:badges": "get-badges"
   },
   "devDependencies": {
