@@ -23,8 +23,8 @@
       ]
     },
     {
-      "begin": "^ */?// *[SRI] *$",
-      "end": "(?=\\n|\\()",
+      "match": "^ */?// *[SRI] *$",
+
       "name": "keyword.other.sass.formatter.action"
     },
     {

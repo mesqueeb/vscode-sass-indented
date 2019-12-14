@@ -10,6 +10,12 @@ jest.config.js
 *.vsix
 .vscode
 node_modules
+out/**
+tslint.json
+.github/**
+.circleci/**
+BADGES.json
+todo
 
 package-json.lock
 
