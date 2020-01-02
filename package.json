@@ -1,8 +1,8 @@
 {
-  "name": "sass-indented",
+  "name": "vscode-sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {

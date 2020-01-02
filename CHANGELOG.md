@@ -2,6 +2,7 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.7.3   | 2.1.2020   | Fix Readme                                                                     |
 | 1.7.2   | 2.1.2020   | Updated sass-formatter                                                         |
 | 1.7.1   | 28.11.2019 | Readme Update                                                                  |
 | 1.7.0   | 27.11.2019 | Added tests for sass language grammar, minor fixes                             |
