@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -72,11 +72,6 @@
           "default": true,
           "description": "also removes empty rows that are near a property."
         },
-        "sass.format.replaceSpacesOrTabs": {
-          "type": "boolean",
-          "default": true,
-          "description": "replace spaces or tabs to the opposite based on the selected preference(indent Using Spaces/Tabs)."
-        },
         "sass.format.debug": {
           "type": "boolean",
           "default": false,
@@ -123,33 +118,32 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run getData && npm run build",
-    "build": "tsc -b && npm run generate:badges && webpack --mode production",
+    "build": "tsc -b && suf && webpack --mode production",
     "watch": "webpack --mode development",
     "getData": "gcp --outPath './src/autocomplete/schemas/generatedData' --prefix 'autocomplete.data' --ignore 'allProps,standardProps,noDataProps'",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
     "test": "ts-node src/test/test.ts",
-    "test:dev": "nodemon src/test/test.ts -- DEV_MODE",
-    "generate:badges": "get-badges"
+    "test:dev": "nodemon src/test/test.ts -- DEV_MODE"
   },
   "devDependencies": {
     "@types/node": "^8.10.59",
+    "nodemon": "2.0.0",
     "ts-loader": "^6.2.1",
     "ts-node": "^8.5.2",
+    "tslib": "^1.10.0",
     "tslint": "^5.20.1",
     "typescript": "^3.7.2",
     "vscode": "^1.1.26",
     "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10",
-    "get-badges": "^0.1.1",
-    "nodemon": "2.0.0",
-    "tslib": "^1.10.0"
+    "webpack-cli": "^3.3.10"
   },
   "license": "MIT",
   "dependencies": {
     "get-css-props": "^1.0.1",
     "s.color": "0.0.10",
-    "sass-formatter": "^0.2.0",
+    "sass-formatter": "^0.4.0",
+    "suf-cli": "^0.1.0",
     "suf-regex": "^0.0.7",
     "test-grammar": "^1.0.0"
   }

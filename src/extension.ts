@@ -18,7 +18,6 @@ export interface StateElement {
 export type StateItem = { title: string; insert: string; detail: string; kind: vscode.CompletionItemKind };
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('awd');
   const config = vscode.workspace.getConfiguration();
   setSassLanguageConfiguration(config);
   const SassFormatter = new FormattingProvider(context);
