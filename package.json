@@ -67,11 +67,6 @@
           "default": true,
           "description": "Convert scss/css to sass."
         },
-        "sass.format.deleteCompact": {
-          "type": "boolean",
-          "default": true,
-          "description": "also removes empty rows that are near a property."
-        },
         "sass.format.debug": {
           "type": "boolean",
           "default": false,
