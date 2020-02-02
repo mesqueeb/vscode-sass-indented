@@ -23,16 +23,6 @@ ext install sass-indented
 
 > [Formatter](#formatter)
 
-#### 1.7.0 new additions
-
-> Added unit testing for the grammar file with [test-grammar](https://www.npmjs.com/package/test-grammar), what this means for you is that i won't brake part of the syntax highlighting at every new release.
-
-> Comments will now also be formatted.
-
-> The `useExperimentalData` is now enabled by default, let me know if you get any strange css property completions.
-
-> also a few minor bug fixes.
-
 ### **Formatter**
 
 ##### Commands

@@ -32,7 +32,6 @@ class FormattingProvider implements DocumentFormattingEditProvider {
             ...options,
             convert: config.get('convert'),
             debug: config.get('debug'),
-            deleteCompact: config.get('deleteCompact'),
             deleteEmptyRows: config.get('deleteEmptyRows'),
             deleteWhitespace: config.get('deleteWhitespace'),
             setPropertySpace: config.get('setPropertySpace')
