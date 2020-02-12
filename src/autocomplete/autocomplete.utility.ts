@@ -154,6 +154,7 @@ export class AutocompleteUtilities {
                 globalScopeModules.push(...getSassModule('SELECTOR', namespace));
                 break;
               case 'sass:meta':
+                // TODO
                 varScopeModules.push(...getSassModule('META', namespace));
                 break;
             }
@@ -189,10 +190,17 @@ export class AutocompleteUtilities {
     return units;
   }
 
-  static getImportSuggestionsForCurrentWord(document: TextDocument, currentWord: string): CompletionItem[] {
+  static getImportSuggestionsForCurrentWord(
+    document: TextDocument,
+    currentWord: string
+  ): CompletionItem[] {
     const suggestions: CompletionItem[] = [];
     const path = normalize(
-      join(document.fileName, '../', currentWord.replace(/(@import|@use) *['"]?([\w-]*)['"]?/, '$2').trim())
+      join(
+        document.fileName,
+        '../',
+        currentWord.replace(/(@import|@use) *['"]?([\w-]*)['"]?/, '$2').trim()
+      )
     );
 
     const dir = readdirSync(path);
@@ -225,7 +233,9 @@ export class AutocompleteUtilities {
     for (const file of dir) {
       const fileName = basename(document.fileName).replace('.sass', '.html');
       if (new RegExp(fileName).test(file)) {
-        const text = readFileSync(normalize(document.fileName).replace('.sass', '.html')).toString();
+        const text = readFileSync(
+          normalize(document.fileName).replace('.sass', '.html')
+        ).toString();
         let m;
         while ((m = regex.exec(text)) !== null) {
           if (m.index === regex.lastIndex) {
@@ -296,7 +306,10 @@ export class AutocompleteUtilities {
               const rep = '$'.concat(variable.split(/[,: \)]/)[0]);
               const completionItem = new CompletionItem(rep);
               completionItem.insertText = new SnippetString(rep.replace('$', '\\$'));
-              completionItem.detail = `@mixin ${mixinName}\n(${rep.replace('$', '')}) - Local Variable`;
+              completionItem.detail = `@mixin ${mixinName}\n(${rep.replace(
+                '$',
+                ''
+              )}) - Local Variable`;
               completionItem.kind = CompletionItemKind.Variable;
               resVar.push(completionItem);
             }
@@ -330,11 +343,11 @@ export class AutocompleteUtilities {
   ) {
     imports.forEach(item => {
       let importPath = item.path;
-      // support previously saved states.
-      if (typeof item === 'string') {
-        importPath = item;
-      }
-      const state: State = context.workspaceState.get(normalize(join(document.fileName, '../', importPath)));
+
+      const state: State = context.workspaceState.get(
+        normalize(join(document.fileName, '../', importPath))
+      );
+
       if (state) {
         for (const key in state) {
           if (state.hasOwnProperty(key)) {

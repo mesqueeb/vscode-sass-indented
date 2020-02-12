@@ -1,7 +1,7 @@
 'use strict';
 import * as vscode from 'vscode';
 import FormattingProvider from './format/format.provider';
-import { Scanner } from './autocomplete/scan/autocomplete.scan';
+import { Searcher } from './autocomplete/search/autocomplete.search';
 import SassCompletion from './autocomplete/autocomplete';
 import { SassHoverProvider } from './languageFeatures/hover/hover.provider';
 import { SassColorProvider } from './languageFeatures/color/color.provider';
@@ -15,7 +15,12 @@ export interface StateElement {
   type: 'Mixin' | 'Variable';
 }
 
-export type StateItem = { title: string; insert: string; detail: string; kind: vscode.CompletionItemKind };
+export type StateItem = {
+  title: string;
+  insert: string;
+  detail: string;
+  kind: vscode.CompletionItemKind;
+};
 
 export function activate(context: vscode.ExtensionContext) {
   const config = vscode.workspace.getConfiguration();
@@ -30,17 +35,16 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Events
-  const scan = new Scanner(context);
+  const searcher = new Searcher(context);
 
-  // const saveDisposable = vscode.workspace.onDidSaveTextDocument(doc => setTimeout(() => scan.scanFile(doc), 0));
   let previousDocument: vscode.TextDocument = vscode.window.activeTextEditor.document;
   const activeDisposable = vscode.window.onDidChangeActiveTextEditor(editor => {
     if (previousDocument !== undefined) {
-      scan.scanFile(previousDocument);
+      searcher.searchDocument(previousDocument);
     }
     if (editor !== undefined) {
       previousDocument = editor.document;
-      scan.scanFile(editor.document);
+      searcher.searchDocument(editor.document);
     }
   });
 
@@ -91,6 +95,7 @@ export function activate(context: vscode.ExtensionContext) {
     '/',
     '?',
     '?.',
+    '+',
     '&'
   );
 
@@ -105,8 +110,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => {
     if (config.get('sass.lint.enable')) {
-      // diagnostics.updateLine(l.document, l.contentChanges, diagnosticsCollection)
-
       diagnostics.update(l.document, diagnosticsCollection);
     }
   });

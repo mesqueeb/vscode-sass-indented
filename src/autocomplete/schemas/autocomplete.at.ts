@@ -63,7 +63,8 @@ November 2019, this will change in the future check the sass-lang.com website fo
   },
   {
     name: '@media',
-    body: '@media ${1:screen} ${2:and} ( ${3|max-width: ,min-width: ,max-height: ,min-height: |} )\n\t$0',
+    body:
+      '@media ${1:screen} ${2:and} ( ${3|max-width: ,min-width: ,max-height: ,min-height: |} )\n\t$0',
     desc: '@media'
   },
   {

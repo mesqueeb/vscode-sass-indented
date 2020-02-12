@@ -14,9 +14,9 @@ import {
   TextDocument,
   workspace,
   ExtensionContext,
-  SnippetString,
   extensions,
-  commands
+  commands,
+  SnippetString
 } from 'vscode';
 
 import * as cssSchema from './schemas/autocomplete.cssSchema';
@@ -26,19 +26,23 @@ import { sassAt } from './schemas/autocomplete.at';
 import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
 import { AutocompleteUtilities as Utility } from './autocomplete.utility';
-import { Scanner } from './scan/autocomplete.scan';
+import { Searcher } from './search/autocomplete.search';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
 import { isPath } from 'suf-regex';
 import { basename } from 'path';
 
 class SassCompletion implements CompletionItemProvider {
   context: ExtensionContext;
-  scan: Scanner;
+  scan: Searcher;
   constructor(context: ExtensionContext) {
     this.context = context;
-    this.scan = new Scanner(context);
+    this.scan = new Searcher(context);
   }
-  provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): CompletionItem[] {
+  provideCompletionItems(
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken
+  ): CompletionItem[] {
     const start = new Position(position.line, 0);
     const range = new Range(start, position);
     const currentWord = document.getText(range).trim();
@@ -63,19 +67,18 @@ class SassCompletion implements CompletionItemProvider {
       block = Utility.isInVueStyleBlock(start, document);
     }
 
-    if (!block && extensions.getExtension('syler.sass-next') !== undefined && currentWord.startsWith('?')) {
+    if (
+      !block &&
+      extensions.getExtension('syler.sass-next') !== undefined &&
+      currentWord.startsWith('?')
+    ) {
       commands.executeCommand('sass.abbreviations').then(
         () => '',
         err => console.log('[Sass Abbreviations Error]: ', err)
       );
     }
 
-    if (!block && /^@import/.test(currentWord)) {
-      completions = Utility.getImportSuggestionsForCurrentWord(document, currentWord);
-      block = true;
-    }
-
-    if (!block && /^@use/.test(currentWord)) {
+    if (!block && /^@import|^@use/.test(currentWord)) {
       completions = Utility.getImportSuggestionsForCurrentWord(document, currentWord);
       block = true;
     }
@@ -102,14 +105,16 @@ class SassCompletion implements CompletionItemProvider {
       // also get current file from the workspace State.
       imports.push({ path: basename(document.fileName), namespace: undefined });
       isInMixinBlock = Utility.isInMixinBlock(start, document);
-      this.scan.scanFile(document);
+      this.scan.searchDocument(document);
 
       if (isValue) {
         values = Utility.getPropertyValues(cssSchema, currentWord);
         if (isInMixinBlock === false) {
           Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
             if (element.type === 'Variable') {
-              const completionItem = new CompletionItem(Utility.mergeNamespace(element.item.title, namespace));
+              const completionItem = new CompletionItem(
+                Utility.mergeNamespace(element.item.title, namespace)
+              );
               completionItem.insertText = Utility.mergeNamespace(element.item.insert, namespace);
               completionItem.detail = element.item.detail;
               completionItem.kind = element.item.kind;
@@ -125,8 +130,14 @@ class SassCompletion implements CompletionItemProvider {
         variables = [];
         Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
           if (element.type === 'Mixin') {
-            const completionItem = new CompletionItem(Utility.mergeNamespace(element.item.title, namespace));
-            completionItem.insertText = Utility.mergeNamespace(element.item.insert, namespace);
+            /** is sass only syntax */
+            const isSS = currentWord.endsWith('+');
+            const completionItem = new CompletionItem(
+              `${isSS ? '+' : '$'}${Utility.mergeNamespace(element.item.title, namespace)}`
+            );
+            completionItem.insertText = new SnippetString(
+              `${isSS ? '' : '@include '}${Utility.mergeNamespace(element.item.insert, namespace)}`
+            );
             completionItem.detail = element.item.detail;
             completionItem.kind = element.item.kind;
             variables.push(completionItem);

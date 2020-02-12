@@ -1,18 +1,22 @@
 import { State, StateItem } from '../../extension';
-import { CompletionItemKind, ExtensionContext, TextDocumentChangeEvent, TextDocument } from 'vscode';
+import {
+  CompletionItemKind,
+  ExtensionContext,
+  TextDocumentChangeEvent,
+  TextDocument
+} from 'vscode';
 import { normalize, basename } from 'path';
 import { escapeRegExp } from 'suf-regex';
 
-export class Scanner {
+export class Searcher {
   context: ExtensionContext;
   private _previousVars: { line: number; namespace: string }[] = [];
   constructor(context: ExtensionContext) {
     this.context = context;
   }
-  /**
-   * scans for variables and mixin.
-   */
-  scanLine(listener: TextDocumentChangeEvent) {
+
+  /** searches for variables and mixin. */
+  searchLine(listener: TextDocumentChangeEvent) {
     const document = listener.document;
     if (document.languageId === 'sass') {
       const previousVars = this._previousVars;
@@ -55,26 +59,24 @@ export class Scanner {
       }
     }
   }
-  /**
-   * scans for variables and mixin.
-   */
-  scanFile(document: TextDocument) {
+
+  /** searches for variables and mixin. */
+  searchDocument(document: TextDocument) {
     if (document.languageId === 'sass') {
       const text = document.getText();
       const pathBasename = basename(document.fileName);
 
       let variables: State = {};
 
-      variables = this.scanFileHandleGetVars(text, pathBasename, variables);
-      variables = this.scanFileHandleGetMixin(text, pathBasename, variables);
+      variables = this.searchDocumentHandleGetVars(text, pathBasename, variables);
+      variables = this.searchDocumentHandleGetMixin(text, pathBasename, variables);
 
       this.context.workspaceState.update(normalize(document.fileName), variables);
     }
   }
-  /**
-   * handles finding the variables in a file.
-   */
-  private scanFileHandleGetVars(text: string, pathBasename: string, variables: State) {
+
+  /** handles finding the variables in a file. */
+  private searchDocumentHandleGetVars(text: string, pathBasename: string, variables: State) {
     const varRegex = /^ *\${1}\S*:/gm;
     let varMatches: RegExpExecArray;
     while ((varMatches = varRegex.exec(text)) !== null) {
@@ -87,25 +89,25 @@ export class Scanner {
     }
     return variables;
   }
-  /**
-   * handles finding the mixins in a file.
-   */
-  private scanFileHandleGetMixin(text: string, pathBasename: string, variables: State) {
-    const mixinRegex = /^ *@mixin ?\S+ ?\(?.*\)?/gm;
+
+  /** handles finding the mixins in a file. */
+  private searchDocumentHandleGetMixin(text: string, pathBasename: string, variables: State) {
+    const mixinRegex = /^[ \t]*(@mixin ?|=)\S+ ?\(?.{2,}\)?/gm;
     let mixinMatches: RegExpExecArray;
     while ((mixinMatches = mixinRegex.exec(text)) !== null) {
       if (mixinMatches.index === mixinRegex.lastIndex) {
         mixinRegex.lastIndex++;
       }
       mixinMatches.forEach((match: string) => {
-        variables = this.createMixin(match, pathBasename, variables).state;
+        if (match !== '@mixin ') {
+          variables = this.createMixin(match, pathBasename, variables).state;
+        }
       });
     }
     return variables;
   }
-  /**
-   * creates a mixin state item.
-   */
+
+  /** creates a mixin state item. */
   private createMixin(
     match: string,
     pathBasename: string,
@@ -113,18 +115,18 @@ export class Scanner {
     line?: number
   ): { state: State; current: { line: number; namespace: string } } {
     let argNum = 0;
-    const rep = match.replace('@mixin', '').trim();
+    const rep = match.replace(/@mixin|=/, '').trim();
     const namespace = `${pathBasename}/${rep}`;
     const item: StateItem = {
-      title: `$${rep.split('(')[0]}`,
-      insert: `@include ${rep
-        .replace(/(\$\w*:? ?[\w-]*,?)/g, r => {
+      title: `${rep.split('(')[0]}`,
+      insert: `${rep
+        .replace(/(\$\w*:? ?[#\w-]*,?)/g, r => {
           argNum++;
           return `$\{${argNum}:${
             r
-              .replace('$', '\\$')
-              .replace(',', '')
-              .split(':')[0]
+              .replace(/\$/, '\\$')
+              .replace(/,/, '')
+              .split(/:/)[0]
           }: \},`;
         })
         .replace(/,\)$/, ')')}\n`,
@@ -134,9 +136,7 @@ export class Scanner {
     variables[namespace] = { item, type: 'Mixin' };
     return { state: variables, current: { line, namespace } };
   }
-  /**
-   * creates a variable snippet.
-   */
+  /** creates a variable snippet. */
   private createVar(
     match: string,
     pathBasename: string,

@@ -1,4 +1,9 @@
-import { TextDocument, DiagnosticCollection, Diagnostic, TextDocumentContentChangeEvent } from 'vscode';
+import {
+  TextDocument,
+  DiagnosticCollection,
+  Diagnostic,
+  TextDocumentContentChangeEvent
+} from 'vscode';
 import { DiagnosticRules } from './diagnostics.rules';
 import { isIgnore } from 'suf-regex';
 
@@ -26,10 +31,12 @@ export class DiagnosticsProvider {
       collection.clear();
     }
   }
-  /**
-   * @deprecated ??
-   */
-  updateLine(document: TextDocument, changes: TextDocumentContentChangeEvent[], collection: DiagnosticCollection) {
+  /** @deprecated ??, yes, but don't remove it yet maybe some day this will be refactored(i doubt it) */
+  updateLine(
+    document: TextDocument,
+    changes: TextDocumentContentChangeEvent[],
+    collection: DiagnosticCollection
+  ) {
     const oldDiagnostics = collection.get(document.uri);
     if (oldDiagnostics !== undefined) {
       const newDiagnostics: Diagnostic[] = [];

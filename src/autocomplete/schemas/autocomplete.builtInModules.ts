@@ -100,7 +100,8 @@ All optional arguments must be numbers. The $red, $green, and $blue arguments mu
     {
       name: 'complement()',
       body: 'complement($1)',
-      desc: 'complement($color) - Returns the complement of a color. Returns the RGB complement of $color.'
+      desc:
+        'complement($color) - Returns the complement of a color. Returns the RGB complement of $color.'
     },
     {
       name: 'darken()',
@@ -158,7 +159,8 @@ Because lighten() is usually not the best way to make a color lighter, it’s no
     {
       name: 'lightness()',
       body: 'lightness($1)',
-      desc: 'lightness($color) - Returns the HSL lightness of $color as a number between 0% and 100%.'
+      desc:
+        'lightness($color) - Returns the HSL lightness of $color as a number between 0% and 100%.'
     },
     {
       name: 'mix()',
@@ -175,7 +177,8 @@ Both the $weight and the relative opacity of each color determines how much of e
     {
       name: 'saturation()',
       body: 'saturation($1)',
-      desc: 'saturation($color) - Returns the HSL saturation of $color as a number between 0% and 100%.'
+      desc:
+        'saturation($color) - Returns the HSL saturation of $color as a number between 0% and 100%.'
     },
     {
       name: 'scale()',
@@ -202,7 +205,8 @@ It’s an error to specify an RGB property ($red, $green, and/or $blue) at the s
     {
       name: 'insert()',
       body: 'insert($1, $2, $3)',
-      desc: 'insert($string, $insert, $index) - Returns a copy of $string with $insert inserted at $index.'
+      desc:
+        'insert($string, $insert, $index) - Returns a copy of $string with $insert inserted at $index.'
     },
     {
       name: 'length()',
@@ -218,12 +222,14 @@ It’s an error to specify an RGB property ($red, $green, and/or $blue) at the s
     {
       name: 'to-upper-case()',
       body: 'to-upper-case($1)',
-      desc: 'to-upper-case($string) - Returns a copy of $string with the ASCII letters converted to upper case.'
+      desc:
+        'to-upper-case($string) - Returns a copy of $string with the ASCII letters converted to upper case.'
     },
     {
       name: 'to-lower-case()',
       body: 'to-lower-case($1)',
-      desc: 'to-lower-case($string) - Returns a copy of $string with the ASCII letters converted to lower case.'
+      desc:
+        'to-lower-case($string) - Returns a copy of $string with the ASCII letters converted to lower case.'
     },
     {
       name: 'unique-id()',
@@ -272,7 +278,8 @@ Use list.append() instead to add a single value to a list. Only use list.join() 
     {
       name: 'length()',
       body: 'length($1)',
-      desc: 'length($list) -Returns the length of $list. This can also return the number of pairs in a map.'
+      desc:
+        'length($list) -Returns the length of $list. This can also return the number of pairs in a map.'
     },
     {
       name: 'separator()',
@@ -417,6 +424,7 @@ The $selector must be a single string that contains a compound selector. This me
 The returned list is comma-separated, and the simple selectors are unquoted strings.`
     }
   ],
+  // TODO
   META: []
 };
 export function getSassModule(
