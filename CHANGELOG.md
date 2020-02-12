@@ -2,6 +2,7 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.7.5   | 11,2.2020  | Fix @include and multiline comment                                             |
 | 1.7.4   | 2,2.2020   | Updated sass-formatter                                                         |
 | 1.7.3   | 2.1.2020   | Fix Readme                                                                     |
 | 1.7.2   | 2.1.2020   | Updated sass-formatter                                                         |
