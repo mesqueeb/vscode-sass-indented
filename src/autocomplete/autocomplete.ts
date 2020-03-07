@@ -33,10 +33,10 @@ import { basename } from 'path';
 
 class SassCompletion implements CompletionItemProvider {
   context: ExtensionContext;
-  scan: Searcher;
+  search: Searcher;
   constructor(context: ExtensionContext) {
     this.context = context;
-    this.scan = new Searcher(context);
+    this.search = new Searcher(context);
   }
   provideCompletionItems(
     document: TextDocument,
@@ -105,7 +105,7 @@ class SassCompletion implements CompletionItemProvider {
       // also get current file from the workspace State.
       imports.push({ path: basename(document.fileName), namespace: undefined });
       isInMixinBlock = Utility.isInMixinBlock(start, document);
-      this.scan.searchDocument(document);
+      this.search.searchDocument(document);
 
       if (isValue) {
         values = Utility.getPropertyValues(cssSchema, currentWord);
