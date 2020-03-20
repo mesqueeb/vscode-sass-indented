@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.7.5",
+  "version": "1.8.0",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -110,7 +110,6 @@
     "vscode:prepublish": "npm run build",
     "build": "tsc -b && suf && webpack --mode production",
     "watch": "webpack --mode development",
-    "getData": "gcp --outPath './src/autocomplete/schemas/generatedData' --prefix 'autocomplete.data' --ignore 'allProps,standardProps,noDataProps'",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
     "test": "ts-node src/test/test.ts",
@@ -130,8 +129,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "deepmerge": "^4.2.2",
-    "get-css-props": "^1.0.1",
     "s.color": "0.0.10",
     "sass-formatter": "^0.4.4",
     "suf-cli": "^0.1.0",
