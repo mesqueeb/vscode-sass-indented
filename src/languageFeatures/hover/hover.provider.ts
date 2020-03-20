@@ -1,19 +1,30 @@
-import { TextDocument, Position, CancellationToken, HoverProvider, ProviderResult, Hover, TextLine } from 'vscode';
-
-import * as cssSchema from '../../autocomplete/schemas/autocomplete.cssSchema';
+import {
+  TextDocument,
+  Position,
+  CancellationToken,
+  HoverProvider,
+  ProviderResult,
+  Hover,
+  TextLine
+} from 'vscode';
 
 import { AutocompleteUtilities } from '../../autocomplete/autocomplete.utility';
 import { isProperty } from 'suf-regex';
 import { GetPropertyDescription } from '../../utilityFunctions';
+import { generatedPropertyData } from '../../autocomplete/schemas/autocomplete.generatedData';
 
 export class SassHoverProvider implements HoverProvider {
   constructor() {}
-  provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+  provideHover(
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken
+  ): ProviderResult<Hover> {
     const line = document.lineAt(position.line);
     const currentWord = SassHoverProvider._GET_CURRENT_WORD(line, position);
     const name = currentWord.replace(/:/g, '');
     if (isProperty(line.text)) {
-      const propData = AutocompleteUtilities.findPropertySchema(cssSchema, name);
+      const propData = AutocompleteUtilities.findPropertySchema(name);
       if (propData) {
         return {
           contents: [

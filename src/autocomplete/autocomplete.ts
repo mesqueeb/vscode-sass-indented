@@ -19,7 +19,6 @@ import {
   SnippetString
 } from 'vscode';
 
-import * as cssSchema from './schemas/autocomplete.cssSchema';
 import sassSchema from './schemas/autocomplete.schema';
 
 import { sassAt } from './schemas/autocomplete.at';
@@ -48,7 +47,7 @@ class SassCompletion implements CompletionItemProvider {
     const currentWord = document.getText(range).trim();
     const currentWordUT = document.getText(range);
     const text = document.getText();
-    const isValue = Utility.isValue(cssSchema, currentWord);
+    const isValue = Utility.isValue(currentWord);
     const config = workspace.getConfiguration();
     const disableUnitCompletion: boolean = config.get('sass.disableUnitCompletion');
     let block = false;
@@ -108,7 +107,7 @@ class SassCompletion implements CompletionItemProvider {
       this.search.searchDocument(document);
 
       if (isValue) {
-        values = Utility.getPropertyValues(cssSchema, currentWord);
+        values = Utility.getPropertyValues(currentWord);
         if (isInMixinBlock === false) {
           Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
             if (element.type === 'Variable') {
@@ -146,7 +145,7 @@ class SassCompletion implements CompletionItemProvider {
 
         classesAndIds = Utility.getHtmlClassOrIdCompletions(document);
         atRules = sassAt;
-        properties = Utility.getProperties(cssSchema, currentWord);
+        properties = Utility.getProperties(currentWord);
       }
 
       completions = [].concat(

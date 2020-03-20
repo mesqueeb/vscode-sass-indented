@@ -4,8 +4,7 @@ import {
   SnippetString,
   TextDocument,
   Position,
-  ExtensionContext,
-  workspace
+  ExtensionContext
 } from 'vscode';
 
 import sassSchemaUnits from './schemas/autocomplete.units';
@@ -15,7 +14,8 @@ import { BasicRawCompletion } from './autocomplete.interfaces';
 import { isClassOrId, isAtRule } from 'suf-regex';
 import { StateElement, State } from '../extension';
 import { getSassModule } from './schemas/autocomplete.builtInModules';
-import { generatedData, dataProps } from './schemas/autocomplete.generatedData';
+import { generatedPropertyData } from './schemas/autocomplete.generatedData';
+import { GetPropertyDescription } from '../utilityFunctions';
 
 interface ImportsItem {
   path: string;
@@ -23,27 +23,13 @@ interface ImportsItem {
 }
 
 export class AutocompleteUtilities {
-  /**
-   * Naive check whether currentWord is value for given property
-   * @param {Object} cssSchema
-   * @param {String} currentWord
-   * @return {Boolean}
-   */
-
-  static isValue(cssSchema, currentWord: string): boolean {
+  /** Naive check whether currentWord is value for given property */
+  static isValue(currentWord: string): boolean {
     const property = AutocompleteUtilities.getPropertyName(currentWord);
-    if (workspace.getConfiguration('sass').get('autocomplete.useExperimentalData') === true) {
-      return property && !!dataProps[property];
-    }
-    return property && Boolean(AutocompleteUtilities.findPropertySchema(cssSchema, property));
+    return property && !!generatedPropertyData[property];
   }
 
-  /**
-   * Formats property name
-   * @param {String} currentWord
-   * @return {String}
-   */
-
+  /** Formats property name */
   static getPropertyName(currentWord: string): string {
     return currentWord
       .trim()
@@ -51,72 +37,49 @@ export class AutocompleteUtilities {
       .split(' ')[0];
   }
 
-  /**
-   * Search for property in cssSchema
-   * @param {Object} cssSchema
-   * @param {String} property
-   * @return {Object}
-   */
-  static findPropertySchema(cssSchema, property: string): BasicRawCompletion | any {
-    if (workspace.getConfiguration('sass').get('autocomplete.useExperimentalData') === true) {
-      return dataProps[property];
-    }
-    return cssSchema.data.css.properties.find(item => item.name === property);
+  /** Search for property in cssSchema */
+  static findPropertySchema(property: string): BasicRawCompletion {
+    return generatedPropertyData[property];
   }
 
-  /**
-   * Returns property list for completion
-   * @param {Object} cssSchema
-   * @param {String} currentWord
-   * @return {CompletionItem}
-   */
-  static getProperties(cssSchema, currentWord: string): CompletionItem[] {
+  /** Returns property list for completion */
+  static getProperties(currentWord: string): CompletionItem[] {
     if (isClassOrId(currentWord) || isAtRule(currentWord)) {
       return [];
     }
-    if (workspace.getConfiguration('sass').get('autocomplete.useExperimentalData') === true) {
-      return generatedData;
-    }
-    return cssSchema.data.css.properties.map(property => {
-      const completionItem = new CompletionItem(property.name);
-
-      completionItem.insertText = property.name.concat(': ');
-      completionItem.detail = property.desc;
-      completionItem.kind = CompletionItemKind.Property;
-
-      return completionItem;
-    });
+    return Object.values(generatedPropertyData).map(
+      AutocompleteUtilities.mapPropertyCompletionItem
+    );
   }
 
-  /**
-   * Returns values for current property for completion list
-   * @param {Object} cssSchema
-   * @param {String} currentWord
-   * @return {CompletionItem}
-   */
-  static getPropertyValues(cssSchema, currentWord: string): CompletionItem[] {
+  private static mapPropertyCompletionItem(prop: BasicRawCompletion): any {
+    const item = new CompletionItem(prop.name);
+    item.insertText = prop.name.concat(': ');
+    item.detail = prop.desc;
+    item.tags = prop.status === 'obsolete' ? [1] : [];
+    item.documentation = GetPropertyDescription(prop.name, prop);
+    item.kind = CompletionItemKind.Property;
+    return item;
+  }
+
+  /** Returns values for current property for completion list */
+  static getPropertyValues(currentWord: string): CompletionItem[] {
     const property = AutocompleteUtilities.getPropertyName(currentWord);
-    const values = AutocompleteUtilities.findPropertySchema(cssSchema, property).values;
+    const values = AutocompleteUtilities.findPropertySchema(property).values;
 
     if (!values) {
       return [];
     }
 
     return values.map(property => {
-      const completionItem = new CompletionItem(property.name);
-
-      completionItem.detail = property.desc;
-      completionItem.kind = CompletionItemKind.Value;
-
-      return completionItem;
+      const item = new CompletionItem(property.name);
+      item.detail = property.desc;
+      item.kind = CompletionItemKind.Value;
+      return item;
     });
   }
 
-  /**
-   * Get the imports.
-   * @param text text of the current File.
-   */
-
+  /** Get the imports. */
   static getImports(text: string) {
     const regex = /\/?\/? {0,}(@import|@use){1}.*/g; //
     let m: RegExpExecArray;
@@ -171,10 +134,7 @@ export class AutocompleteUtilities {
     return { imports, varScopeModules, globalScopeModules };
   }
 
-  /**
-   * gets unit completions.
-   * @param currentword
-   */
+  /** gets unit completions.*/
   static getUnits(currentword: string) {
     const units = [];
 
@@ -273,9 +233,7 @@ export class AutocompleteUtilities {
     }
     return res;
   }
-  /**
-   * sets the block variable, don't get confused by the return values.
-   */
+  /** sets the block variable, don't get confused by the return values. */
   static isInVueStyleBlock(start: Position, document: TextDocument) {
     for (let i = start.line; i > 0; i--) {
       const line = document.lineAt(i);

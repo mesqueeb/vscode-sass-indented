@@ -37,11 +37,6 @@
           "default": true,
           "description": "adds units to the intellisense completions if false."
         },
-        "sass.autocomplete.useExperimentalData": {
-          "type": "boolean",
-          "default": true,
-          "description": "uses auto generated data."
-        },
         "sass.format.enabled": {
           "type": "boolean",
           "default": true,
@@ -112,7 +107,7 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run getData && npm run build",
+    "vscode:prepublish": "npm run build",
     "build": "tsc -b && suf && webpack --mode production",
     "watch": "webpack --mode development",
     "getData": "gcp --outPath './src/autocomplete/schemas/generatedData' --prefix 'autocomplete.data' --ignore 'allProps,standardProps,noDataProps'",
@@ -130,16 +125,17 @@
     "tslint": "^5.20.1",
     "typescript": "^3.7.2",
     "vscode": "^1.1.26",
-    "webpack": "^4.41.2",
+    "webpack": "^4.42.0",
     "webpack-cli": "^3.3.10"
   },
   "license": "MIT",
   "dependencies": {
+    "deepmerge": "^4.2.2",
     "get-css-props": "^1.0.1",
     "s.color": "0.0.10",
-    "sass-formatter": "^0.4.3",
+    "sass-formatter": "^0.4.4",
     "suf-cli": "^0.1.0",
-    "suf-regex": "^0.0.7",
+    "suf-regex": "^0.0.15",
     "test-grammar": "^1.0.0"
   }
 }
