@@ -1,11 +1,13 @@
 'use strict';
 import * as vscode from 'vscode';
-import FormattingProvider from './format/format.provider';
+import FormattingProvider from './languageFeatures/format/format.provider';
 import { Searcher } from './autocomplete/search/autocomplete.search';
 import SassCompletion from './autocomplete/autocomplete';
 import { SassHoverProvider } from './languageFeatures/hover/hover.provider';
 import { SassColorProvider } from './languageFeatures/color/color.provider';
 import { DiagnosticsProvider } from './diagnostics/diagnostics.provider';
+import { SassCodeActionProvider } from './languageFeatures/codeActions/codeActoins.provider';
+import { CommandManager } from './utils/commandManager';
 
 export interface State {
   [name: string]: StateElement;
@@ -25,13 +27,15 @@ export type StateItem = {
 export function activate(context: vscode.ExtensionContext) {
   const config = vscode.workspace.getConfiguration();
   setSassLanguageConfiguration(config);
-  const SassFormatter = new FormattingProvider(context);
+
+  const commandManager = new CommandManager();
+
   const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
     [
       { language: 'sass', scheme: 'file' },
       { language: 'sass', scheme: 'untitled' }
     ],
-    SassFormatter
+    new FormattingProvider(context)
   );
 
   // Events
@@ -48,27 +52,29 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  const hover = new SassHoverProvider();
   const hoverDisposable = vscode.languages.registerHoverProvider(
     [
       { language: 'sass', scheme: 'file' },
       { language: 'sass', scheme: 'untitled' }
     ],
-    {
-      provideHover: hover.provideHover
-    }
+    new SassHoverProvider()
   );
 
-  const color = new SassColorProvider();
   const colorDisposable = vscode.languages.registerColorProvider(
     [
       { language: 'sass', scheme: 'file' },
       { language: 'sass', scheme: 'untitled' }
     ],
-    {
-      provideColorPresentations: color.provideColorPresentations,
-      provideDocumentColors: color.provideDocumentColors
-    }
+    new SassColorProvider()
+  );
+
+  const actionsProviderDisposable = vscode.languages.registerCodeActionsProvider(
+    [
+      { language: 'sass', scheme: 'file' },
+      { language: 'sass', scheme: 'untitled' }
+    ],
+    new SassCodeActionProvider(commandManager),
+    { providedCodeActionKinds: SassCodeActionProvider.providedCodeActionKinds }
   );
 
   const sassCompletion = new SassCompletion(context);
@@ -132,10 +138,13 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  context.subscriptions.push(commandManager);
+
   context.subscriptions.push(changeDisposable);
 
   context.subscriptions.push(hoverDisposable);
   context.subscriptions.push(colorDisposable);
+  context.subscriptions.push(actionsProviderDisposable);
   context.subscriptions.push(sassCompletionDisposable);
   context.subscriptions.push(SassFormatterRegister);
   context.subscriptions.push(activeDisposable);
