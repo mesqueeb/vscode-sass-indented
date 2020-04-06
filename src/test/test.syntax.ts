@@ -1,9 +1,7 @@
 import { TestGrammar } from 'test-grammar';
 export function RunSyntaxTests() {
-  // process.argv.indexOf('DEV_MODE') !== -1
-
   // tslint:disable-next-line: no-unused-expression
-  new TestGrammar(`syntaxes/sass.tmLanguage.json`, null, run => {
+  new TestGrammar(`syntaxes/sass.tmLanguage.json`, null, (run) => {
     const propName = 'support.type.property-name.css.sass.prop.name';
     const prop = 'meta.property-list.css.sass.prop';
     const propVal = 'meta.property-value.css.sass support.constant.property-value.css.sass';
@@ -43,6 +41,7 @@ export function RunSyntaxTests() {
     const _module = 'constant.character.module';
     const moduleName = 'constant.character.module.name';
     const moduleDot = 'constant.numeric.module.dot';
+    const cssVariable = 'variable.css';
     console.log(''); // add new line for visual purposes.
     run(
       'Property ',
@@ -57,7 +56,7 @@ ${propName}|${prop}|${prop}|${prop} ${propVal}
 ${propName}|${prop}|${prop}|${prop} ${_var}
 ${propName}|${prop}|${prop}|${prop} ${propVal}|${prop}|${prop} ${constNum}|${prop} ${unit}|${prop}|${prop} ${color}
 ${propName}|${prop}|${prop}|${prop} ${constNum}|${prop} ${unit}
-${propName}|${prop}|${prop}|${prop} ${_module} ${moduleName}|${prop} ${_module} ${moduleDot}|${prop} ${func}|${prop} ${constNum}|${prop} ${unit}|${prop} ${func}`
+${propName}|${prop}|${prop}|${prop} ${_module} ${moduleName}|${prop} ${_module} ${moduleDot}|${prop} ${func}|${prop} ${constNum}|${prop} ${unit}|${prop} ${funcClose}`
     );
     run(
       'Class    ',
@@ -137,6 +136,12 @@ corners.$radius`,
       `${varSSM} ${varSSMn}|${varSSM}|${varSSM} ${funcBase}|${varSSM}|${varSSM} ${_var}|${varSSM} ${comma}|${varSSM}|${varSSM} ${constNum}|${varSSM}|${varSSM} ${invalid}
 ${varSSM} ${varSSMn}|${varSSM}|${varSSM} ${color}|${varSSM}|${varSSM} ${flag}
 ${_module} ${moduleName}|${_module} ${moduleDot}|${varRoot}`
+    );
+
+    run(
+      'Css Variables',
+      `margin: var(--test) calc(1 + 1)`,
+      `${propName}|${prop}|${prop}|${prop} ${func}|${prop} ${cssVariable}|${prop} ${funcClose}|${prop}|${prop} ${func}|${prop} ${constNum}|${prop}|${prop} ${operator}|${prop}|${prop} ${constNum}|${prop} ${funcClose}`
     );
   });
 }

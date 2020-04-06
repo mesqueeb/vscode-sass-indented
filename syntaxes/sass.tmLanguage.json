@@ -294,16 +294,7 @@
       "name": "entity.other.attribute-name.pseudo-class.css.sass"
     },
     {
-      "match": "([\\w-]*?)(\\.)",
-      "name": "constant.character.module",
-      "captures": {
-        "1": {
-          "name": "constant.character.module.name"
-        },
-        "2": {
-          "name": "constant.numeric.module.dot"
-        }
-      }
+      "include": "#module"
     },
     {
       "match": "[\\w-]*\\(",
@@ -351,16 +342,11 @@
           "include": "#unit"
         },
         {
-          "match": "([\\w-]+)(\\.)",
-          "name": "constant.character.module",
-          "captures": {
-            "1": {
-              "name": "constant.character.module.name"
-            },
-            "2": {
-              "name": "constant.numeric.module.dot"
-            }
-          }
+          "include": "#module"
+        },
+        {
+          "match": "--.+?(?=\\))",
+          "name": "variable.css"
         },
         {
           "match": "[\\w-]*\\(",
@@ -368,7 +354,7 @@
         },
         {
           "match": "\\)",
-          "name": "entity.name.function"
+          "name": "entity.name.function.close"
         },
         {
           "include": "#flag"
@@ -434,6 +420,18 @@
     }
   ],
   "repository": {
+    "module": {
+      "match": "([\\w-]+?)(\\.)",
+      "name": "constant.character.module",
+      "captures": {
+        "1": {
+          "name": "constant.character.module.name"
+        },
+        "2": {
+          "name": "constant.numeric.module.dot"
+        }
+      }
+    },
     "comma": {
       "match": "\\band\\b|\\bor\\b|,",
       "name": "comment.punctuation.comma.sass"
