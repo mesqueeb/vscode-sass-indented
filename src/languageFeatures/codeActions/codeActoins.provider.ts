@@ -10,9 +10,8 @@ import {
   CodeActionKind,
   WorkspaceEdit,
   Position,
-  commands,
   window,
-  TextEditor
+  TextEditor,
 } from 'vscode';
 import { Command, CommandManager } from '../../utils/commandManager';
 
@@ -60,7 +59,7 @@ ${document.getText(range).replace(/^/gm, tab)}
       action.command = {
         title: 'test',
         command: 'sass.refactor.extractToMixin',
-        arguments: [document.lineCount - (range.end.line - range.start.line), editor]
+        arguments: [document.lineCount - (range.end.line - range.start.line), editor],
       };
     }
     return action;

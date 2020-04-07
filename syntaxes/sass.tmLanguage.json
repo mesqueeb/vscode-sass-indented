@@ -5,10 +5,6 @@
   "name": "Sass",
   "patterns": [
     {
-      "match": "(css property)",
-      "name": "keyword.other.sass.hover.info"
-    },
-    {
       "begin": "^(/\\*)",
       "end": "\\*/|(?=^[a-zA-Z0-9#.%$@\\[=*+])",
 

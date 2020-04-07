@@ -4,7 +4,7 @@ import {
   SnippetString,
   TextDocument,
   Position,
-  ExtensionContext
+  ExtensionContext,
 } from 'vscode';
 
 import sassSchemaUnits from './schemas/autocomplete.units';
@@ -17,24 +17,21 @@ import { getSassModule } from './schemas/autocomplete.builtInModules';
 import { generatedPropertyData } from './schemas/autocomplete.generatedData';
 import { GetPropertyDescription } from '../utilityFunctions';
 
-interface ImportsItem {
+export interface ImportsItem {
   path: string;
   namespace: string | undefined;
 }
 
-export class AutocompleteUtilities {
+export class AutocompleteUtils {
   /** Naive check whether currentWord is value for given property */
   static isValue(currentWord: string): boolean {
-    const property = AutocompleteUtilities.getPropertyName(currentWord);
+    const property = AutocompleteUtils.getPropertyName(currentWord);
     return property && !!generatedPropertyData[property];
   }
 
   /** Formats property name */
   static getPropertyName(currentWord: string): string {
-    return currentWord
-      .trim()
-      .replace(':', ' ')
-      .split(' ')[0];
+    return currentWord.trim().replace(':', ' ').split(' ')[0];
   }
 
   /** Search for property in cssSchema */
@@ -47,9 +44,7 @@ export class AutocompleteUtilities {
     if (isClassOrId(currentWord) || isAtRule(currentWord)) {
       return [];
     }
-    return Object.values(generatedPropertyData).map(
-      AutocompleteUtilities.mapPropertyCompletionItem
-    );
+    return Object.values(generatedPropertyData).map(AutocompleteUtils.mapPropertyCompletionItem);
   }
 
   private static mapPropertyCompletionItem(prop: BasicRawCompletion): any {
@@ -64,14 +59,14 @@ export class AutocompleteUtilities {
 
   /** Returns values for current property for completion list */
   static getPropertyValues(currentWord: string): CompletionItem[] {
-    const property = AutocompleteUtilities.getPropertyName(currentWord);
-    const values = AutocompleteUtilities.findPropertySchema(property).values;
+    const property = AutocompleteUtils.getPropertyName(currentWord);
+    const values = AutocompleteUtils.findPropertySchema(property).values;
 
     if (!values) {
       return [];
     }
 
-    return values.map(property => {
+    return values.map((property) => {
       const item = new CompletionItem(property.name);
       item.detail = property.desc;
       item.kind = CompletionItemKind.Value;
@@ -84,7 +79,7 @@ export class AutocompleteUtilities {
     const regex = /\/?\/? {0,}(@import|@use){1}.*/g; //
     let m: RegExpExecArray;
     const imports: ImportsItem[] = [];
-    const varScopeModules: any[] = [];
+    const propertyScopedModules: any[] = [];
     const globalScopeModules: any[] = [];
     while ((m = regex.exec(text)) !== null) {
       if (m.index === regex.lastIndex) {
@@ -99,26 +94,26 @@ export class AutocompleteUtilities {
           if (/sass:(math|color|string|list|map|selector|meta)/.test(path)) {
             switch (path) {
               case 'sass:math':
-                varScopeModules.push(...getSassModule('MATH', namespace));
+                propertyScopedModules.push(...getSassModule('MATH', namespace));
                 break;
               case 'sass:color':
-                varScopeModules.push(...getSassModule('COLOR', namespace));
+                propertyScopedModules.push(...getSassModule('COLOR', namespace));
                 break;
               case 'sass:string':
-                varScopeModules.push(...getSassModule('STRING', namespace));
+                propertyScopedModules.push(...getSassModule('STRING', namespace));
                 break;
               case 'sass:list':
-                varScopeModules.push(...getSassModule('LIST', namespace));
+                propertyScopedModules.push(...getSassModule('LIST', namespace));
                 break;
               case 'sass:map':
-                varScopeModules.push(...getSassModule('MAP', namespace));
+                propertyScopedModules.push(...getSassModule('MAP', namespace));
                 break;
               case 'sass:selector':
                 globalScopeModules.push(...getSassModule('SELECTOR', namespace));
                 break;
               case 'sass:meta':
                 // TODO
-                varScopeModules.push(...getSassModule('META', namespace));
+                propertyScopedModules.push(...getSassModule('META', namespace));
                 break;
             }
           } else {
@@ -131,14 +126,14 @@ export class AutocompleteUtilities {
         }
       });
     }
-    return { imports, varScopeModules, globalScopeModules };
+    return { imports, propertyScopedModules, globalScopeModules };
   }
 
   /** gets unit completions.*/
   static getUnits(currentword: string) {
     const units = [];
 
-    sassSchemaUnits.forEach(item => {
+    sassSchemaUnits.forEach((item) => {
       const lastWord = currentword.split(' ');
       const rep = lastWord[lastWord.length - 1];
       const completionItem = new CompletionItem(rep + item.name);
@@ -205,9 +200,11 @@ export class AutocompleteUtilities {
             if (groupIndex !== 0 && match !== undefined) {
               if (groupIndex === 1) {
                 const classes = match.split(' ');
-                classes.forEach(className => {
-                  if (classesAndIds.find(value => value === '.'.concat(className)) === undefined) {
-                    if (addedClasses.find(item => className === item) === undefined) {
+                classes.forEach((className) => {
+                  if (
+                    classesAndIds.find((value) => value === '.'.concat(className)) === undefined
+                  ) {
+                    if (addedClasses.find((item) => className === item) === undefined) {
                       addedClasses.push(className);
                       const item = new CompletionItem('.'.concat(className));
                       item.kind = CompletionItemKind.Class;
@@ -218,7 +215,7 @@ export class AutocompleteUtilities {
                   }
                 });
               } else {
-                if (classesAndIds.find(value => value === '#'.concat(match)) === undefined) {
+                if (classesAndIds.find((value) => value === '#'.concat(match)) === undefined) {
                   const item = new CompletionItem('#'.concat(match));
                   item.kind = CompletionItemKind.Class;
                   item.detail = `Id From: ${fileName}`;
@@ -259,7 +256,7 @@ export class AutocompleteUtilities {
         if (firstSplit[1] !== undefined) {
           const resVar: CompletionItem[] = [];
           const mixinName = firstSplit[0].replace('@mixin', '').trim();
-          firstSplit[1].split('$').forEach(variable => {
+          firstSplit[1].split('$').forEach((variable) => {
             if (variable) {
               const rep = '$'.concat(variable.split(/[,: \)]/)[0]);
               const completionItem = new CompletionItem(rep);
@@ -297,23 +294,33 @@ export class AutocompleteUtilities {
     imports: ImportsItem[],
     document: TextDocument,
     context: ExtensionContext,
-    callback: (element: StateElement, namespace: string | undefined) => void
+    /**returning true breaks the loop. */
+    callback: (element: StateElement, namespace: string | undefined) => void | true
   ) {
-    imports.forEach(item => {
+    let breakLoop = false;
+    for (let i = 0; i < imports.length; i++) {
+      const item = imports[i];
       let importPath = item.path;
 
-      const state: State = context.workspaceState.get(
+      const STATE: State = context.workspaceState.get(
         normalize(join(document.fileName, '../', importPath))
       );
 
-      if (state) {
-        for (const key in state) {
-          if (state.hasOwnProperty(key)) {
-            callback(state[key], item.namespace);
+      if (STATE) {
+        for (const key in STATE) {
+          if (STATE.hasOwnProperty(key)) {
+            breakLoop = !!callback(STATE[key], item.namespace);
+          }
+          if (breakLoop) {
+            break;
           }
         }
       }
-    });
+
+      if (breakLoop) {
+        break;
+      }
+    }
   }
   static mergeNamespace(text: string, namespace: string | undefined) {
     return `${namespace ? namespace.concat('.') : ''}${text}`;

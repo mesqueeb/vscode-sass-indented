@@ -96,6 +96,13 @@
           ".sass.erb"
         ],
         "configuration": "./sass.configuration.json"
+      },
+      {
+        "id": "sass.hover",
+        "extensions": [
+          ".sass.hover"
+        ],
+        "configuration": "./sass.configuration.json"
       }
     ],
     "grammars": [
@@ -103,6 +110,11 @@
         "language": "sass",
         "scopeName": "source.sass",
         "path": "./syntaxes/sass.tmLanguage.json"
+      },
+      {
+        "language": "sass.hover",
+        "scopeName": "source.sass.hover",
+        "path": "./syntaxes/sass.hover.highlighting.json"
       }
     ]
   },

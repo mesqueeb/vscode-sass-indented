@@ -14,7 +14,7 @@ export interface State {
 }
 export interface StateElement {
   item: StateItem;
-  type: 'Mixin' | 'Variable';
+  type: 'Mixin' | 'Variable' | 'Css Variable';
 }
 
 export type StateItem = {
@@ -33,7 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
   const SassFormatterRegister = vscode.languages.registerDocumentFormattingEditProvider(
     [
       { language: 'sass', scheme: 'file' },
-      { language: 'sass', scheme: 'untitled' }
+      { language: 'sass', scheme: 'untitled' },
     ],
     new FormattingProvider(context)
   );
@@ -42,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
   const searcher = new Searcher(context);
 
   let previousDocument: vscode.TextDocument = vscode.window.activeTextEditor.document;
-  const activeDisposable = vscode.window.onDidChangeActiveTextEditor(editor => {
+  const activeDisposable = vscode.window.onDidChangeActiveTextEditor((editor) => {
     if (previousDocument !== undefined) {
       searcher.searchDocument(previousDocument);
     }
@@ -55,15 +55,15 @@ export function activate(context: vscode.ExtensionContext) {
   const hoverDisposable = vscode.languages.registerHoverProvider(
     [
       { language: 'sass', scheme: 'file' },
-      { language: 'sass', scheme: 'untitled' }
+      { language: 'sass', scheme: 'untitled' },
     ],
-    new SassHoverProvider()
+    new SassHoverProvider(context)
   );
 
   const colorDisposable = vscode.languages.registerColorProvider(
     [
       { language: 'sass', scheme: 'file' },
-      { language: 'sass', scheme: 'untitled' }
+      { language: 'sass', scheme: 'untitled' },
     ],
     new SassColorProvider()
   );
@@ -71,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
   const actionsProviderDisposable = vscode.languages.registerCodeActionsProvider(
     [
       { language: 'sass', scheme: 'file' },
-      { language: 'sass', scheme: 'untitled' }
+      { language: 'sass', scheme: 'untitled' },
     ],
     new SassCodeActionProvider(commandManager),
     { providedCodeActionKinds: SassCodeActionProvider.providedCodeActionKinds }
@@ -83,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
       { language: 'sass', scheme: 'file' },
       { language: 'sass', scheme: 'untitled' },
       { language: 'vue', scheme: 'file' },
-      { language: 'vue', scheme: 'untitled' }
+      { language: 'vue', scheme: 'untitled' },
     ],
     sassCompletion,
     '\\.',
@@ -114,14 +114,14 @@ export function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  const changeDisposable = vscode.workspace.onDidChangeTextDocument(l => {
+  const changeDisposable = vscode.workspace.onDidChangeTextDocument((l) => {
     if (config.get('sass.lint.enable')) {
       diagnostics.update(l.document, diagnosticsCollection);
     }
   });
 
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(editor => {
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (editor) {
         if (config.get('sass.lint.enable')) {
           diagnostics.update(editor.document, diagnosticsCollection);
@@ -168,10 +168,10 @@ function setSassLanguageConfiguration(
       {
         beforeText: /^((?!^(\/n|\s+|.*: .*|.*@.*|.*,|\s+\+.*)$).*|.*@media(?!^\s+$).*)$/,
         action: {
-          indentAction: disableAutoIndent ? vscode.IndentAction.None : vscode.IndentAction.Indent
-        }
-      }
-    ]
+          indentAction: disableAutoIndent ? vscode.IndentAction.None : vscode.IndentAction.Indent,
+        },
+      },
+    ],
   });
 }
 

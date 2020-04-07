@@ -1,97 +1,62 @@
-import { State, StateItem } from '../../extension';
-import {
-  CompletionItemKind,
-  ExtensionContext,
-  TextDocumentChangeEvent,
-  TextDocument
-} from 'vscode';
-import { normalize, basename } from 'path';
-import { escapeRegExp } from 'suf-regex';
+import { State, StateItem, StateElement } from '../../extension';
+import { CompletionItemKind, ExtensionContext, TextDocument, workspace } from 'vscode';
+import { normalize, relative } from 'path';
 
 export class Searcher {
   context: ExtensionContext;
-  private _previousVars: { line: number; namespace: string }[] = [];
   constructor(context: ExtensionContext) {
     this.context = context;
-  }
-
-  /** searches for variables and mixin. */
-  searchLine(listener: TextDocumentChangeEvent) {
-    const document = listener.document;
-    if (document.languageId === 'sass') {
-      const previousVars = this._previousVars;
-      this._previousVars = [];
-      const pathBasename = basename(document.fileName);
-      const varRegex = /\${1}\S*:/;
-      const mixinRegex = /@mixin ?\S+ ?\(?.*\)?/;
-      let variables: State = {};
-      for (const change of listener.contentChanges) {
-        const start = change.range.start;
-        const end = change.range.end;
-        for (let i = start.line; i <= end.line && i < document.lineCount; i++) {
-          const line = document.lineAt(i);
-          const isVar = varRegex.test(line.text);
-          let currentItem: { state: State; current: { line: number; namespace: string } };
-          if (isVar) {
-            variables = this.context.workspaceState.get(normalize(document.fileName));
-            currentItem = this.createVar(line.text, pathBasename, variables);
-          }
-          const isMixin = mixinRegex.test(line.text);
-          if (isMixin) {
-            variables = this.context.workspaceState.get(normalize(document.fileName));
-            currentItem = this.createMixin(line.text, pathBasename, variables);
-          }
-
-          if (isVar || isMixin) {
-            variables = currentItem.state;
-            this._previousVars.push(currentItem.current);
-            previousVars.forEach((v, i) => {
-              if (
-                currentItem.current.line === v.line ||
-                currentItem.current.namespace.match(escapeRegExp(v.namespace))
-              ) {
-                delete variables[v.namespace];
-              }
-            });
-            this.context.workspaceState.update(normalize(document.fileName), variables);
-          }
-        }
-      }
-    }
   }
 
   /** searches for variables and mixin. */
   searchDocument(document: TextDocument) {
     if (document.languageId === 'sass') {
       const text = document.getText();
-      const pathBasename = basename(document.fileName);
 
-      let variables: State = {};
+      let workspacePath = '';
+      for (let i = 0; i < workspace.workspaceFolders.length; i++) {
+        const path = workspace.workspaceFolders[i].uri.fsPath;
+        if (document.fileName.startsWith(path)) {
+          workspacePath = path;
+          break;
+        }
+      }
 
-      variables = this.searchDocumentHandleGetVars(text, pathBasename, variables);
-      variables = this.searchDocumentHandleGetMixin(text, pathBasename, variables);
+      const pathBasename = relative(workspacePath, document.fileName);
 
-      this.context.workspaceState.update(normalize(document.fileName), variables);
+      const STATE: State = {};
+
+      this.searchVars(text, pathBasename, STATE);
+
+      this.searchMixins(text, pathBasename, STATE);
+
+      this.context.workspaceState.update(normalize(document.fileName), STATE);
     }
   }
 
   /** handles finding the variables in a file. */
-  private searchDocumentHandleGetVars(text: string, pathBasename: string, variables: State) {
-    const varRegex = /^ *\${1}\S*:/gm;
+  private searchVars(text: string, pathBasename: string, SEARCH_STATE: State) {
+    const varRegex = /^[\t ]*(\$|--)\S+:.*/gm;
     let varMatches: RegExpExecArray;
     while ((varMatches = varRegex.exec(text)) !== null) {
       if (varMatches.index === varRegex.lastIndex) {
         varRegex.lastIndex++;
       }
       varMatches.forEach((match: string) => {
-        variables = this.createVar(match, pathBasename, variables).state;
+        if (match !== '$' && match !== '--') {
+          this.createVar(
+            match,
+            pathBasename,
+            SEARCH_STATE,
+            match.trim().startsWith('$') ? 'Variable' : 'Css Variable'
+          );
+        }
       });
     }
-    return variables;
   }
 
   /** handles finding the mixins in a file. */
-  private searchDocumentHandleGetMixin(text: string, pathBasename: string, variables: State) {
+  private searchMixins(text: string, pathBasename: string, SEARCH_STATE: State) {
     const mixinRegex = /^[ \t]*(@mixin ?|=)\S+ ?\(?.{2,}\)?/gm;
     let mixinMatches: RegExpExecArray;
     while ((mixinMatches = mixinRegex.exec(text)) !== null) {
@@ -100,58 +65,46 @@ export class Searcher {
       }
       mixinMatches.forEach((match: string) => {
         if (match !== '@mixin ') {
-          variables = this.createMixin(match, pathBasename, variables).state;
+          this.createMixin(match, pathBasename, SEARCH_STATE);
         }
       });
     }
-    return variables;
   }
 
   /** creates a mixin state item. */
-  private createMixin(
-    match: string,
-    pathBasename: string,
-    variables: State,
-    line?: number
-  ): { state: State; current: { line: number; namespace: string } } {
+  private createMixin(match: string, pathBasename: string, SEARCH_STATE: State) {
     let argNum = 0;
-    const rep = match.replace(/@mixin|=/, '').trim();
-    const namespace = `${pathBasename}/${rep}`;
+    const mixinName = match.replace(/@mixin|=/, '').trim();
+    const namespace = `${pathBasename}/${mixinName}`;
     const item: StateItem = {
-      title: `${rep.split('(')[0]}`,
-      insert: `${rep
-        .replace(/(\$\w*:? ?[#\w-]*,?)/g, r => {
+      title: `${mixinName.split('(')[0]}`,
+      insert: `${mixinName
+        .replace(/(\$\w*:? ?[#\w-]*,?)/g, (r) => {
           argNum++;
-          return `$\{${argNum}:${
-            r
-              .replace(/\$/, '\\$')
-              .replace(/,/, '')
-              .split(/:/)[0]
-          }: \},`;
+          return `$\{${argNum}:${r.replace(/\$/, '\\$').replace(/,/, '').split(/:/)[0]}: \},`;
         })
         .replace(/,\)$/, ')')}\n`,
-      detail: `Include ${rep} - ${pathBasename} Mixin.`,
-      kind: CompletionItemKind.Method
+      detail: `Include ${mixinName} - ${pathBasename} Mixin.`,
+      kind: CompletionItemKind.Method,
     };
-    variables[namespace] = { item, type: 'Mixin' };
-    return { state: variables, current: { line, namespace } };
+    SEARCH_STATE[namespace] = { item, type: 'Mixin' };
   }
   /** creates a variable snippet. */
   private createVar(
     match: string,
     pathBasename: string,
-    variables: State,
-    line?: number
-  ): { state: State; current: { line: number; namespace: string } } {
-    const rep = match.split(':')[0].replace(':', '');
-    const namespace = `${pathBasename}/${rep}`;
+    SEARCH_STATE: State,
+    type: StateElement['type']
+  ) {
+    let [varName, value] = match.split(':').map((i) => i.trim());
+
+    const namespace = `${pathBasename}/${varName}`;
     const item: StateItem = {
-      title: rep,
-      insert: rep,
-      detail: `(${rep.replace('$', '')}) - ${pathBasename} Variable.`,
-      kind: CompletionItemKind.Variable
+      title: varName,
+      insert: varName,
+      detail: `\`\`\`sass\n${varName}: ${value} \n\`\`\`\n\`\`\`sass.hover\nPath: ${pathBasename}\n\`\`\``,
+      kind: CompletionItemKind.Variable,
     };
-    variables[namespace] = { item, type: 'Variable' };
-    return { state: variables, current: { line, namespace } };
+    SEARCH_STATE[namespace] = { item, type };
   }
 }

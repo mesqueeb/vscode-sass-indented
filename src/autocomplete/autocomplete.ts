@@ -16,7 +16,8 @@ import {
   ExtensionContext,
   extensions,
   commands,
-  SnippetString
+  SnippetString,
+  MarkdownString,
 } from 'vscode';
 
 import sassSchema from './schemas/autocomplete.schema';
@@ -24,16 +25,16 @@ import sassSchema from './schemas/autocomplete.schema';
 import { sassAt } from './schemas/autocomplete.at';
 import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
-import { AutocompleteUtilities as Utility } from './autocomplete.utility';
+import { AutocompleteUtils as Utility, ImportsItem } from './autocomplete.utility';
 import { Searcher } from './search/autocomplete.search';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
 import { isPath } from 'suf-regex';
 import { basename } from 'path';
+import { StateElement } from '../extension';
 
 class SassCompletion implements CompletionItemProvider {
-  context: ExtensionContext;
   search: Searcher;
-  constructor(context: ExtensionContext) {
+  constructor(public context: ExtensionContext) {
     this.context = context;
     this.search = new Searcher(context);
   }
@@ -46,7 +47,7 @@ class SassCompletion implements CompletionItemProvider {
     const range = new Range(start, position);
     const currentWord = document.getText(range).trim();
     const currentWordUT = document.getText(range);
-    const text = document.getText();
+
     const isValue = Utility.isValue(currentWord);
     const config = workspace.getConfiguration();
     const disableUnitCompletion: boolean = config.get('sass.disableUnitCompletion');
@@ -65,7 +66,6 @@ class SassCompletion implements CompletionItemProvider {
     if (document.languageId === 'vue') {
       block = Utility.isInVueStyleBlock(start, document);
     }
-
     if (
       !block &&
       extensions.getExtension('syler.sass-next') !== undefined &&
@@ -73,7 +73,7 @@ class SassCompletion implements CompletionItemProvider {
     ) {
       commands.executeCommand('sass.abbreviations').then(
         () => '',
-        err => console.log('[Sass Abbreviations Error]: ', err)
+        (err) => console.log('[Sass Abbreviations Error]: ', err)
       );
     }
 
@@ -100,7 +100,9 @@ class SassCompletion implements CompletionItemProvider {
     }
 
     if (!block) {
-      let { imports, varScopeModules, globalScopeModules } = Utility.getImports(text);
+      let { imports, propertyScopedModules, globalScopeModules } = Utility.getImports(
+        document.getText()
+      );
       // also get current file from the workspace State.
       imports.push({ path: basename(document.fileName), namespace: undefined });
       isInMixinBlock = Utility.isInMixinBlock(start, document);
@@ -109,23 +111,17 @@ class SassCompletion implements CompletionItemProvider {
       if (isValue) {
         values = Utility.getPropertyValues(currentWord);
         if (isInMixinBlock === false) {
-          Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
-            if (element.type === 'Variable') {
-              const completionItem = new CompletionItem(
-                Utility.mergeNamespace(element.item.title, namespace)
-              );
-              completionItem.insertText = Utility.mergeNamespace(element.item.insert, namespace);
-              completionItem.detail = element.item.detail;
-              completionItem.kind = element.item.kind;
-              variables.push(completionItem);
-            }
-          });
+          if (/var\([\w\$-]*$/.test(currentWord)) {
+            return this.getVariables(imports, document, 'Css Variable');
+          } else {
+            variables = this.getVariables(imports, document, 'Variable');
+          }
         } else {
           variables = isInMixinBlock;
         }
         functions = sassSchema;
       } else {
-        varScopeModules = [];
+        propertyScopedModules = [];
         variables = [];
         Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
           if (element.type === 'Mixin') {
@@ -156,12 +152,28 @@ class SassCompletion implements CompletionItemProvider {
         variables,
         atRules,
         classesAndIds,
-        varScopeModules,
+        propertyScopedModules,
         globalScopeModules
       );
     }
 
     return completions;
+  }
+
+  private getVariables(imports: ImportsItem[], document: TextDocument, type: StateElement['type']) {
+    const variables: CompletionItem[] = [];
+    Utility.ImportsLoop(imports, document, this.context, (element, namespace) => {
+      if (element.type === type) {
+        const completionItem = new CompletionItem(
+          Utility.mergeNamespace(element.item.title, namespace)
+        );
+        completionItem.insertText = Utility.mergeNamespace(element.item.insert, namespace);
+        completionItem.documentation = new MarkdownString(element.item.detail);
+        completionItem.kind = element.item.kind;
+        variables.push(completionItem);
+      }
+    });
+    return variables;
   }
 }
 
