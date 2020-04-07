@@ -21,19 +21,9 @@ ext install sass-indented
 
 > AutoCompletions / Intellisense
 
-> [Formatter](#formatter)
+> [Formatter](https://github.com/TheRealSyler/sass-formatter)
 
-### **Formatter**
-
-##### Commands
-
-1. `///S` The formatter ignores empty lines until the next class, id or mixin.
-2. `///R` The formatter uses the beginning of the command as the current indentation level.
-3. `///I` The formatter ignores the next line.
-
-Options can be set in the [Configuration](#Configuration)
-
-![Formatter Example](https://media.giphy.com/media/fXhWNUfxr2bFNqgHzk/giphy.gif)
+> Hover Info
 
 ## **Configuration**
 
@@ -55,7 +45,6 @@ Configuration options can be set in the `Sass (Indented)` section of VSCode sett
 | `sass.format.enabled`          | boolean | true    | enables the sass formatter.                                    |
 | `sass.format.deleteWhitespace` | boolean | true    | removes trailing whitespace.                                   |
 | `sass.format.deleteEmptyRows`  | boolean | true    | removes empty rows.                                            |
-| `sass.format.deleteCompact`    | boolean | true    | removes empty rows that are near a property.                   |
 | `sass.format.setPropertySpace` | boolean | true    | If true space between the property: value, is always set to 1. |
 
 ## **Bugs**

@@ -2,6 +2,7 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.8.2   | 7.4.2020   | add css variable hover and completion.                                         |
 | 1.8.1   | 20.3.2020  | Add Extract to Mixin.                                                          |
 | 1.8.0   | 20.3.2020  | Merge and Remove Experimental data                                             |
 | 1.7.5   | 11,2.2020  | Fix @include and multiline comment                                             |
