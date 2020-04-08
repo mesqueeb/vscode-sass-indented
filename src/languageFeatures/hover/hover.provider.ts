@@ -42,7 +42,7 @@ export class SassHoverProvider implements HoverProvider {
         if (propData) {
           return {
             contents: [
-              `\`\`\`sass\n${name}: property\n\`\`\``,
+              `\`\`\`sass.hover\n${name}: css property\n\`\`\``,
               `${GetPropertyDescription(name, propData, true)}`,
             ],
           };

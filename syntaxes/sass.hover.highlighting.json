@@ -7,7 +7,19 @@
       "name": "entity.name.function"
     },
     {
-      "match": "[\\t ]*([A-z\\/-]+)",
+      "match": "([A-z\\/-]+): (.*)",
+      "name": "meta.path",
+      "captures": {
+        "1": {
+          "name": "variable"
+        },
+        "2": {
+          "name": "entity.name.type"
+        }
+      }
+    },
+    {
+      "match": "([A-z\\/-]+)",
       "name": "meta.path",
       "captures": {
         "1": {
