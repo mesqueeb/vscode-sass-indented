@@ -32,7 +32,7 @@ import {
 } from './autocomplete.utility';
 import { Searcher } from './search/autocomplete.search';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
-import { isPath, isProperty } from 'suf-regex';
+import { isPath, isProperty, isVar } from 'suf-regex';
 import { basename } from 'path';
 import { StateElement } from '../extension';
 
@@ -52,7 +52,6 @@ class SassCompletion implements CompletionItemProvider {
     const currentWord = document.getText(range).trim();
     const currentWordUT = document.getText(range);
 
-    const isValue = Utility.isValue(currentWord);
     const config = workspace.getConfiguration();
     const disableUnitCompletion: boolean = config.get('sass.disableUnitCompletion');
     let block = false;
@@ -114,7 +113,7 @@ class SassCompletion implements CompletionItemProvider {
       isInMixinBlock = Utility.isInMixinBlock(start, document);
       this.search.searchDocument(document);
 
-      if (isValue) {
+      if (isProperty(currentWord)) {
         values = Utility.getPropertyValues(currentWord);
         if (isInMixinBlock === false) {
           if (/var\([\w\$-]*$/.test(currentWord)) {
@@ -126,6 +125,8 @@ class SassCompletion implements CompletionItemProvider {
           variables = isInMixinBlock;
         }
         functions = sassSchema;
+      } else if (isVar(currentWord)) {
+        // TODO
       } else {
         propertyScopedModules = [];
         variables = [];

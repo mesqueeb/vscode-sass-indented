@@ -144,7 +144,7 @@
     "s.color": "0.0.10",
     "sass-formatter": "^0.4.4",
     "suf-cli": "^0.1.1",
-    "suf-regex": "^0.0.15",
+    "suf-regex": "^0.0.16",
     "test-grammar": "^1.0.3"
   }
 }
