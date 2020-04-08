@@ -47,6 +47,14 @@ Configuration options can be set in the `Sass (Indented)` section of VSCode sett
 | `sass.format.deleteEmptyRows`  | boolean | true    | removes empty rows.                                            |
 | `sass.format.setPropertySpace` | boolean | true    | If true space between the property: value, is always set to 1. |
 
+## Usage tips
+
+### Variable Completion
+
+You can import using variables and mixins using `@import` or `@use`, if you want to only import the css variables, you can easily do that by using a magic comment `//import css-variables from <File Path>`.
+
+> Note: at the moment all variables are global scoped meaning if you declare a variable inside a class you will get
+
 ## **Bugs**
 
 > **_IMPORTANT_**: if the bug is related to the formatter please open the issue in the formatter [repo](https://github.com/TheRealSyler/sass-formatter/issues/new?assignees=TheRealSyler&labels=bug&template=bug_report.md&title=).

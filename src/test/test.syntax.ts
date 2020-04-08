@@ -42,6 +42,8 @@ export function RunSyntaxTests() {
     const moduleName = 'constant.character.module.name';
     const moduleDot = 'constant.numeric.module.dot';
     const cssVariable = 'variable.css';
+    const importCssVar = 'comment.import.css.variables';
+    const control = 'keyword.control';
     console.log(''); // add new line for visual purposes.
     run(
       'Property ',
@@ -140,8 +142,10 @@ ${_module} ${moduleName}|${_module} ${moduleDot}|${varRoot}`
 
     run(
       'Css Variables',
-      `margin: var(--test) calc(1 + 1)`,
-      `${propName}|${prop}|${prop}|${prop} ${func}|${prop} ${cssVariable}|${prop} ${funcClose}|${prop}|${prop} ${func}|${prop} ${constNum}|${prop}|${prop} ${operator}|${prop}|${prop} ${constNum}|${prop} ${funcClose}`
+      `margin: var(--test) calc(1 + 1)
+// import css-variables from '../folder/file'`,
+      `${propName}|${prop}|${prop}|${prop} ${func}|${prop} ${cssVariable}|${prop} ${funcClose}|${prop}|${prop} ${func}|${prop} ${constNum}|${prop}|${prop} ${operator}|${prop}|${prop} ${constNum}|${prop} ${funcClose}
+${importCssVar}|${importCssVar} ${control}|${importCssVar}|${importCssVar} variable|${importCssVar}|${importCssVar} ${control}|${importCssVar}|${importCssVar} ${constChar}`
     );
   });
 }

@@ -17,18 +17,19 @@ import { getSassModule } from './schemas/autocomplete.builtInModules';
 import { generatedPropertyData } from './schemas/autocomplete.generatedData';
 import { GetPropertyDescription } from '../utilityFunctions';
 
+export const importCssVariableRegex = /^[\t ]*\/\/[\t ]*import[\t ]*css-variables[\t ]*from/;
+const importPathRegex = /(@import|@use|\/\/[\t ]*import[\t ]*css-variables[\t ]*from)[\t ]*['"]?([\w-]*)['"]?/;
+const getImportsRegex = /^[\t ]*(@import|@use|\/\/[\t ]*import[\t ]*css-variables[\t ]*from){1}.*/gm;
+const importAtPathRegex = /^[\t ]*(@import|@use)[\t ]*['"]?(.*?)['"]?[\t ]*(as.*)?$/;
+const replaceQuotesRegex = /[\t ]*['"]?([\w-]*?)['"]?[\t ]*/;
+
 export interface ImportsItem {
   path: string;
   namespace: string | undefined;
+  cssVarsOnly?: boolean;
 }
 
 export class AutocompleteUtils {
-  /** Naive check whether currentWord is value for given property */
-  static isValue(currentWord: string): boolean {
-    const property = AutocompleteUtils.getPropertyName(currentWord);
-    return property && !!generatedPropertyData[property];
-  }
-
   /** Formats property name */
   static getPropertyName(currentWord: string): string {
     return currentWord.trim().replace(':', ' ').split(' ')[0];
@@ -60,7 +61,7 @@ export class AutocompleteUtils {
   /** Returns values for current property for completion list */
   static getPropertyValues(currentWord: string): CompletionItem[] {
     const property = AutocompleteUtils.getPropertyName(currentWord);
-    const values = AutocompleteUtils.findPropertySchema(property).values;
+    const values = AutocompleteUtils.findPropertySchema(property)?.values;
 
     if (!values) {
       return [];
@@ -75,21 +76,24 @@ export class AutocompleteUtils {
   }
 
   /** Get the imports. */
-  static getImports(text: string) {
-    const regex = /\/?\/? {0,}(@import|@use){1}.*/g; //
+  static getImports(document: TextDocument) {
+    const text = document.getText();
+
     let m: RegExpExecArray;
     const imports: ImportsItem[] = [];
     const propertyScopedModules: any[] = [];
     const globalScopeModules: any[] = [];
-    while ((m = regex.exec(text)) !== null) {
-      if (m.index === regex.lastIndex) {
-        regex.lastIndex++;
+    while ((m = getImportsRegex.exec(text)) !== null) {
+      if (m.index === getImportsRegex.lastIndex) {
+        getImportsRegex.lastIndex++;
       }
       m.forEach((match: string) => {
         // prevent commented lines from being imported.
         if (!match.startsWith('//')) {
-          let path = match.replace(/^(@import|@use) *['"]?(.*?)['"]? *( as.*)?$/, '$2');
-          let namespace = match.replace(/(.*?as |@use) *['"]?.*?([\w-]*?)['"]? *$/, '$2').trim();
+          let path = match.replace(importAtPathRegex, '$2');
+          let namespace = match
+            .replace(/(.*?as |@use)[\t ]*['"]?.*?([\w-]*?)['"]?[\t ]*$/, '$2')
+            .trim();
           namespace = namespace === '*' || match.startsWith('@import') ? undefined : namespace;
           if (/sass:(math|color|string|list|map|selector|meta)/.test(path)) {
             switch (path) {
@@ -116,17 +120,30 @@ export class AutocompleteUtils {
                 propertyScopedModules.push(...getSassModule('META', namespace));
                 break;
             }
-          } else {
-            if (!/\.sass$/.test(path)) {
-              path = path.concat('.sass');
-            }
+          } else if (path) {
+            path = AutocompleteUtils.addDotSassToPath(path);
 
             imports.push({ path, namespace });
+          }
+        } else if (importCssVariableRegex.test(match)) {
+          let path = match.replace(importCssVariableRegex, '').replace(replaceQuotesRegex, '$1');
+
+          if (path) {
+            path = AutocompleteUtils.addDotSassToPath(path);
+
+            imports.push({ path, namespace: undefined, cssVarsOnly: true });
           }
         }
       });
     }
     return { imports, propertyScopedModules, globalScopeModules };
+  }
+
+  private static addDotSassToPath(path: string) {
+    if (!/\.sass$/.test(path)) {
+      path = path.concat('.sass');
+    }
+    return path;
   }
 
   /** gets unit completions.*/
@@ -151,11 +168,7 @@ export class AutocompleteUtils {
   ): CompletionItem[] {
     const suggestions: CompletionItem[] = [];
     const path = normalize(
-      join(
-        document.fileName,
-        '../',
-        currentWord.replace(/(@import|@use) *['"]?([\w-]*)['"]?/, '$2').trim()
-      )
+      join(document.fileName, '../', currentWord.replace(importPathRegex, '$2').trim())
     );
 
     const dir = readdirSync(path);
@@ -230,7 +243,7 @@ export class AutocompleteUtils {
     }
     return res;
   }
-  /** sets the block variable, don't get confused by the return values. */
+  /** don't get confused by the return values. */
   static isInVueStyleBlock(start: Position, document: TextDocument) {
     for (let i = start.line; i > 0; i--) {
       const line = document.lineAt(i);
@@ -248,6 +261,7 @@ export class AutocompleteUtils {
     }
     return true;
   }
+
   static isInMixinBlock(start: Position, document: TextDocument): CompletionItem[] | false {
     for (let i = start.line; i > 0; i--) {
       const line = document.lineAt(i);
@@ -309,7 +323,11 @@ export class AutocompleteUtils {
       if (STATE) {
         for (const key in STATE) {
           if (STATE.hasOwnProperty(key)) {
-            breakLoop = !!callback(STATE[key], item.namespace);
+            if (!item.cssVarsOnly) {
+              breakLoop = !!callback(STATE[key], item.namespace);
+            } else if (STATE[key].type === 'Css Variable') {
+              breakLoop = !!callback(STATE[key], item.namespace);
+            }
           }
           if (breakLoop) {
             break;

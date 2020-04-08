@@ -25,10 +25,14 @@ import sassSchema from './schemas/autocomplete.schema';
 import { sassAt } from './schemas/autocomplete.at';
 import { sassPseudo } from './schemas/autocomplete.pseudo';
 import { isNumber } from 'util';
-import { AutocompleteUtils as Utility, ImportsItem } from './autocomplete.utility';
+import {
+  AutocompleteUtils as Utility,
+  ImportsItem,
+  importCssVariableRegex,
+} from './autocomplete.utility';
 import { Searcher } from './search/autocomplete.search';
 import { sassCommentCompletions } from './schemas/autocomplete.commentCompletions';
-import { isPath } from 'suf-regex';
+import { isPath, isProperty } from 'suf-regex';
 import { basename } from 'path';
 import { StateElement } from '../extension';
 
@@ -92,7 +96,11 @@ class SassCompletion implements CompletionItemProvider {
     }
 
     if (!block && currentWord.startsWith('/')) {
-      completions = sassCommentCompletions();
+      if (importCssVariableRegex.test(currentWord)) {
+        completions = Utility.getImportSuggestionsForCurrentWord(document, currentWord);
+      } else {
+        completions = sassCommentCompletions();
+      }
       block = true;
     }
     if (!block && isPath(currentWord)) {
@@ -100,9 +108,7 @@ class SassCompletion implements CompletionItemProvider {
     }
 
     if (!block) {
-      let { imports, propertyScopedModules, globalScopeModules } = Utility.getImports(
-        document.getText()
-      );
+      let { imports, propertyScopedModules, globalScopeModules } = Utility.getImports(document);
       // also get current file from the workspace State.
       imports.push({ path: basename(document.fileName), namespace: undefined });
       isInMixinBlock = Utility.isInMixinBlock(start, document);

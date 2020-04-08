@@ -10,7 +10,7 @@ import {
 } from 'vscode';
 
 import { AutocompleteUtils } from '../../autocomplete/autocomplete.utility';
-import { isProperty, isVar } from 'suf-regex';
+import { isProperty, isVar, isClassOrId } from 'suf-regex';
 import { GetPropertyDescription } from '../../utilityFunctions';
 import { basename } from 'path';
 import { Searcher } from '../../autocomplete/search/autocomplete.search';
@@ -52,7 +52,7 @@ export class SassHoverProvider implements HoverProvider {
     return null;
   }
   private variableHover(document: TextDocument, name: string) {
-    let { imports } = AutocompleteUtils.getImports(document.getText());
+    let { imports } = AutocompleteUtils.getImports(document);
     imports.unshift({ path: basename(document.fileName), namespace: undefined });
 
     this.search.searchDocument(document);
@@ -67,6 +67,11 @@ export class SassHoverProvider implements HoverProvider {
         return true;
       }
     });
+    if (result === null) {
+      return {
+        contents: ['variable declaration not found.'],
+      };
+    }
     return result;
   }
 

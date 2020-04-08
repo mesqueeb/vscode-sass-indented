@@ -19,20 +19,27 @@
       ]
     },
     {
-      "match": "^ */?// *[SRI] *$",
-
+      "match": "^[\\t ]*/?//[\\t ]*[SRI][\\t ]*$",
       "name": "keyword.other.sass.formatter.action"
     },
     {
-      "begin": "\\s/\\*",
-      "end": "\\*/",
-      "name": "comment.block.sass",
+      "begin": "^[\\t ]*//[\\t ]*(import)[\\t ]*(css-variables)[\\t ]*(from)",
+      "end": "$\\n?",
+      "name": "comment.import.css.variables",
+      "captures": {
+        "1": {
+          "name": "keyword.control"
+        },
+        "2": {
+          "name": "variable"
+        },
+        "3": {
+          "name": "keyword.control"
+        }
+      },
       "patterns": [
         {
-          "include": "#comment-tag"
-        },
-        {
-          "include": "#comment-param"
+          "include": "#import-quotes"
         }
       ]
     },
@@ -190,8 +197,7 @@
           "include": "#colon"
         },
         {
-          "match": "[\"']?\\.{0,2}[\\w/]+[\"']?",
-          "name": "constant.character.css.sass"
+          "include": "#import-quotes"
         }
       ]
     },
@@ -456,9 +462,6 @@
       "patterns": [
         {
           "include": "#comment-tag"
-        },
-        {
-          "include": "#comment-param"
         }
       ]
     },
@@ -605,6 +608,10 @@
     "variable": {
       "match": "\\$[a-zA-Z0-9_-]+",
       "name": "variable.other.value"
+    },
+    "import-quotes": {
+      "match": "[\"']?\\.{0,2}[\\w/]+[\"']?",
+      "name": "constant.character.css.sass"
     }
   },
   "scopeName": "source.sass"
