@@ -42,16 +42,15 @@ export class Searcher {
       if (varMatches.index === varRegex.lastIndex) {
         varRegex.lastIndex++;
       }
-      varMatches.forEach((match: string) => {
-        if (match !== '$' && match !== '--') {
-          this.createVar(
-            match,
-            pathBasename,
-            SEARCH_STATE,
-            match.trim().startsWith('$') ? 'Variable' : 'Css Variable'
-          );
-        }
-      });
+      const match = varMatches[0];
+      if (match !== '$' && match !== '--') {
+        this.createVar(
+          match,
+          pathBasename,
+          SEARCH_STATE,
+          match.trim().startsWith('$') ? 'Variable' : 'Css Variable'
+        );
+      }
     }
   }
 
@@ -63,11 +62,9 @@ export class Searcher {
       if (mixinMatches.index === mixinRegex.lastIndex) {
         mixinRegex.lastIndex++;
       }
-      mixinMatches.forEach((match: string) => {
-        if (match !== '@mixin ') {
-          this.createMixin(match, pathBasename, SEARCH_STATE);
-        }
-      });
+      const match = mixinMatches[0];
+
+      this.createMixin(match, pathBasename, SEARCH_STATE);
     }
   }
 

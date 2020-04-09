@@ -87,54 +87,51 @@ export class AutocompleteUtils {
       if (m.index === getImportsRegex.lastIndex) {
         getImportsRegex.lastIndex++;
       }
-      m.forEach((match: string) => {
-        // prevent commented lines from being imported.
-        if (!match.startsWith('//')) {
-          let path = match.replace(importAtPathRegex, '$2');
-          let namespace = match
-            .replace(/(.*?as |@use)[\t ]*['"]?.*?([\w-]*?)['"]?[\t ]*$/, '$2')
-            .trim();
-          namespace = namespace === '*' || match.startsWith('@import') ? undefined : namespace;
-          if (/sass:(math|color|string|list|map|selector|meta)/.test(path)) {
-            switch (path) {
-              case 'sass:math':
-                propertyScopedModules.push(...getSassModule('MATH', namespace));
-                break;
-              case 'sass:color':
-                propertyScopedModules.push(...getSassModule('COLOR', namespace));
-                break;
-              case 'sass:string':
-                propertyScopedModules.push(...getSassModule('STRING', namespace));
-                break;
-              case 'sass:list':
-                propertyScopedModules.push(...getSassModule('LIST', namespace));
-                break;
-              case 'sass:map':
-                propertyScopedModules.push(...getSassModule('MAP', namespace));
-                break;
-              case 'sass:selector':
-                globalScopeModules.push(...getSassModule('SELECTOR', namespace));
-                break;
-              case 'sass:meta':
-                // TODO
-                propertyScopedModules.push(...getSassModule('META', namespace));
-                break;
-            }
-          } else if (path) {
-            path = AutocompleteUtils.addDotSassToPath(path);
-
-            imports.push({ path, namespace });
+      const match = m[0];
+      // prevent commented lines from being imported.
+      if (!match.startsWith('//')) {
+        let path = match.replace(importAtPathRegex, '$2');
+        let namespace = match
+          .replace(/(.*?as |@use)[\t ]*['"]?.*?([\w-]*?)['"]?[\t ]*$/, '$2')
+          .trim();
+        namespace = namespace === '*' || match.startsWith('@import') ? undefined : namespace;
+        if (/sass:(math|color|string|list|map|selector|meta)/.test(path)) {
+          switch (path) {
+            case 'sass:math':
+              propertyScopedModules.push(...getSassModule('MATH', namespace));
+              break;
+            case 'sass:color':
+              propertyScopedModules.push(...getSassModule('COLOR', namespace));
+              break;
+            case 'sass:string':
+              propertyScopedModules.push(...getSassModule('STRING', namespace));
+              break;
+            case 'sass:list':
+              propertyScopedModules.push(...getSassModule('LIST', namespace));
+              break;
+            case 'sass:map':
+              propertyScopedModules.push(...getSassModule('MAP', namespace));
+              break;
+            case 'sass:selector':
+              globalScopeModules.push(...getSassModule('SELECTOR', namespace));
+              break;
+            case 'sass:meta':
+              // TODO
+              propertyScopedModules.push(...getSassModule('META', namespace));
+              break;
           }
-        } else if (importCssVariableRegex.test(match)) {
-          let path = match.replace(importCssVariableRegex, '').replace(replaceQuotesRegex, '$1');
+        } else {
+          path = AutocompleteUtils.addDotSassToPath(path);
 
-          if (path) {
-            path = AutocompleteUtils.addDotSassToPath(path);
-
-            imports.push({ path, namespace: undefined, cssVarsOnly: true });
-          }
+          imports.push({ path, namespace });
         }
-      });
+      } else if (importCssVariableRegex.test(match)) {
+        let path = match.replace(importCssVariableRegex, '').replace(replaceQuotesRegex, '$1');
+
+        path = AutocompleteUtils.addDotSassToPath(path);
+
+        imports.push({ path, namespace: undefined, cssVarsOnly: true });
+      }
     }
     return { imports, propertyScopedModules, globalScopeModules };
   }
