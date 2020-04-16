@@ -6,6 +6,7 @@
     "sourceMap": true,
     "strict": true,
     "outDir": "out",
+    "resolveJsonModule": true,
     "rootDir": "scripts"
   },
   "include": ["scripts"],
