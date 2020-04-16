@@ -11,14 +11,13 @@ import {
   ProposedFeatures,
   InitializeParams,
   DidChangeConfigurationNotification,
-  CompletionItem,
-  CompletionItemKind,
-  TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
 } from 'vscode-languageserver';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { completion } from './languageFeatures/completion/completion';
+import { AbstractSyntaxTree } from './abstractSyntaxTree/abstractSyntaxTree';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -88,6 +87,8 @@ interface ExampleSettings {
 // but could happen with other clients.
 const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
 let globalSettings: ExampleSettings = defaultSettings;
+
+const ast = new AbstractSyntaxTree();
 
 // Cache the settings of all open documents
 let documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
@@ -182,39 +183,8 @@ connection.onDidChangeWatchedFiles((_change) => {
   connection.console.log('We received an file change event');
 });
 
-// This handler provides the initial list of the completion items.
-connection.onCompletion((_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-  // The pass parameter contains the position of the text document in
-  // which code complete got requested. For the example we ignore this
-  // info and always provide the same completion items.
-  return [
-    {
-      label: '"""""TEST AWD"""""',
-      kind: CompletionItemKind.Text,
-      data: 1,
-    },
-    {
-      label: 'TEST 2',
-      kind: CompletionItemKind.Text,
-      data: 2,
-    },
-  ];
-});
-
-// This handler resolves additional information for the item selected in
-// the completion list.
-connection.onCompletionResolve(
-  (item: CompletionItem): CompletionItem => {
-    if (item.data === 1) {
-      item.detail = 'TypeScript details';
-      item.documentation = 'TypeScript documentation';
-    } else if (item.data === 2) {
-      item.detail = 'JavaScript details';
-      item.documentation = 'JavaScript documentation';
-    }
-    return item;
-  }
-);
+connection.onCompletion(completion);
+connection.onCompletionResolve((item) => item);
 
 /*
 connection.onDidOpenTextDocument((params) => {
