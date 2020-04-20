@@ -2,7 +2,7 @@
   "name": "sass-indented",
   "displayName": "Sass",
   "description": "Indented Sass syntax Highlighting, Autocomplete & Formatter",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
   "repository": {
@@ -142,7 +142,7 @@
   "license": "MIT",
   "dependencies": {
     "s.color": "0.0.10",
-    "sass-formatter": "^0.4.4",
+    "sass-formatter": "^0.4.5",
     "suf-cli": "^0.1.1",
     "suf-regex": "^0.0.16",
     "test-grammar": "^1.0.3"

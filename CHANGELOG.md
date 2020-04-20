@@ -2,6 +2,7 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.8.3   | 20.4.2020  | Fix @extend indentation issue.                                                 |
 | 1.8.2   | 7.4.2020   | add css variable hover and completion.                                         |
 | 1.8.1   | 20.3.2020  | Add Extract to Mixin.                                                          |
 | 1.8.0   | 20.3.2020  | Merge and Remove Experimental data                                             |
