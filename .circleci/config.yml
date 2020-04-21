@@ -39,8 +39,8 @@ jobs:
       - run: yarn test
 
       - codecov/upload:
-        file: server/coverage/lcov.info
-        flags: jest
+          file: server/coverage/lcov.info
+          flags: jest
       # - codecov/upload:
       #   file: client/coverage/lcov.info
       #   flags: jest
