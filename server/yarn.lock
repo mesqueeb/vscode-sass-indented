@@ -4770,10 +4770,10 @@ strip-final-newline@^2.0.0:
   resolved "https://registry.yarnpkg.com/strip-final-newline/-/strip-final-newline-2.0.0.tgz#89b852fb2fcbe936f6f4b3187afb0a12c1ab58ad"
   integrity sha512-BrpvfNAE3dcvq7ll3xVumzjKjZQ5tI1sEUIKr3Uoks0XUl45St3FlatVqef9prk4jRDzhW6WZg+3bk93y6pLjA==
 
-suf-regex@^0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/suf-regex/-/suf-regex-0.0.16.tgz#0e33707f903ce6deb8142d45690fc279313fdaf5"
-  integrity sha512-xbAAwVIPC+xUUZYKsf+jLyTecso8LsTziP3rxU3SFvP9Err1YBKcvau4jq/f4wfrIXL4QIOBaQGyntP/KNp7qA==
+suf-regex@^0.0.17:
+  version "0.0.17"
+  resolved "https://registry.yarnpkg.com/suf-regex/-/suf-regex-0.0.17.tgz#feb3ee3dd47e7fe8abfc063ead2193c9aef9be6d"
+  integrity sha512-/TIMx0G1iXCGHm5XbqHTV86tkdETO7OUOB8UAWHc04M2mMQnWAIZeO6M9GuSibRVM8ewRcHAV3fOFY2z1XtWaQ==
 
 supports-color@6.1.0:
   version "6.1.0"
