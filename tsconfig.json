@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
+    "lib": ["ES2019"],
     "moduleResolution": "node",
     "sourceMap": true,
     "strict": true,
