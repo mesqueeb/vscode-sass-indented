@@ -394,7 +394,6 @@ export class ASTParser {
       }
     }
 
-    // TODO, fix range start and end char offset.
     this.diagnostics.push(
       createSassDiagnostic(
         'variableNotFound',
