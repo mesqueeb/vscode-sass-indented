@@ -1,15 +1,37 @@
 import { SassFile, SassASTOptions } from './utils';
 import { StingKeyObj } from '../utils';
 import { ASTParser } from './parse';
+import { promises } from 'fs';
 
 export class AbstractSyntaxTree {
   files: StingKeyObj<SassFile> = {};
 
-  addFile(text: string, uri: string, options: SassASTOptions) {
-    const file: SassFile = {
-      body: new ASTParser(uri).parse(text, options),
-    };
-    console.log(JSON.stringify(file.body, null, 2));
-    this.files[uri] = file;
+  findVariable(uri: string, name: string) {
+    const file = this.files[uri];
+    if (file && file.body) {
+      for (let i = 0; i < file.body.length; i++) {
+        const node = file.body[i];
+        if (node.type === 'variable' && node.value === name) {
+          return node;
+        }
+      }
+    }
+    return null;
+  }
+
+  async lookUpFile(uri: string, options: SassASTOptions) {
+    // TODO add check and test for circular dependencies
+    if (this.files[uri]) {
+      return true;
+    }
+
+    const text = (await promises.readFile(uri)).toString();
+
+    this.files[uri] = await new ASTParser(uri, options, this).parse(text);
+    return true;
+  }
+
+  async parseFile(text: string, uri: string, options: SassASTOptions) {
+    this.files[uri] = await new ASTParser(uri, options, this).parse(text);
   }
 }

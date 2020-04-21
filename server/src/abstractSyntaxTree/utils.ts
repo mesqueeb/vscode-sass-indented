@@ -1,3 +1,5 @@
+import { SassDiagnostic } from './diagnostics';
+
 interface SassBaseNode {
   body: SassNode[] | null;
   line: number;
@@ -8,15 +10,25 @@ interface SassBaseNode {
 
 export type SassNodeValues = SassLiteralNode | SassVariableRefNode | SassExpressionNode;
 
-interface SassImportNode extends SassBaseNode {
-  body: null;
+interface SassImportNode extends Omit<SassBaseNode, 'body'> {
+  value: string;
+  uri: string;
   type: 'import';
 }
-interface SassUseNode extends SassBaseNode {
-  body: null;
-  namespace?: string;
+
+interface SassUseNode extends Omit<SassBaseNode, 'body'> {
+  value: string;
+  uri: string;
+  namespace: string | null;
   type: 'use';
 }
+
+interface SassCommentNode extends Omit<SassBaseNode, 'body'> {
+  isMultiLine: boolean;
+  value: string;
+  type: 'comment';
+}
+
 interface SassSelectorNode extends SassBaseNode {
   body: SassNode[];
   type: 'selector';
@@ -30,9 +42,8 @@ interface SassLiteralNode {
 interface SassVariableRefNode {
   type: 'variableRef';
   ref: {
-    file: string;
+    uri: string;
     line: number;
-    level: number;
   } | null;
   value: string;
 }
@@ -54,6 +65,10 @@ interface SassVariableNode extends SassBaseNode {
   type: 'variable';
 }
 
+interface SassEmptyLineNode extends Pick<SassBaseNode, 'type' | 'line'> {
+  type: 'emptyLine';
+}
+
 type _SassNode<T extends keyof SassNodes> = SassNodes[T];
 
 export type SassASTOptions = {
@@ -72,9 +87,12 @@ export interface SassNodes {
   variable: SassVariableNode;
   variableRef: SassVariableRefNode;
   expression: SassExpressionNode;
+  comment: SassCommentNode;
+  emptyLine: SassEmptyLineNode;
 }
 export interface SassFile {
-  body: SassNode[] | null;
+  body: SassNode[];
+  diagnostics: SassDiagnostic[];
 }
 
 export function isUse(text: string) {
@@ -88,12 +106,12 @@ export function createSassNode<K extends keyof SassNodes>(values: SassNodes[K]) 
   return values;
 }
 
-export function execGlobalRegex(regex: RegExp, text: string, func: (m: RegExpExecArray) => void) {
-  let m;
-  while ((m = regex.exec(text)) !== null) {
-    if (m.index === regex.lastIndex) {
-      regex.lastIndex++;
-    }
-    func(m);
-  }
-}
+// export function execGlobalRegex(regex: RegExp, text: string, func: (m: RegExpExecArray) => void) {
+//   let m;
+//   while ((m = regex.exec(text)) !== null) {
+//     if (m.index === regex.lastIndex) {
+//       regex.lastIndex++;
+//     }
+//     func(m);
+//   }
+// }
