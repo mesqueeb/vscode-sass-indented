@@ -44,7 +44,7 @@ const allDiagnostics: AllDiagnostics = {
     };
   },
   variableNotFound: (name) => ({
-    isResolvedByFormatting: true,
+    isResolvedByFormatting: false,
     code: 'variableNotFound',
     message: `Variable declaration for ${name} not found.`,
     severity: DiagnosticSeverity.Error,
