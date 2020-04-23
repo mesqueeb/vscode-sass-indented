@@ -43,4 +43,11 @@ test('AST: EmptyLine and empty property', async () => {
     },
   };
   expect(ast.files).toStrictEqual(expectedFiles);
+
+  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toEqual(`
+.class
+  margin-top:
+
+
+`);
 });

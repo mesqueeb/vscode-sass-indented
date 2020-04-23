@@ -1,6 +1,6 @@
 import { SassDiagnostic } from './diagnostics';
 
-interface SassBaseNode {
+interface BaseNode {
   body: SassNode[] | null;
   line: number;
   level: number;
@@ -8,38 +8,38 @@ interface SassBaseNode {
   value: string;
 }
 
-export type SassNodeValues = SassLiteralNode | SassVariableRefNode | SassExpressionNode;
+export type NodeValues = LiteralNode | VariableRefNode | ExpressionNode;
 
-interface SassImportNode extends Omit<SassBaseNode, 'body'> {
+interface ImportNode extends Omit<BaseNode, 'body'> {
   value: string;
   uri: string;
   type: 'import';
 }
 
-interface SassUseNode extends Omit<SassBaseNode, 'body'> {
+interface UseNode extends Omit<BaseNode, 'body' | 'level'> {
   value: string;
   uri: string;
   namespace: string | null;
   type: 'use';
 }
 
-interface SassCommentNode extends Omit<SassBaseNode, 'body'> {
+interface CommentNode extends Omit<BaseNode, 'body'> {
   isMultiLine: boolean;
   value: string;
   type: 'comment';
 }
 
-interface SassSelectorNode extends SassBaseNode {
+interface SelectorNode extends BaseNode {
   body: SassNode[];
   type: 'selector';
 }
 
-interface SassLiteralNode {
+interface LiteralNode {
   type: 'literal';
   value: string;
 }
 
-interface SassVariableRefNode {
+interface VariableRefNode {
   type: 'variableRef';
   ref: {
     uri: string;
@@ -48,24 +48,37 @@ interface SassVariableRefNode {
   value: string;
 }
 
-interface SassExpressionNode {
-  body: SassNodeValues[];
+interface ExpressionNodeBase {
+  body: NodeValues[];
   type: 'expression';
-  expressionType: 'func' | 'interpolated';
-  funcName?: string;
+  expressionType: keyof SassExpressionNodes;
 }
 
-interface SassPropertyNode extends SassBaseNode {
-  body: SassNodeValues[];
+interface FuncExpressionNode extends ExpressionNodeBase {
+  expressionType: 'func';
+  funcName: string;
+}
+interface InterpolationExpressionNode extends ExpressionNodeBase {
+  expressionType: 'interpolated';
+}
+
+interface SassExpressionNodes {
+  func: FuncExpressionNode;
+  interpolated: InterpolationExpressionNode;
+}
+type ExpressionNode = SassExpressionNodes[keyof SassExpressionNodes];
+
+interface PropertyNode extends BaseNode {
+  body: NodeValues[];
   type: 'property';
 }
 
-interface SassVariableNode extends SassBaseNode {
-  body: SassNodeValues[];
+interface VariableNode extends BaseNode {
+  body: NodeValues[];
   type: 'variable';
 }
 
-interface SassEmptyLineNode extends Pick<SassBaseNode, 'type' | 'line'> {
+interface EmptyLineNode extends Pick<BaseNode, 'type' | 'line'> {
   type: 'emptyLine';
 }
 
@@ -79,16 +92,16 @@ export type SassASTOptions = {
 export type SassNode = _SassNode<keyof SassNodes>;
 
 export interface SassNodes {
-  import: SassImportNode;
-  use: SassUseNode;
-  selector: SassSelectorNode;
-  literal: SassLiteralNode;
-  property: SassPropertyNode;
-  variable: SassVariableNode;
-  variableRef: SassVariableRefNode;
-  expression: SassExpressionNode;
-  comment: SassCommentNode;
-  emptyLine: SassEmptyLineNode;
+  import: ImportNode;
+  use: UseNode;
+  selector: SelectorNode;
+  literal: LiteralNode;
+  property: PropertyNode;
+  variable: VariableNode;
+  variableRef: VariableRefNode;
+  expression: ExpressionNode;
+  comment: CommentNode;
+  emptyLine: EmptyLineNode;
 }
 export interface SassFile {
   body: SassNode[];

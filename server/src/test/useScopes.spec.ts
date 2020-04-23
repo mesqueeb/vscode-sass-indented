@@ -50,7 +50,7 @@ test('AST: Use Scopes', async () => {
       body: [
         {
           type: 'use',
-          level: 0,
+
           line: 0,
           value: './files/import1',
           namespace: 'import1',
@@ -58,7 +58,7 @@ test('AST: Use Scopes', async () => {
         },
         {
           type: 'use',
-          level: 0,
+
           line: 1,
           value: './files/import2',
           namespace: null,

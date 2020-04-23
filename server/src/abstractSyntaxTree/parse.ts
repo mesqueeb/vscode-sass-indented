@@ -2,7 +2,7 @@ import {
   SassNode,
   SassNodes,
   createSassNode,
-  SassNodeValues,
+  NodeValues,
   isUse,
   isImport,
   SassASTOptions,
@@ -118,7 +118,7 @@ export class ASTParser {
             this.scope.selectors[this.scope.selectors.length - 1].body.push(
               createSassNode<'property'>({
                 body,
-                level: Math.max(this.current.level, 1),
+                level: Math.min(Math.max(this.current.level, 1), this.scope.selectors.length),
                 line: index,
                 type: this.current.type,
                 value,
@@ -164,6 +164,7 @@ export class ASTParser {
           {
             const clampedLevel = Math.min(this.current.level, this.scope.selectors.length);
             if (canPushAtUseOrAtForwardNode) {
+              // TODO ADD @use with functionality
               const path = this.current.line.replace(importAtPathRegex, '$2');
               const uri = resolve(this.uri, '../', addDotSassToPath(path));
               let namespace: string | null = this.current.line
@@ -174,7 +175,6 @@ export class ASTParser {
               const node = createSassNode<'use'>({
                 uri,
                 line: index,
-                level: 0,
                 namespace,
                 type: this.current.type,
                 value: path,
@@ -275,13 +275,13 @@ export class ASTParser {
   }
   private parseExpression(expression: string, startOffset: number) {
     let token = '';
-    const body: SassNodeValues[] = [];
+    const body: NodeValues[] = [];
 
     const expressionNodes: SassNodes['expression'][] = [];
     let level = 0;
     let i = 0;
 
-    const pushExpressionNode = (node: SassNodeValues) => {
+    const pushExpressionNode = (node: NodeValues) => {
       if (level === 0) {
         body.push(node);
       } else {
