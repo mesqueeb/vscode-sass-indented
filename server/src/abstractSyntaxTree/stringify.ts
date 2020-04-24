@@ -1,4 +1,4 @@
-import { SassNode, SassASTOptions, SassNodes } from './utils';
+import { SassNode, SassASTOptions, SassNodes } from './nodes';
 
 export function stringifyNodes(nodes: SassNode[], options: SassASTOptions) {
   let text = '';
@@ -23,6 +23,28 @@ function stringifyNode(node: SassNode, options: SassASTOptions) {
       break;
     case 'selector':
       text += addLine(node.value, node.level, options);
+      text += stringifyNodes(node.body, options);
+      break;
+    case 'mixin':
+      text += addLine(
+        `${node.mixinType === '=' ? '=' : '@mixin '}${node.value}${
+          node.args.length === 0
+            ? ''
+            : node.args.reduce((acc, item, index) => {
+                acc += `${item.value}${
+                  item.body ? ':'.concat(stringifyNodes(item.body, options)) : ''
+                }`;
+                if (node.args.length - 1 !== index) {
+                  acc += ', ';
+                } else {
+                  acc += ')';
+                }
+                return acc;
+              }, '(')
+        }`,
+        node.level,
+        options
+      );
       text += stringifyNodes(node.body, options);
       break;
     case 'variable':

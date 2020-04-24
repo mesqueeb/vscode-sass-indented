@@ -1,14 +1,14 @@
+import { createSassNode, isUse, isImport, SassFile } from './utils';
+import { SassNode, SassNodes, NodeValues, SassASTOptions } from './nodes';
 import {
-  SassNode,
-  SassNodes,
-  createSassNode,
-  NodeValues,
-  isUse,
-  isImport,
-  SassASTOptions,
-  SassFile,
-} from './utils';
-import { getDistance, isProperty, isSelector, isVar } from 'suf-regex';
+  getDistance,
+  isProperty,
+  isSelector,
+  isVar,
+  isMixin,
+  isHtmlTag,
+  isEmptyOrWhitespace,
+} from 'suf-regex';
 import { resolve } from 'path';
 import { addDotSassToPath } from '../utils';
 import { AbstractSyntaxTree } from './abstractSyntaxTree';
@@ -26,7 +26,7 @@ interface ASTScope {
    *       padding: 20px
    *   .class3 // [.class3 node]
    * ``` */
-  selectors: SassNodes['selector'][];
+  selectors: (SassNodes['selector'] | SassNodes['mixin'])[];
   /**Stores all the variables available in the current scope.
    *
    * ```sass
@@ -103,18 +103,36 @@ export class ASTParser {
 
             this.pushNode(node);
 
-            if (this.scope.selectors.length > this.current.level) {
-              this.scope.selectors.splice(this.current.level);
-              this.scope.variables.splice(Math.max(this.current.level, 1));
-              this.scope.imports.splice(Math.max(this.current.level, 1));
-            }
+            this.limitScope();
 
             this.scope.selectors.push(node);
           }
           break;
+        case 'mixin':
+          // TODO ADD DIAGNOSTICS, duplicate mixin name in current scope?(look it up in the docs).
+          {
+            const { args, value, mixinType } = this.parseMixin(this.current.line);
+            const node = createSassNode<'mixin'>({
+              body: [],
+              level: Math.min(this.current.level, this.scope.selectors.length),
+              line: index,
+              type: this.current.type,
+              value,
+              args,
+              mixinType,
+            });
+
+            this.pushNode(node);
+
+            this.limitScope();
+
+            this.scope.selectors.push(node);
+          }
+          break;
+
         case 'property':
           {
-            const { value, body } = this.splitProperty(this.current.line);
+            const { value, body } = this.parseValue(this.current.line);
             this.scope.selectors[this.scope.selectors.length - 1].body.push(
               createSassNode<'property'>({
                 body,
@@ -128,12 +146,12 @@ export class ASTParser {
           break;
 
         case 'variable':
+          // TODO ADD DIAGNOSTICS, duplicate variable name in current scope.
           {
-            this.current.level = Math.min(this.current.level, this.scope.selectors.length);
-            const { value, body } = this.splitProperty(this.current.line);
+            const { value, body } = this.parseValue(this.current.line);
             const node = createSassNode<'variable'>({
               body: body,
-              level: this.current.level,
+              level: Math.min(this.current.level, this.scope.selectors.length),
               line: index,
               type: this.current.type,
               value,
@@ -226,6 +244,15 @@ export class ASTParser {
     };
   }
 
+  /**Removes all nodes that should not be accessible from the current scope. */
+  private limitScope() {
+    if (this.scope.selectors.length > this.current.level) {
+      this.scope.selectors.splice(this.current.level);
+      this.scope.variables.splice(Math.max(this.current.level, 1));
+      this.scope.imports.splice(Math.max(this.current.level, 1));
+    }
+  }
+
   private pushNode(node: SassNode) {
     // TODO EXTEND DIAGNOSTIC, invalid indentation, example, (tabSize: 2) ' .class'
     if (this.current.distance < this.options.tabSize || this.scope.selectors.length === 0) {
@@ -260,7 +287,8 @@ export class ASTParser {
     }
   }
 
-  private splitProperty(line: string) {
+  /**Parse the values of a property or variable declaration. */
+  private parseValue(line: string) {
     const split = /^[\t ]*(.*?):(.*)/.exec(line);
     if (!split) {
       return { value: '', body: [] };
@@ -280,6 +308,7 @@ export class ASTParser {
     const expressionNodes: SassNodes['expression'][] = [];
     let level = 0;
     let i = 0;
+    let quote: '"' | "'" | null = null;
 
     const pushExpressionNode = (node: NodeValues) => {
       if (level === 0) {
@@ -307,8 +336,22 @@ export class ASTParser {
     };
     for (i; i < expression.length; i++) {
       const char = expression[i];
-
-      if (char === '#' && expression[i + 1] === '{') {
+      if (quote) {
+        if (char === quote) {
+          quote = null;
+        }
+        token += char;
+        if (i === expression.length - 1) {
+          i++; // i is used to measure the current offset, so 1 needs to be added on the last loop iteration.
+          pushToken(token);
+        }
+      } else if (char === '"') {
+        token += char;
+        quote = '"';
+      } else if (char === "'") {
+        token += char;
+        quote = "'";
+      } else if (char === '#' && expression[i + 1] === '{') {
         i++; // skip open bracket
 
         const node = createSassNode<'expression'>({
@@ -364,22 +407,135 @@ export class ASTParser {
     return body;
   }
 
+  private parseMixin(
+    line: string
+  ): {
+    value: string;
+    args: SassNodes['mixin']['args'];
+    mixinType: SassNodes['mixin']['mixinType'];
+  } {
+    const split = /^([\t ]*(@mixin|=)[\t ]*([-_\w]*)[\t ]*)(\((.*)\))?/.exec(line)!;
+
+    const offset = split[1].length;
+    const mixinType = split[2] as SassNodes['mixin']['mixinType'];
+    const value = split[3];
+    const rawArgs = split[5];
+    const args: SassNodes['mixin']['args'] = [];
+    let expression = '';
+    let argName = '';
+    let isArgName = true;
+    let quote: '"' | "'" | null = null;
+
+    // TODO ADD DIAGNOSTICS, duplicate argument Names
+    if (rawArgs) {
+      for (let i = 0; i < rawArgs.length; i++) {
+        const char = rawArgs[i];
+
+        const isLastChar = i === rawArgs.length - 1;
+        if (isArgName) {
+          if (char === ':') {
+            isArgName = false;
+          } else if (char === ',' || isLastChar) {
+            if (isLastChar) {
+              argName += char;
+            }
+
+            args.push({ value: argName, body: null });
+            argName = '';
+            isArgName = true;
+          } else if (char !== ' ') {
+            argName += char;
+          }
+        } else if (quote) {
+          if (char === quote) {
+            quote = null;
+          }
+          expression += char;
+          if (isLastChar) {
+            args.push({
+              value: argName,
+              body: this.parseExpression(expression, offset + i + 1 - (expression.length - 1)),
+            });
+          }
+        } else if (char === '"') {
+          expression += char;
+          quote = '"';
+        } else if (char === "'") {
+          expression += char;
+          quote = "'";
+        } else if (char === ',' || isLastChar) {
+          if (isLastChar) {
+            expression += char;
+          }
+
+          args.push({
+            value: argName,
+            body: this.parseExpression(expression, offset + i + 1 - (expression.length - 1)),
+          });
+          expression = '';
+          argName = '';
+          isArgName = true;
+        } else {
+          expression += char;
+        }
+      }
+    }
+
+    return { value, args, mixinType };
+  }
+
   private getVarRef(
     name: string,
     namespace: null | string,
     offset: number
   ): SassNodes['variableRef']['ref'] {
-    let varNode: SassNodes['variable'] | null | undefined = this.scope.variables
+    const varNode: SassNodes['variable'] | null | undefined = this.scope.variables
       .flat()
       .find((v) => v.value === name);
     if (varNode) {
       return { uri: this.uri, line: varNode.line };
     }
 
-    return this.findVariableInImports(name, namespace, offset);
+    const mixinVar = this.findVariableInMixinArgs(name);
+    if (mixinVar) {
+      return mixinVar;
+    }
+    const importVar = this.findVariableInImports(name, namespace);
+    if (importVar) {
+      return importVar;
+    }
+
+    this.diagnostics.push(
+      createSassDiagnostic(
+        'variableNotFound',
+        createRange(this.current.index, offset, offset + name.length),
+        name
+      )
+    );
+    return null;
   }
 
-  private findVariableInImports(name: string, namespace: null | string, offset: number) {
+  private findVariableInMixinArgs(name: string): SassNodes['variableRef']['ref'] {
+    const selectors = this.scope.selectors;
+
+    for (let i = 0; i < selectors.length; i++) {
+      const selector = selectors[i];
+      if (selector.type === 'mixin') {
+        for (let i = 0; i < selector.args.length; i++) {
+          const arg = selector.args[i];
+          if (arg.value === name) {
+            return { line: selector.line, uri: this.uri };
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  private findVariableInImports(
+    name: string,
+    namespace: null | string
+  ): SassNodes['variableRef']['ref'] {
     const imports = this.scope.imports.flat();
 
     for (let i = 0; i < imports.length; i++) {
@@ -394,29 +550,24 @@ export class ASTParser {
       }
     }
 
-    this.diagnostics.push(
-      createSassDiagnostic(
-        'variableNotFound',
-        createRange(this.current.index, offset, offset + name.length),
-        name
-      )
-    );
     return null;
   }
 
   private getLineType(line: string): keyof SassNodes {
-    if (line.length === 0) {
+    if (isEmptyOrWhitespace(line)) {
       return 'emptyLine';
+    } else if (isSelector(line) || isHtmlTag(line)) {
+      return 'selector';
     } else if (isProperty(line)) {
       return 'property';
-    } else if (isSelector(line)) {
-      return 'selector';
     } else if (isVar(line)) {
       return 'variable';
     } else if (isUse(line)) {
       return 'use';
     } else if (isImport(line)) {
       return 'import';
+    } else if (isMixin(line)) {
+      return 'mixin';
     }
     return 'literal';
   }

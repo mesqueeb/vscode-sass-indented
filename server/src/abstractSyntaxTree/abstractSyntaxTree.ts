@@ -1,4 +1,5 @@
-import { SassFile, SassASTOptions } from './utils';
+import { SassFile } from './utils';
+import { SassASTOptions } from './nodes';
 import { StingKeyObj } from '../utils';
 import { ASTParser } from './parse';
 import { promises } from 'fs';
