@@ -24,10 +24,20 @@ interface UseNode extends Omit<BaseNode, 'body' | 'level'> {
   type: 'use';
 }
 interface CommentNode extends Omit<BaseNode, 'body'> {
-  isMultiLine: boolean;
   value: string;
   type: 'comment';
 }
+
+interface BlockCommentContentNode {
+  value: string;
+  line: number;
+}
+
+interface BlockCommentNode extends Omit<BaseNode, 'body' | 'value'> {
+  body: BlockCommentContentNode[];
+  type: 'blockComment';
+}
+
 interface LiteralNode {
   type: 'literal';
   value: string;
@@ -74,6 +84,10 @@ interface ExtendNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'>
   extendType: '@extend' | '+';
 }
 
+// interface FontFaceNode extends BaseNode {
+//   type: 'fontFace';
+// }
+
 interface MixinNode extends BaseNode {
   body: SassNode[];
   type: 'mixin';
@@ -101,4 +115,5 @@ export interface SassNodes {
   emptyLine: EmptyLineNode;
   mixin: MixinNode;
   extend: ExtendNode;
+  blockComment: BlockCommentNode;
 }

@@ -75,7 +75,6 @@ test('AST: Use Scopes', async () => {
               level: 1,
               line: 3,
               value: '// @use "./files/import3"',
-              isMultiLine: false,
             },
             {
               type: 'property',

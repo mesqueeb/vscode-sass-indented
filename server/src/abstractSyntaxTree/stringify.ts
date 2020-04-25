@@ -20,7 +20,7 @@ export function stringifyNodes(nodes: SassNode[], options: SassASTOptions, reset
     const node = nodes[i];
     if (node.type === 'emptyLine' && STATE.wasLastLineEmpty) {
       nodes.splice(i, 1);
-      i--;
+      i--; // without decreasing the index the loop will skip the next node, because the array is one element shorter.
     }
     text += stringifyNode(node, options);
   }
@@ -33,6 +33,14 @@ function stringifyNode(node: SassNode, options: SassASTOptions) {
     case 'comment':
       increaseStateLineNumber(node);
       text += addLine(node.value, node.level, options);
+      break;
+    case 'blockComment':
+      increaseStateLineNumber(node);
+      STATE.currentLine--; // decrease because the block comment node stores the first line twice, in the node and in the first element of the body.
+      node.body.forEach((contentNode) => {
+        increaseStateLineNumber(contentNode);
+        text += addLine(contentNode.value, node.level, options);
+      });
       break;
     case 'extend':
       increaseStateLineNumber(node);
@@ -103,9 +111,7 @@ function stringifyNode(node: SassNode, options: SassASTOptions) {
   return text;
 }
 
-function increaseStateLineNumber(
-  node: SassNodes[keyof Omit<SassNodes, 'literal' | 'variableRef' | 'expression'>]
-) {
+function increaseStateLineNumber(node: { line: number }) {
   node.line = STATE.currentLine;
   STATE.currentLine++;
   STATE.wasLastLineEmpty = false;

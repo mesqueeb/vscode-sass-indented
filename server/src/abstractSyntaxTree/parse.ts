@@ -9,6 +9,9 @@ import {
   isHtmlTag,
   isEmptyOrWhitespace,
   isAtExtend,
+  isSingleLineComment,
+  isBlockCommentStart,
+  isBlockCommentEnd,
 } from 'suf-regex';
 import { resolve } from 'path';
 import { addDotSassToPath } from '../utils';
@@ -54,6 +57,9 @@ interface ASTParserCurrentContext {
   distance: number;
   /**line indentation level.*/
   level: number;
+  /**not null if currently in block comment. */
+  blockCommentNode: SassNodes['blockComment'] | null;
+  isLastBlockCommentLine: boolean;
 }
 
 export class ASTParser {
@@ -74,6 +80,8 @@ export class ASTParser {
     line: '',
     type: 'emptyLine',
     level: 0,
+    blockCommentNode: null,
+    isLastBlockCommentLine: false,
   };
 
   constructor(public uri: string, public options: SassASTOptions, public ast: AbstractSyntaxTree) {}
@@ -92,6 +100,27 @@ export class ASTParser {
         canPushAtUseOrAtForwardNode = false;
       }
       switch (this.current.type) {
+        case 'blockComment':
+          {
+            if (!this.current.blockCommentNode) {
+              this.current.blockCommentNode = createSassNode<'blockComment'>({
+                body: [],
+                level: this.current.level,
+                line: this.current.index,
+                type: 'blockComment',
+              });
+              this.pushNode(this.current.blockCommentNode);
+            }
+            this.current.blockCommentNode.body.push({
+              line: this.current.index,
+              value: this.current.line.replace(/^[\t ]*(?!\/)/, ' ').trimEnd(),
+            });
+            if (this.current.isLastBlockCommentLine) {
+              this.current.blockCommentNode = null;
+              this.current.isLastBlockCommentLine = false;
+            }
+          }
+          break;
         case 'selector':
           {
             const node = createSassNode<'selector'>({
@@ -212,7 +241,6 @@ export class ASTParser {
                 createSassNode<'comment'>({
                   level: clampedLevel,
                   line: index,
-                  isMultiLine: false,
                   type: 'comment',
                   value: '// '.concat(this.current.line.trimLeft()),
                 })
@@ -237,7 +265,6 @@ export class ASTParser {
 
         case 'emptyLine':
           {
-            // TODO ADD DIAGNOSTICS, when there is more than 1 empty line in a row.
             this.pushNode(
               createSassNode<'emptyLine'>({ line: this.current.index, type: 'emptyLine' })
             );
@@ -567,8 +594,15 @@ export class ASTParser {
   }
 
   private getLineType(line: string): keyof SassNodes {
-    if (isEmptyOrWhitespace(line)) {
+    if (this.current.blockCommentNode) {
+      if (isBlockCommentEnd(line)) {
+        this.current.isLastBlockCommentLine = true;
+      }
+      return 'blockComment';
+    } else if (isEmptyOrWhitespace(line)) {
       return 'emptyLine';
+    } else if (isBlockCommentStart(line)) {
+      return 'blockComment';
     } else if (isSelector(line) || isHtmlTag(line)) {
       return 'selector';
     } else if (isProperty(line)) {
@@ -583,6 +617,8 @@ export class ASTParser {
       return 'mixin';
     } else if (isAtExtend(line)) {
       return 'extend';
+    } else if (isSingleLineComment(line)) {
+      return 'comment';
     }
     return 'literal';
   }
