@@ -8,6 +8,7 @@ import {
   isMixin,
   isHtmlTag,
   isEmptyOrWhitespace,
+  isAtExtend,
 } from 'suf-regex';
 import { resolve } from 'path';
 import { addDotSassToPath } from '../utils';
@@ -220,6 +221,20 @@ export class ASTParser {
           }
           break;
 
+        case 'extend':
+          {
+            this.pushNode(
+              createSassNode<'extend'>({
+                line: this.current.index,
+                type: 'extend',
+                level: Math.min(Math.max(this.current.level, 1), this.scope.selectors.length),
+                value: this.current.line.replace(/^[\t ]*(@extend|\+)/, '').trim(),
+                extendType: this.current.line.replace(/^[\t ]*(@extend|\+)/, '$1') as any,
+              })
+            );
+          }
+          break;
+
         case 'emptyLine':
           {
             // TODO ADD DIAGNOSTICS, when there is more than 1 empty line in a row.
@@ -289,10 +304,8 @@ export class ASTParser {
 
   /**Parse the values of a property or variable declaration. */
   private parseValue(line: string) {
-    const split = /^[\t ]*(.*?):(.*)/.exec(line);
-    if (!split) {
-      return { value: '', body: [] };
-    }
+    const split = /^[\t ]*(.*?):(.*)/.exec(line)!;
+
     const value = split[1];
     const rawExpression = split[2];
 
@@ -320,7 +333,7 @@ export class ASTParser {
 
     const pushToken = (value: string) => {
       if (/^[.\w-]*\$/.test(value)) {
-        const [, namespace, val] = /^(.*?)\.?(\$.*)/.exec(value) || [];
+        const [, namespace, val] = /^(.*?)\.?(\$.*)/.exec(value)!;
         pushExpressionNode(
           createSassNode<'variableRef'>({
             type: 'variableRef',
@@ -568,6 +581,8 @@ export class ASTParser {
       return 'import';
     } else if (isMixin(line)) {
       return 'mixin';
+    } else if (isAtExtend(line)) {
+      return 'extend';
     }
     return 'literal';
   }

@@ -47,7 +47,30 @@ test('AST: EmptyLine and empty property', async () => {
   expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toEqual(`
 .class
   margin-top:
-
-
 `);
+  const expectedFilesAfterFormat: AbstractSyntaxTree['files'] = {
+    '/file': {
+      diagnostics: [],
+      body: [
+        { type: 'emptyLine', line: 0 },
+        {
+          type: 'selector',
+          level: 0,
+          line: 1,
+          value: '.class',
+          body: [
+            {
+              type: 'property',
+              level: 1,
+              line: 2,
+              value: 'margin-top',
+              body: [],
+            },
+          ],
+        },
+        { type: 'emptyLine', line: 3 },
+      ],
+    },
+  };
+  expect(ast.files).toStrictEqual(expectedFilesAfterFormat);
 });

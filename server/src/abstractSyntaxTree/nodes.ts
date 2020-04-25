@@ -69,6 +69,10 @@ interface VariableNode extends BaseNode {
 interface EmptyLineNode extends Pick<BaseNode, 'type' | 'line'> {
   type: 'emptyLine';
 }
+interface ExtendNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
+  type: 'extend';
+  extendType: '@extend' | '+';
+}
 
 interface MixinNode extends BaseNode {
   body: SassNode[];
@@ -96,4 +100,5 @@ export interface SassNodes {
   comment: CommentNode;
   emptyLine: EmptyLineNode;
   mixin: MixinNode;
+  extend: ExtendNode;
 }

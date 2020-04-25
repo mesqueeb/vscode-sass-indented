@@ -1,9 +1,28 @@
 import { SassNode, SassASTOptions, SassNodes } from './nodes';
 
-export function stringifyNodes(nodes: SassNode[], options: SassASTOptions) {
+interface StringifyState {
+  currentLine: number;
+  wasLastLineEmpty: boolean;
+}
+
+const STATE: StringifyState = {
+  currentLine: 0,
+  wasLastLineEmpty: false,
+};
+
+export function stringifyNodes(nodes: SassNode[], options: SassASTOptions, resetState = false) {
+  if (resetState) {
+    STATE.currentLine = 0;
+    STATE.wasLastLineEmpty = false;
+  }
   let text = '';
   for (let i = 0; i < nodes.length; i++) {
-    text += stringifyNode(nodes[i], options);
+    const node = nodes[i];
+    if (node.type === 'emptyLine' && STATE.wasLastLineEmpty) {
+      nodes.splice(i, 1);
+      i--;
+    }
+    text += stringifyNode(node, options);
   }
   return text;
 }
@@ -12,20 +31,33 @@ function stringifyNode(node: SassNode, options: SassASTOptions) {
   let text = '';
   switch (node.type) {
     case 'comment':
+      increaseStateLineNumber(node);
       text += addLine(node.value, node.level, options);
       break;
+    case 'extend':
+      increaseStateLineNumber(node);
+      text += addLine(
+        `${node.extendType === '+' ? '+' : '@extend '}${node.value}`,
+        node.level,
+        options
+      );
+      break;
     case 'import':
+      increaseStateLineNumber(node);
       text += addLine(`@import '${node.value}'`, node.level, options);
       break;
     case 'use':
       // TODO ADD @use "with" functionality
+      increaseStateLineNumber(node);
       text += addLine(stringifyAtUse(node), 0, options);
       break;
     case 'selector':
+      increaseStateLineNumber(node);
       text += addLine(node.value, node.level, options);
       text += stringifyNodes(node.body, options);
       break;
     case 'mixin':
+      increaseStateLineNumber(node);
       text += addLine(
         `${node.mixinType === '=' ? '=' : '@mixin '}${node.value}${
           node.args.length === 0
@@ -49,13 +81,18 @@ function stringifyNode(node: SassNode, options: SassASTOptions) {
       break;
     case 'variable':
     case 'property':
+      increaseStateLineNumber(node);
       text += addLine(`${node.value}:${stringifyNodes(node.body, options)}`, node.level, options);
       break;
     case 'expression':
       text += stringifyExpression(node, options);
       break;
     case 'emptyLine':
-      text += '\n';
+      if (!STATE.wasLastLineEmpty) {
+        increaseStateLineNumber(node);
+        text += '\n';
+        STATE.wasLastLineEmpty = true;
+      }
       break;
     case 'literal':
     case 'variableRef':
@@ -64,6 +101,14 @@ function stringifyNode(node: SassNode, options: SassASTOptions) {
   }
 
   return text;
+}
+
+function increaseStateLineNumber(
+  node: SassNodes[keyof Omit<SassNodes, 'literal' | 'variableRef' | 'expression'>]
+) {
+  node.line = STATE.currentLine;
+  STATE.currentLine++;
+  STATE.wasLastLineEmpty = false;
 }
 
 function stringifyAtUse(node: SassNodes['use']) {

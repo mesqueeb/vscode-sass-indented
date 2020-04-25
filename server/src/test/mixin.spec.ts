@@ -9,7 +9,7 @@ test('AST: Mixin', async () => {
 =mx2($arg1)
   margin: $arg1
 @mixin mx3 ($arg1: "$nonExistentVar")
-@mixin mx4 ($arg1: $nonExistentVar)`,
+@mixin mx4 ($arg1:   $nonExistentVar)`,
     `/file`,
     {
       insertSpaces: false,
@@ -20,7 +20,7 @@ test('AST: Mixin', async () => {
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
       diagnostics: [
-        createSassDiagnostic('variableNotFound', createRange(5, 19, 34), '$nonExistentVar'),
+        createSassDiagnostic('variableNotFound', createRange(5, 21, 36), '$nonExistentVar'),
       ],
       body: [
         {
@@ -84,4 +84,11 @@ test('AST: Mixin', async () => {
     },
   };
   expect(ast.files).toStrictEqual(expectedFiles);
+
+  expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toEqual(`=mx1
+  margin: 20px
+=mx2($arg1)
+  margin: $arg1
+@mixin mx3($arg1: "$nonExistentVar")
+@mixin mx4($arg1: $nonExistentVar)`);
 });
