@@ -7,6 +7,11 @@ export interface BaseNode {
 }
 export type NodeValues = LiteralNode | VariableRefNode | ExpressionNode;
 
+/** TODO
+ * expand selector node, so that every class, id, tag have their own node,
+ * its useful in case the selector has an interpolated section,
+ * to check is var exist.
+ */
 export interface SelectorNode extends BaseNode {
   body: SassNode[];
   type: 'selector';
