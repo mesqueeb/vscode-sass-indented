@@ -104,6 +104,7 @@ export class ASTParser {
       switch (this.current.type) {
         case 'blockComment':
           {
+            let value = this.current.line.replace(/^[\t ]*/, ' ').trimEnd();
             if (!this.current.blockCommentNode) {
               this.current.blockCommentNode = createSassNode<'blockComment'>({
                 body: [],
@@ -112,10 +113,12 @@ export class ASTParser {
                 type: 'blockComment',
               });
               this.pushNode(this.current.blockCommentNode);
+              value = value.trimLeft();
             }
+
             this.current.blockCommentNode.body.push({
               line: this.current.index,
-              value: this.current.line.replace(/^[\t ]*(?!\/)/, ' ').trimEnd(),
+              value,
             });
             if (this.current.isLastBlockCommentLine) {
               this.current.blockCommentNode = null;
