@@ -2,7 +2,7 @@ import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
 import { Pluralize } from '../utils';
 
 export interface SassDiagnostic extends Diagnostic {
-  isResolvedByFormatting: boolean;
+  isResolvedByStringify: boolean;
 }
 
 const source = 'sass';
@@ -23,7 +23,7 @@ interface AllDiagnostics {
 
 const allDiagnostics: AllDiagnostics = {
   '@useNotTopLevel': () => ({
-    isResolvedByFormatting: true,
+    isResolvedByStringify: true,
     message:
       '@use rules must come before any rules other than @forward, including style rules. However, you can declare variables before @use rules to use when configuring modules.',
     code: '@useNotTopLevel',
@@ -33,7 +33,7 @@ const allDiagnostics: AllDiagnostics = {
   invalidIndentation: (level, tabSize, insertSpaces) => {
     const expectedIndentation = level * tabSize;
     return {
-      isResolvedByFormatting: true,
+      isResolvedByStringify: true,
       message: `Invalid Indentation Expected ${expectedIndentation} ${Pluralize(
         insertSpaces ? 'space' : 'tab',
         expectedIndentation
@@ -44,7 +44,7 @@ const allDiagnostics: AllDiagnostics = {
     };
   },
   variableNotFound: (name) => ({
-    isResolvedByFormatting: false,
+    isResolvedByStringify: false,
     code: 'variableNotFound',
     message: `Variable declaration for ${name} not found.`,
     severity: DiagnosticSeverity.Error,

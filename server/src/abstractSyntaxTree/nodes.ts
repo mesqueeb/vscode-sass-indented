@@ -87,9 +87,10 @@ interface IncludeNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'
   includeType: '@include' | '+';
 }
 
-// interface FontFaceNode extends BaseNode {
-//   type: 'fontFace';
-// }
+interface FontFaceNode extends Omit<BaseNode, 'value'> {
+  type: 'fontFace';
+  body: SassNode[];
+}
 
 interface MixinNode extends BaseNode {
   body: SassNode[];
@@ -120,4 +121,5 @@ export interface SassNodes {
   extend: ExtendNode;
   blockComment: BlockCommentNode;
   include: IncludeNode;
+  fontFace: FontFaceNode;
 }

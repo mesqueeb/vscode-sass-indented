@@ -13,6 +13,7 @@ import {
   isBlockCommentStart,
   isBlockCommentEnd,
   isInclude,
+  isFontFace,
 } from 'suf-regex';
 import { resolve } from 'path';
 import { addDotSassToPath } from '../utils';
@@ -620,7 +621,7 @@ export class ASTParser {
       return 'emptyLine';
     } else if (isBlockCommentStart(line)) {
       return 'blockComment';
-    } else if (isSelector(line) || isHtmlTag(line)) {
+    } else if (isSelector(line) || isHtmlTag(line) || isFontFace(line)) {
       return 'selector';
     } else if (isProperty(line)) {
       return 'property';

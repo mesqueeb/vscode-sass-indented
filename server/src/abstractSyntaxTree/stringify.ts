@@ -11,6 +11,7 @@ const STATE: StringifyState = {
 };
 
 export function stringifyNodes(nodes: SassNode[], options: SassASTOptions, resetState = false) {
+  // TODO remove fixed diagnostics, and update diagnostic positions.
   if (resetState) {
     STATE.currentLine = 0;
     STATE.wasLastLineEmpty = false;
