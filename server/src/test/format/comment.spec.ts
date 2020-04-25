@@ -4,8 +4,8 @@ test('Sass Format: Block Comment', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
     `/**
-* @comment
-      * test Comment text.
+* @comment  
+      * test Comment text.  
  		   			*
   
  *

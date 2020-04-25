@@ -12,6 +12,7 @@ import {
   isSingleLineComment,
   isBlockCommentStart,
   isBlockCommentEnd,
+  isInclude,
 } from 'suf-regex';
 import { resolve } from 'path';
 import { addDotSassToPath } from '../utils';
@@ -166,7 +167,7 @@ export class ASTParser {
             this.scope.selectors[this.scope.selectors.length - 1].body.push(
               createSassNode<'property'>({
                 body,
-                level: Math.min(Math.max(this.current.level, 1), this.scope.selectors.length),
+                level: this.getPropLevel(),
                 line: index,
                 type: this.current.type,
                 value,
@@ -255,9 +256,21 @@ export class ASTParser {
               createSassNode<'extend'>({
                 line: this.current.index,
                 type: 'extend',
-                level: Math.min(Math.max(this.current.level, 1), this.scope.selectors.length),
-                value: this.current.line.replace(/^[\t ]*(@extend|\+)/, '').trim(),
-                extendType: this.current.line.replace(/^[\t ]*(@extend|\+)/, '$1') as any,
+                level: this.getPropLevel(),
+                value: this.current.line.replace(/^[\t ]*@extend/, '').trim(),
+              })
+            );
+          }
+          break;
+        case 'include':
+          {
+            this.pushNode(
+              createSassNode<'include'>({
+                line: this.current.index,
+                type: 'include',
+                level: this.getPropLevel(),
+                value: this.current.line.replace(/^[\t ]*(@include|\+)/, '').trim(),
+                includeType: this.current.line.replace(/^[\t ]*(@include|\+)/, '$1') as any,
               })
             );
           }
@@ -284,6 +297,10 @@ export class ASTParser {
       body: this.nodes,
       diagnostics: this.diagnostics,
     };
+  }
+
+  private getPropLevel(): number {
+    return Math.min(Math.max(this.current.level, 1), this.scope.selectors.length);
   }
 
   /**Removes all nodes that should not be accessible from the current scope. */
@@ -617,6 +634,8 @@ export class ASTParser {
       return 'mixin';
     } else if (isAtExtend(line)) {
       return 'extend';
+    } else if (isInclude(line)) {
+      return 'include';
     } else if (isSingleLineComment(line)) {
       return 'comment';
     }

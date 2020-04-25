@@ -74,15 +74,15 @@ $test: 23
   position: relative
   i:not(.fv)
     &::after
-      display: block
+  display: block
       background: $light-gray
       &::after
         position: absolute
-        display: none
-        content: ""
+    display: none
+    content: ""
         left: 5px
       div
-        top: $awd
+  top: $awd
         @include name ($test)
 `
   );

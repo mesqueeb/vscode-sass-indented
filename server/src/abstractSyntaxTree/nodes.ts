@@ -81,7 +81,10 @@ interface EmptyLineNode extends Pick<BaseNode, 'type' | 'line'> {
 }
 interface ExtendNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
   type: 'extend';
-  extendType: '@extend' | '+';
+}
+interface IncludeNode extends Pick<BaseNode, 'type' | 'line' | 'value' | 'level'> {
+  type: 'include';
+  includeType: '@include' | '+';
 }
 
 // interface FontFaceNode extends BaseNode {
@@ -116,4 +119,5 @@ export interface SassNodes {
   mixin: MixinNode;
   extend: ExtendNode;
   blockComment: BlockCommentNode;
+  include: IncludeNode;
 }

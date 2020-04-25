@@ -44,8 +44,12 @@ function stringifyNode(node: SassNode, options: SassASTOptions) {
       break;
     case 'extend':
       increaseStateLineNumber(node);
+      text += addLine(`@extend ${node.value}`, node.level, options);
+      break;
+    case 'include':
+      increaseStateLineNumber(node);
       text += addLine(
-        `${node.extendType === '+' ? '+' : '@extend '}${node.value}`,
+        `${node.includeType === '+' ? '+' : '@include '}${node.value}`,
         node.level,
         options
       );
