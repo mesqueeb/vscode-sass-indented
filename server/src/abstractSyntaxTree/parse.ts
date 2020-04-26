@@ -1,5 +1,5 @@
 import { createSassNode, isUse, isImport, SassFile } from './utils';
-import { SassNode, SassNodes, NodeValues, SassASTOptions } from './nodes';
+import { SassNode, SassNodes, NodeValue, SassASTOptions } from './nodes';
 import {
   getDistance,
   isProperty,
@@ -14,6 +14,7 @@ import {
   isBlockCommentEnd,
   isInclude,
   isFontFace,
+  isInterpolatedProperty,
 } from 'suf-regex';
 import { resolve } from 'path';
 import { addDotSassToPath } from '../utils';
@@ -133,7 +134,11 @@ export class ASTParser {
               level: Math.min(this.current.level, this.scope.selectors.length),
               line: index,
               type: this.current.type,
-              value: this.current.line.trim(),
+              value: this.parseExpression(
+                this.current.line.replace(/^[\t ]*/, ''),
+                this.current.distance,
+                true
+              ),
             });
 
             this.pushNode(node);
@@ -167,7 +172,7 @@ export class ASTParser {
 
         case 'property':
           {
-            const { value, body } = this.parseValue(this.current.line);
+            const { value, body } = this.parseProperty(this.current.line, false);
             this.scope.selectors[this.scope.selectors.length - 1].body.push(
               createSassNode<'property'>({
                 body,
@@ -183,7 +188,7 @@ export class ASTParser {
         case 'variable':
           // TODO ADD DIAGNOSTICS, duplicate variable name in current scope.
           {
-            const { value, body } = this.parseValue(this.current.line);
+            const { value, body } = this.parseProperty(this.current.line, true);
             const node = createSassNode<'variable'>({
               body: body,
               level: Math.min(this.current.level, this.scope.selectors.length),
@@ -351,27 +356,31 @@ export class ASTParser {
   }
 
   /**Parse the values of a property or variable declaration. */
-  private parseValue(line: string) {
+  private parseProperty<R extends boolean>(
+    line: string,
+    stringVal: R
+  ): { value: R extends true ? string : NodeValue[]; body: NodeValue[] } {
     const split = /^[\t ]*(.*?):(.*)/.exec(line)!;
 
     const value = split[1];
     const rawExpression = split[2];
 
     return {
-      value,
+      value: (stringVal ? value : this.parseExpression(value, this.current.distance)) as any,
       body: this.parseExpression(rawExpression, value.length + 1 + this.current.distance),
     };
   }
-  private parseExpression(expression: string, startOffset: number) {
+
+  private parseExpression(expression: string, startOffset: number, skipSpace = false) {
     let token = '';
-    const body: NodeValues[] = [];
+    const body: NodeValue[] = [];
 
     const expressionNodes: SassNodes['expression'][] = [];
     let level = 0;
     let i = 0;
     let quote: '"' | "'" | null = null;
 
-    const pushExpressionNode = (node: NodeValues) => {
+    const pushExpressionNode = (node: NodeValue) => {
       if (level === 0) {
         body.push(node);
       } else {
@@ -429,7 +438,7 @@ export class ASTParser {
         level++;
 
         token = '';
-      } else if (char === ' ') {
+      } else if (char === ' ' && !skipSpace) {
         pushToken(token);
         token = '';
       } else if (char === '(') {
@@ -615,6 +624,7 @@ export class ASTParser {
   }
 
   private getLineType(line: string): keyof SassNodes {
+    const isInterpolatedProp = isInterpolatedProperty(line);
     if (this.current.blockCommentNode) {
       if (isBlockCommentEnd(line)) {
         this.current.isLastBlockCommentLine = true;
@@ -624,9 +634,9 @@ export class ASTParser {
       return 'emptyLine';
     } else if (isBlockCommentStart(line)) {
       return 'blockComment';
-    } else if (isSelector(line) || isHtmlTag(line) || isFontFace(line)) {
+    } else if ((isSelector(line) || isHtmlTag(line) || isFontFace(line)) && !isInterpolatedProp) {
       return 'selector';
-    } else if (isProperty(line)) {
+    } else if (isProperty(line) || isInterpolatedProp) {
       return 'property';
     } else if (isVar(line)) {
       return 'variable';

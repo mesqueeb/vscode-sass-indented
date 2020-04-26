@@ -28,13 +28,13 @@ test('AST: EmptyLine and empty property', async () => {
           type: 'selector',
           level: 0,
           line: 1,
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               type: 'property',
               level: 1,
               line: 2,
-              value: 'border',
+              value: [{ type: 'literal', value: 'border' }],
               body: [
                 { type: 'literal', value: 'solid' },
                 {
@@ -62,7 +62,7 @@ test('AST: EmptyLine and empty property', async () => {
               type: 'property',
               level: 1,
               line: 3,
-              value: 'margin',
+              value: [{ type: 'literal', value: 'margin' }],
               body: [
                 {
                   type: 'expression',

@@ -1,4 +1,5 @@
 import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
 
 test('Sass Format: Selector Interpolation', async () => {
   const ast = new AbstractSyntaxTree();
@@ -7,26 +8,37 @@ test('Sass Format: Selector Interpolation', async () => {
     color: red
 
 #{$main}
-    color:red`,
+  color:red
+  #{$var}: 1rem`,
     '/file',
     { insertSpaces: true, tabSize: 2 }
   );
 
   const expectedFiles: AbstractSyntaxTree['files'] = {
     '/file': {
-      diagnostics: [],
+      diagnostics: [
+        createSassDiagnostic('variableNotFound', createRange(0, 2, 7), '$body'),
+        createSassDiagnostic('variableNotFound', createRange(3, 2, 7), '$main'),
+        createSassDiagnostic('variableNotFound', createRange(5, 4, 8), '$var'),
+      ],
       body: [
         {
           type: 'selector',
           level: 0,
           line: 0,
-          value: '#{$body}',
+          value: [
+            {
+              type: 'expression',
+              expressionType: 'interpolated',
+              body: [{ type: 'variableRef', ref: null, value: '$body' }],
+            },
+          ],
           body: [
             {
               type: 'property',
               level: 1,
               line: 1,
-              value: 'color',
+              value: [{ type: 'literal', value: 'color' }],
               body: [{ type: 'literal', value: 'red' }],
             },
           ],
@@ -36,14 +48,33 @@ test('Sass Format: Selector Interpolation', async () => {
           type: 'selector',
           level: 0,
           line: 3,
-          value: '#{$main}',
+          value: [
+            {
+              type: 'expression',
+              expressionType: 'interpolated',
+              body: [{ type: 'variableRef', ref: null, value: '$main' }],
+            },
+          ],
           body: [
             {
               type: 'property',
               level: 1,
               line: 4,
-              value: 'color',
+              value: [{ type: 'literal', value: 'color' }],
               body: [{ type: 'literal', value: 'red' }],
+            },
+            {
+              type: 'property',
+              level: 1,
+              line: 5,
+              value: [
+                {
+                  type: 'expression',
+                  expressionType: 'interpolated',
+                  body: [{ type: 'variableRef', ref: null, value: '$var' }],
+                },
+              ],
+              body: [{ type: 'literal', value: '1rem' }],
             },
           ],
         },
@@ -56,5 +87,6 @@ test('Sass Format: Selector Interpolation', async () => {
   color: red
 
 #{$main}
-  color: red`);
+  color: red
+  #{$var}: 1rem`);
 });

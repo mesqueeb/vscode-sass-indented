@@ -25,13 +25,13 @@ test('AST: EmptyLine and empty property', async () => {
           type: 'selector',
           level: 0,
           line: 1,
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               type: 'property',
               level: 1,
               line: 2,
-              value: 'margin-top',
+              value: [{ type: 'literal', value: 'margin-top' }],
               body: [],
             },
           ],
@@ -57,13 +57,13 @@ test('AST: EmptyLine and empty property', async () => {
           type: 'selector',
           level: 0,
           line: 1,
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               type: 'property',
               level: 1,
               line: 2,
-              value: 'margin-top',
+              value: [{ type: 'literal', value: 'margin-top' }],
               body: [],
             },
           ],

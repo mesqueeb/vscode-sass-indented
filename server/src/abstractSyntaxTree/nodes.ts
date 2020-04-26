@@ -3,9 +3,9 @@ export interface BaseNode {
   line: number;
   level: number;
   type: keyof SassNodes;
-  value: string;
+  value: string | NodeValue[];
 }
-export type NodeValues = LiteralNode | VariableRefNode | ExpressionNode;
+export type NodeValue = LiteralNode | VariableRefNode | ExpressionNode;
 
 /** TODO
  * expand selector node, so that every class, id, tag have their own node,
@@ -14,6 +14,7 @@ export type NodeValues = LiteralNode | VariableRefNode | ExpressionNode;
  */
 export interface SelectorNode extends BaseNode {
   body: SassNode[];
+  value: NodeValue[];
   type: 'selector';
 }
 
@@ -56,7 +57,7 @@ interface VariableRefNode {
   value: string;
 }
 interface ExpressionNodeBase {
-  body: NodeValues[];
+  body: NodeValue[];
   type: 'expression';
   expressionType: keyof SassExpressionNodes;
 }
@@ -74,11 +75,13 @@ interface SassExpressionNodes {
 
 type ExpressionNode = SassExpressionNodes[keyof SassExpressionNodes];
 interface PropertyNode extends BaseNode {
-  body: NodeValues[];
+  body: NodeValue[];
+  value: NodeValue[];
   type: 'property';
 }
 interface VariableNode extends BaseNode {
-  body: NodeValues[];
+  body: NodeValue[];
+  value: string;
   type: 'variable';
 }
 interface EmptyLineNode extends Pick<BaseNode, 'type' | 'line'> {
@@ -101,7 +104,7 @@ interface MixinNode extends BaseNode {
   body: SassNode[];
   type: 'mixin';
   mixinType: '@mixin' | '=';
-  args: { value: string; body: NodeValues[] | null }[];
+  args: { value: string; body: NodeValue[] | null }[];
 }
 
 type _SassNode<T extends keyof SassNodes> = SassNodes[T];

@@ -1,4 +1,4 @@
-import { AbstractSyntaxTree } from '../abstractSyntaxTree/abstractSyntaxTree';
+import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 
 test('@font-face', async () => {
   const ast = new AbstractSyntaxTree();

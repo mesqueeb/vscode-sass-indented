@@ -18,20 +18,20 @@ test('AST: Simple Stringify', async () => {
           type: 'selector',
           line: 0,
           level: 0,
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               type: 'property',
               level: 1,
               line: 1,
-              value: 'margin',
+              value: [{ type: 'literal', value: 'margin' }],
               body: [{ type: 'literal', value: '20px' }],
             },
             {
               type: 'property',
               level: 1,
               line: 2,
-              value: 'padding',
+              value: [{ type: 'literal', value: 'padding' }],
               body: [
                 {
                   type: 'expression',

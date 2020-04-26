@@ -106,7 +106,7 @@ test('AST: Import Scopes', async () => {
           line: 2,
           level: 0,
           type: 'selector',
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               type: 'import',
@@ -118,7 +118,7 @@ test('AST: Import Scopes', async () => {
             {
               line: 4,
               level: 1,
-              value: '&:hover',
+              value: [{ type: 'literal', value: '&:hover' }],
               type: 'selector',
               body: [
                 {
@@ -136,7 +136,7 @@ test('AST: Import Scopes', async () => {
           type: 'selector',
           level: 0,
           line: 6,
-          value: '.class2',
+          value: [{ type: 'literal', value: '.class2' }],
           body: [
             {
               type: 'import',
@@ -149,7 +149,7 @@ test('AST: Import Scopes', async () => {
               type: 'property',
               level: 1,
               line: 8,
-              value: 'margin',
+              value: [{ type: 'literal', value: 'margin' }],
               body: [
                 {
                   type: 'variableRef',
@@ -169,7 +169,7 @@ test('AST: Import Scopes', async () => {
               type: 'property',
               level: 1,
               line: 9,
-              value: 'padding',
+              value: [{ type: 'literal', value: 'padding' }],
               body: [
                 {
                   type: 'variableRef',

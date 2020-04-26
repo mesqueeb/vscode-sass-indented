@@ -38,12 +38,12 @@ test('AST: Simple Import', async () => {
           line: 1,
           level: 0,
           type: 'selector',
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               line: 2,
               level: 1,
-              value: 'margin',
+              value: [{ type: 'literal', value: 'margin' }],
               type: 'property',
               body: [
                 {

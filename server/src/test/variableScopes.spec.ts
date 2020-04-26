@@ -46,7 +46,7 @@ $notUsedVar: none
           line: 2,
           level: 0,
           type: 'selector',
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               type: 'variable',
@@ -59,7 +59,7 @@ $notUsedVar: none
             {
               line: 4,
               level: 1,
-              value: '&:hover',
+              value: [{ type: 'literal', value: '&:hover' }],
               type: 'selector',
               body: [
                 {
@@ -84,7 +84,7 @@ $notUsedVar: none
           type: 'selector',
           level: 0,
           line: 7,
-          value: '.class2',
+          value: [{ type: 'literal', value: '.class2' }],
           body: [
             {
               type: 'variable',
@@ -97,7 +97,7 @@ $notUsedVar: none
               type: 'property',
               level: 1,
               line: 9,
-              value: 'margin',
+              value: [{ type: 'literal', value: 'margin' }],
               body: [
                 { type: 'variableRef', ref: { line: 0, uri: '/file' }, value: '$var' },
                 { type: 'variableRef', ref: null, value: '$var2' },

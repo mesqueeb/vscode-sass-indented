@@ -68,7 +68,7 @@ test('AST: Use Scopes', async () => {
           line: 2,
           level: 0,
           type: 'selector',
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               type: 'comment',
@@ -80,7 +80,7 @@ test('AST: Use Scopes', async () => {
               type: 'property',
               level: 1,
               line: 4,
-              value: 'margin',
+              value: [{ type: 'literal', value: 'margin' }],
               body: [
                 { type: 'variableRef', ref: null, value: '$var' },
                 {

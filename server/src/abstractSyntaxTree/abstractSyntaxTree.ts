@@ -3,7 +3,7 @@ import { SassASTOptions } from './nodes';
 import { StingKeyObj } from '../utils';
 import { ASTParser } from './parse';
 import { promises } from 'fs';
-import { stringifyNodes } from './stringify';
+import { ASTStringify } from './stringify';
 
 export class AbstractSyntaxTree {
   files: StingKeyObj<SassFile> = {};
@@ -40,6 +40,8 @@ export class AbstractSyntaxTree {
   // TODO add stringify line method
   async stringifyFile(uri: string, options: SassASTOptions) {
     await this.lookUpFile(uri, options);
-    return stringifyNodes(this.files[uri].body, options, true).replace(/\n$/, '');
+    return new ASTStringify()
+      .stringifyNodes(this.files[uri].body, options, true)
+      .replace(/\n$/, '');
   }
 }

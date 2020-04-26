@@ -96,7 +96,7 @@ margin-top:  calc( #{ $var } - 20px)
           type: 'selector',
           level: 0,
           line: 3,
-          value: '.class',
+          value: [{ type: 'literal', value: '.class' }],
           body: [
             {
               type: 'import',
@@ -109,7 +109,7 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 5,
-              value: 'margin-top',
+              value: [{ type: 'literal', value: 'margin-top' }],
               body: [
                 {
                   type: 'expression',
@@ -137,7 +137,7 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 6,
-              value: 'margin-left',
+              value: [{ type: 'literal', value: 'margin-left' }],
               body: [
                 {
                   type: 'variableRef',
@@ -150,7 +150,7 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 7,
-              value: 'margin-right',
+              value: [{ type: 'literal', value: 'margin-right' }],
               body: [
                 {
                   type: 'variableRef',
@@ -163,7 +163,7 @@ margin-top:  calc( #{ $var } - 20px)
               type: 'property',
               level: 1,
               line: 8,
-              value: 'margin-bottom',
+              value: [{ type: 'literal', value: 'margin-bottom' }],
               body: [
                 {
                   type: 'variableRef',

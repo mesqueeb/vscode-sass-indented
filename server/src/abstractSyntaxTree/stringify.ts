@@ -1,143 +1,178 @@
-import { SassNode, SassASTOptions, SassNodes } from './nodes';
+import { SassNode, SassASTOptions, SassNodes, NodeValue } from './nodes';
 
 interface StringifyState {
   currentLine: number;
   wasLastLineEmpty: boolean;
 }
 
-const STATE: StringifyState = {
-  currentLine: 0,
-  wasLastLineEmpty: false,
-};
+export class ASTStringify {
+  STATE: StringifyState = {
+    currentLine: 0,
+    wasLastLineEmpty: false,
+  };
 
-export function stringifyNodes(nodes: SassNode[], options: SassASTOptions, resetState = false) {
-  // TODO remove fixed diagnostics, and update diagnostic positions.
-  if (resetState) {
-    STATE.currentLine = 0;
-    STATE.wasLastLineEmpty = false;
+  stringifyNodes(nodes: SassNode[], options: SassASTOptions, resetState = false) {
+    // TODO remove fixed diagnostics, and update diagnostic positions.
+    if (resetState) {
+      this.STATE.currentLine = 0;
+      this.STATE.wasLastLineEmpty = false;
+    }
+    let text = '';
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      if (node.type === 'emptyLine' && this.STATE.wasLastLineEmpty) {
+        nodes.splice(i, 1);
+        i--; // without decreasing the index the loop will skip the next node, because the array is one element shorter.
+      }
+      text += this.stringifyNode(node, options);
+    }
+    return text;
   }
+
+  private stringifyNode(node: SassNode, options: SassASTOptions) {
+    let text = '';
+    switch (node.type) {
+      case 'comment':
+        this.increaseStateLineNumber(node);
+        text += this.addLine(node.value, node.level, options);
+        break;
+      case 'blockComment':
+        this.increaseStateLineNumber(node);
+        this.STATE.currentLine--; // decrease because the block comment node stores the first line twice, in the node and in the first element of the body.
+        node.body.forEach((contentNode) => {
+          this.increaseStateLineNumber(contentNode);
+          text += this.addLine(contentNode.value, node.level, options);
+        });
+        break;
+      case 'extend':
+        this.increaseStateLineNumber(node);
+        text += this.addLine(`@extend ${node.value}`, node.level, options);
+        break;
+      case 'include':
+        this.increaseStateLineNumber(node);
+        text += this.addLine(
+          `${node.includeType === '+' ? '+' : '@include '}${node.value}`,
+          node.level,
+          options
+        );
+        break;
+      case 'import':
+        this.increaseStateLineNumber(node);
+        text += this.addLine(`@import '${node.value}'`, node.level, options);
+        break;
+      case 'use':
+        // TODO ADD @use "with" functionality
+        this.increaseStateLineNumber(node);
+        text += this.addLine(this.stringifyAtUse(node), 0, options);
+        break;
+      case 'selector':
+        this.increaseStateLineNumber(node);
+        text += this.addLine(stringifySelector(node.value), node.level, options);
+        text += this.stringifyNodes(node.body, options);
+        break;
+      case 'mixin':
+        this.increaseStateLineNumber(node);
+        text += this.addLine(
+          `${node.mixinType === '=' ? '=' : '@mixin '}${node.value}${
+            node.args.length === 0
+              ? ''
+              : node.args.reduce((acc, item, index) => {
+                  acc += `${item.value}${item.body ? ':'.concat(stringifyValues(item.body)) : ''}`;
+                  if (node.args.length - 1 !== index) {
+                    acc += ', ';
+                  } else {
+                    acc += ')';
+                  }
+                  return acc;
+                }, '(')
+          }`,
+          node.level,
+          options
+        );
+        text += this.stringifyNodes(node.body, options);
+        break;
+      case 'variable':
+        this.increaseStateLineNumber(node);
+        text += this.addLine(`${node.value}:${stringifyValues(node.body)}`, node.level, options);
+        break;
+      case 'property':
+        this.increaseStateLineNumber(node);
+        text += this.addLine(
+          `${stringifyValues(node.value, true)}:${stringifyValues(node.body)}`,
+          node.level,
+          options
+        );
+        break;
+      case 'emptyLine':
+        if (!this.STATE.wasLastLineEmpty) {
+          this.increaseStateLineNumber(node);
+          text += '\n';
+          this.STATE.wasLastLineEmpty = true;
+        }
+        break;
+
+      case 'expression':
+      case 'literal':
+      case 'variableRef':
+        text += stringifyValue(node);
+        break;
+    }
+
+    return text;
+  }
+  private increaseStateLineNumber(node: { line: number }) {
+    node.line = this.STATE.currentLine;
+    this.STATE.currentLine++;
+    this.STATE.wasLastLineEmpty = false;
+  }
+
+  private addLine(text: string, level: number, options: SassASTOptions) {
+    return `${
+      options.insertSpaces ? ' '.repeat(level * options.tabSize) : '\t'.repeat(level)
+    }${text}\n`;
+  }
+
+  private stringifyAtUse(node: SassNodes['use']) {
+    const useNamespace = node.namespace && !node.value.endsWith(node.namespace);
+    return `@use '${node.value}'${useNamespace ? ` as ${node.namespace}` : ''}`;
+  }
+}
+
+function stringifySelector(nodes: NodeValue[]) {
   let text = '';
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
-    if (node.type === 'emptyLine' && STATE.wasLastLineEmpty) {
-      nodes.splice(i, 1);
-      i--; // without decreasing the index the loop will skip the next node, because the array is one element shorter.
+    if (node.type === 'expression') {
+      text += stringifyExpression(node).replace(/^ /, '');
+    } else {
+      text += node.value;
     }
-    text += stringifyNode(node, options);
   }
   return text;
 }
 
-function stringifyNode(node: SassNode, options: SassASTOptions) {
+export function stringifyValues(nodes: NodeValue[], removeFirstSpace = false) {
   let text = '';
-  switch (node.type) {
-    case 'comment':
-      increaseStateLineNumber(node);
-      text += addLine(node.value, node.level, options);
-      break;
-    case 'blockComment':
-      increaseStateLineNumber(node);
-      STATE.currentLine--; // decrease because the block comment node stores the first line twice, in the node and in the first element of the body.
-      node.body.forEach((contentNode) => {
-        increaseStateLineNumber(contentNode);
-        text += addLine(contentNode.value, node.level, options);
-      });
-      break;
-    case 'extend':
-      increaseStateLineNumber(node);
-      text += addLine(`@extend ${node.value}`, node.level, options);
-      break;
-    case 'include':
-      increaseStateLineNumber(node);
-      text += addLine(
-        `${node.includeType === '+' ? '+' : '@include '}${node.value}`,
-        node.level,
-        options
-      );
-      break;
-    case 'import':
-      increaseStateLineNumber(node);
-      text += addLine(`@import '${node.value}'`, node.level, options);
-      break;
-    case 'use':
-      // TODO ADD @use "with" functionality
-      increaseStateLineNumber(node);
-      text += addLine(stringifyAtUse(node), 0, options);
-      break;
-    case 'selector':
-      increaseStateLineNumber(node);
-      text += addLine(node.value, node.level, options);
-      text += stringifyNodes(node.body, options);
-      break;
-    case 'mixin':
-      increaseStateLineNumber(node);
-      text += addLine(
-        `${node.mixinType === '=' ? '=' : '@mixin '}${node.value}${
-          node.args.length === 0
-            ? ''
-            : node.args.reduce((acc, item, index) => {
-                acc += `${item.value}${
-                  item.body ? ':'.concat(stringifyNodes(item.body, options)) : ''
-                }`;
-                if (node.args.length - 1 !== index) {
-                  acc += ', ';
-                } else {
-                  acc += ')';
-                }
-                return acc;
-              }, '(')
-        }`,
-        node.level,
-        options
-      );
-      text += stringifyNodes(node.body, options);
-      break;
-    case 'variable':
-    case 'property':
-      increaseStateLineNumber(node);
-      text += addLine(`${node.value}:${stringifyNodes(node.body, options)}`, node.level, options);
-      break;
-    case 'expression':
-      text += stringifyExpression(node, options);
-      break;
-    case 'emptyLine':
-      if (!STATE.wasLastLineEmpty) {
-        increaseStateLineNumber(node);
-        text += '\n';
-        STATE.wasLastLineEmpty = true;
-      }
-      break;
-    case 'literal':
-    case 'variableRef':
-      text += ` ${node.value}`;
-      break;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    text += stringifyValue(node);
   }
-
-  return text;
+  return removeFirstSpace ? text.replace(/^ /, '') : text;
 }
 
-function increaseStateLineNumber(node: { line: number }) {
-  node.line = STATE.currentLine;
-  STATE.currentLine++;
-  STATE.wasLastLineEmpty = false;
+function stringifyValue(node: NodeValue) {
+  if (node.type === 'expression') {
+    return stringifyExpression(node);
+  } else {
+    return ` ${node.value}`;
+  }
 }
 
-function stringifyAtUse(node: SassNodes['use']) {
-  const useNamespace = node.namespace && !node.value.endsWith(node.namespace);
-  return `@use '${node.value}'${useNamespace ? ` as ${node.namespace}` : ''}`;
-}
-
-function stringifyExpression(node: SassNodes['expression'], options: SassASTOptions) {
+function stringifyExpression(node: SassNodes['expression']) {
   switch (node.expressionType) {
     case 'func':
-      return ` ${node.funcName}(${stringifyNodes(node.body, options).replace(/^ /, '')})`;
+      return ` ${node.funcName}(${stringifyValues(node.body).replace(/^ /, '')})`;
     case 'interpolated':
-      return ` #{${stringifyNodes(node.body, options).replace(/^ /, '')}}`;
+      return ` #{${stringifyValues(node.body).replace(/^ /, '')}}`;
   }
-}
-
-function addLine(text: string, level: number, options: SassASTOptions) {
-  return `${
-    options.insertSpaces ? ' '.repeat(level * options.tabSize) : '\t'.repeat(level)
-  }${text}\n`;
 }
