@@ -40,8 +40,6 @@ export class AbstractSyntaxTree {
   // TODO add stringify line method
   async stringifyFile(uri: string, options: SassASTOptions) {
     await this.lookUpFile(uri, options);
-    return new ASTStringify()
-      .stringifyNodes(this.files[uri].body, options, true)
-      .replace(/\n$/, '');
+    return new ASTStringify().stringify(this.files[uri], options).replace(/\n$/, '');
   }
 }

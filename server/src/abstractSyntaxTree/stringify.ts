@@ -1,4 +1,5 @@
 import { SassNode, SassASTOptions, SassNodes, NodeValue } from './nodes';
+import { SassFile } from './utils';
 
 interface StringifyState {
   currentLine: number;
@@ -11,12 +12,15 @@ export class ASTStringify {
     wasLastLineEmpty: false,
   };
 
-  stringifyNodes(nodes: SassNode[], options: SassASTOptions, resetState = false) {
-    // TODO remove fixed diagnostics, and update diagnostic positions.
-    if (resetState) {
-      this.STATE.currentLine = 0;
-      this.STATE.wasLastLineEmpty = false;
-    }
+  stringify(file: SassFile, options: SassASTOptions) {
+    const text = this.stringifyNodes(file.body, options);
+    // TODO maybe vscode handles this? update diagnostic positions??.
+    file.diagnostics = file.diagnostics.filter((v) => !v.isResolvedByStringify);
+
+    return text;
+  }
+
+  private stringifyNodes(nodes: SassNode[], options: SassASTOptions) {
     let text = '';
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
