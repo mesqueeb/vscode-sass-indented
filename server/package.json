@@ -47,7 +47,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "watch": "webpack --mode development",
-    "test": "jest --coverage --ci --clearCache",
+    "test": "jest --coverage --ci --clearCache -w 1",
     "test:watch": "jest --clearCache && jest --watch --coverage"
   }
 }
