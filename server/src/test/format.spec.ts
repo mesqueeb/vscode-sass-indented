@@ -1,6 +1,6 @@
 import { AbstractSyntaxTree } from '../abstractSyntaxTree/abstractSyntaxTree';
 
-test('AST: EmptyLine and empty property', async () => {
+test('AST: Format', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
     `@use "./files/import2"
@@ -172,9 +172,9 @@ margin-top:  calc( #{ $var } - 20px)
                 },
               ],
             },
+            { type: 'emptyLine', line: 9 },
           ],
         },
-        { type: 'emptyLine', line: 9 },
       ],
     },
   };

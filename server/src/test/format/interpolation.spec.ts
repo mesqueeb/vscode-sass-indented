@@ -41,9 +41,9 @@ test('Sass Format: Selector Interpolation', async () => {
               value: [{ type: 'literal', value: 'color' }],
               body: [{ type: 'literal', value: 'red' }],
             },
+            { type: 'emptyLine', line: 2 },
           ],
         },
-        { type: 'emptyLine', line: 2 },
         {
           type: 'selector',
           level: 0,

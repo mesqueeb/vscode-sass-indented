@@ -287,6 +287,8 @@ export class ASTParser {
 
         case 'emptyLine':
           {
+            this.current.distance = this.scope.selectors.length * this.options.tabSize;
+            this.current.level = this.scope.selectors.length;
             this.pushNode(
               createSassNode<'emptyLine'>({ line: this.current.index, type: 'emptyLine' })
             );

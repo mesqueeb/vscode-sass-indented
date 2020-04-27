@@ -5,6 +5,7 @@ test('AST: EmptyLine and empty property', async () => {
   await ast.parseFile(
     `
 .class
+
   margin-top:
 
 
@@ -27,18 +28,19 @@ test('AST: EmptyLine and empty property', async () => {
           line: 1,
           value: [{ type: 'literal', value: '.class' }],
           body: [
+            { type: 'emptyLine', line: 2 },
             {
               type: 'property',
               level: 1,
-              line: 2,
+              line: 3,
               value: [{ type: 'literal', value: 'margin-top' }],
               body: [],
             },
+            { type: 'emptyLine', line: 4 },
+            { type: 'emptyLine', line: 5 },
+            { type: 'emptyLine', line: 6 },
           ],
         },
-        { type: 'emptyLine', line: 3 },
-        { type: 'emptyLine', line: 4 },
-        { type: 'emptyLine', line: 5 },
       ],
     },
   };
@@ -46,6 +48,7 @@ test('AST: EmptyLine and empty property', async () => {
 
   expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toEqual(`
 .class
+
   margin-top:
 `);
   const expectedFilesAfterFormat: AbstractSyntaxTree['files'] = {
@@ -59,16 +62,17 @@ test('AST: EmptyLine and empty property', async () => {
           line: 1,
           value: [{ type: 'literal', value: '.class' }],
           body: [
+            { type: 'emptyLine', line: 2 },
             {
               type: 'property',
               level: 1,
-              line: 2,
+              line: 3,
               value: [{ type: 'literal', value: 'margin-top' }],
               body: [],
             },
+            { type: 'emptyLine', line: 4 },
           ],
         },
-        { type: 'emptyLine', line: 3 },
       ],
     },
   };

@@ -1,7 +1,7 @@
 import { AbstractSyntaxTree } from '../abstractSyntaxTree/abstractSyntaxTree';
 import { createSassDiagnostic, createRange } from '../abstractSyntaxTree/diagnostics';
 
-test('AST: EmptyLine and empty property', async () => {
+test('AST: Property functions', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
     `
@@ -76,9 +76,9 @@ test('AST: EmptyLine and empty property', async () => {
                 },
               ],
             },
+            { type: 'emptyLine', line: 4 },
           ],
         },
-        { type: 'emptyLine', line: 4 },
       ],
     },
   };
