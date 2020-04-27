@@ -149,7 +149,6 @@ export class ASTParser {
           }
           break;
         case 'mixin':
-          // TODO ADD DIAGNOSTICS, duplicate mixin name in current scope?(look it up in the docs).
           {
             const { args, value, mixinType } = this.parseMixin(this.current.line);
             const node = createSassNode<'mixin'>({
@@ -186,7 +185,6 @@ export class ASTParser {
           break;
 
         case 'variable':
-          // TODO ADD DIAGNOSTICS, duplicate variable name in current scope.
           {
             const { value, body } = this.parseProperty(this.current.line, true);
             const node = createSassNode<'variable'>({
@@ -305,6 +303,17 @@ export class ASTParser {
                 value: this.current.line.trimLeft(),
               }),
               false
+            );
+          }
+          break;
+        case 'literal':
+          {
+            this.pushNode(
+              createSassNode<'literal'>({
+                type: 'literal',
+                line: this.current.index,
+                value: this.current.line,
+              })
             );
           }
           break;

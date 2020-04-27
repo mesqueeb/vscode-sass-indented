@@ -41,6 +41,7 @@ interface BlockCommentNode extends Omit<BaseNode, 'body' | 'value'> {
 
 interface LiteralNode {
   type: 'literal';
+  line?: number;
   value: string;
 }
 interface VariableRefNode {

@@ -115,8 +115,13 @@ export class ASTStringify {
         }
         break;
 
-      case 'expression':
       case 'literal':
+        if (node.line !== undefined) {
+          this.increaseStateLineNumber(node as any);
+          text += this.addLine(node.value, 0, options);
+        }
+        break;
+      case 'expression':
       case 'variableRef':
         text += stringifyValue(node);
         break;
