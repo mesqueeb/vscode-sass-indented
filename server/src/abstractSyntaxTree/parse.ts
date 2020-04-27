@@ -131,11 +131,11 @@ export class ASTParser {
           {
             const node = createSassNode<'selector'>({
               body: [],
-              level: Math.min(this.current.level, this.scope.selectors.length),
+              level: this.getMinLevel(),
               line: index,
               type: this.current.type,
               value: this.parseExpression(
-                this.current.line.replace(/^[\t ]*/, ''),
+                this.current.line.trimStart(),
                 this.current.distance,
                 true
               ),
@@ -154,7 +154,7 @@ export class ASTParser {
             const { args, value, mixinType } = this.parseMixin(this.current.line);
             const node = createSassNode<'mixin'>({
               body: [],
-              level: Math.min(this.current.level, this.scope.selectors.length),
+              level: this.getMinLevel(),
               line: index,
               type: this.current.type,
               value,
@@ -191,7 +191,7 @@ export class ASTParser {
             const { value, body } = this.parseProperty(this.current.line, true);
             const node = createSassNode<'variable'>({
               body: body,
-              level: Math.min(this.current.level, this.scope.selectors.length),
+              level: this.getMinLevel(),
               line: index,
               type: this.current.type,
               value,
@@ -204,7 +204,7 @@ export class ASTParser {
           {
             const path = this.current.line.replace(importAtPathRegex, '$2');
             const uri = resolve(this.uri, '../', addDotSassToPath(path));
-            const clampedLevel = Math.min(this.current.level, this.scope.selectors.length);
+            const clampedLevel = this.getMinLevel();
 
             const node = createSassNode<'import'>({
               uri,
@@ -220,7 +220,7 @@ export class ASTParser {
           break;
         case 'use':
           {
-            const clampedLevel = Math.min(this.current.level, this.scope.selectors.length);
+            const clampedLevel = this.getMinLevel();
             if (canPushAtUseOrAtForwardNode) {
               // TODO ADD @use with functionality
               const path = this.current.line.replace(importAtPathRegex, '$2');
@@ -295,6 +295,20 @@ export class ASTParser {
           }
           break;
 
+        case 'comment':
+          {
+            this.pushNode(
+              createSassNode<'comment'>({
+                level: this.getMinLevel(),
+                line: index,
+                type: 'comment',
+                value: this.current.line.trimLeft(),
+              }),
+              false
+            );
+          }
+          break;
+
         default:
           //TODO Handle default case ?
           //throw
@@ -313,6 +327,9 @@ export class ASTParser {
   private getPropLevel(): number {
     return Math.min(Math.max(this.current.level, 1), this.scope.selectors.length);
   }
+  private getMinLevel() {
+    return Math.min(this.current.level, this.scope.selectors.length);
+  }
 
   /**Removes all nodes that should not be accessible from the current scope. */
   private limitScope() {
@@ -323,20 +340,22 @@ export class ASTParser {
     }
   }
 
-  private pushNode(node: SassNode) {
+  private pushNode(node: SassNode, pushDiagnostics = true) {
     // TODO EXTEND DIAGNOSTIC, invalid indentation, example, (tabSize: 2) ' .class'
     if (this.current.distance < this.options.tabSize || this.scope.selectors.length === 0) {
       this.nodes.push(node);
     } else if (this.current.level > this.scope.selectors.length) {
-      this.diagnostics.push(
-        createSassDiagnostic(
-          'invalidIndentation',
-          createRange(this.current.index, this.current.distance, this.current.line.length),
-          this.scope.selectors.length,
-          this.options.tabSize,
-          this.options.insertSpaces
-        )
-      );
+      if (pushDiagnostics) {
+        this.diagnostics.push(
+          createSassDiagnostic(
+            'invalidIndentation',
+            createRange(this.current.index, this.current.distance, this.current.line.length),
+            this.scope.selectors.length,
+            this.options.tabSize,
+            this.options.insertSpaces
+          )
+        );
+      }
       this.scope.selectors[this.scope.selectors.length - 1].body.push(node);
     } else {
       this.scope.selectors[this.current.level - 1].body.push(node);
@@ -373,14 +392,16 @@ export class ASTParser {
     };
   }
 
-  private parseExpression(expression: string, startOffset: number, skipSpace = false) {
+  private parseExpression(expression: string, startOffset: number, selectorMode = false) {
     let token = '';
     const body: NodeValue[] = [];
 
     const expressionNodes: SassNodes['expression'][] = [];
     let level = 0;
     let i = 0;
-    let quote: '"' | "'" | null = null;
+    let currentType: '"' | "'" | '//' | null = null;
+    /**Keeps a space at the start of the token if in selectorMode*/
+    let addSpace = false;
 
     const pushExpressionNode = (node: NodeValue) => {
       if (level === 0) {
@@ -391,6 +412,9 @@ export class ASTParser {
     };
 
     const pushToken = (value: string) => {
+      if (selectorMode && addSpace && value) {
+        value = ' '.concat(value);
+      }
       if (/^[.\w-]*\$/.test(value)) {
         const [, namespace, val] = /^(.*?)\.?(\$.*)/.exec(value)!;
         pushExpressionNode(
@@ -405,24 +429,31 @@ export class ASTParser {
           createSassNode<'literal'>({ type: 'literal', value })
         );
       }
+      addSpace = false;
     };
     for (i; i < expression.length; i++) {
       const char = expression[i];
-      if (quote) {
-        if (char === quote) {
-          quote = null;
+      if (currentType) {
+        // the char can never equal // thats why you can never escape an inline comment.
+        if (char === currentType) {
+          currentType = null;
         }
         token += char;
         if (i === expression.length - 1) {
           i++; // i is used to measure the current offset, so 1 needs to be added on the last loop iteration.
-          pushToken(token);
+          pushToken(token.trimEnd());
         }
       } else if (char === '"') {
         token += char;
-        quote = '"';
+        currentType = '"';
       } else if (char === "'") {
         token += char;
-        quote = "'";
+        currentType = "'";
+      } else if (char === '/' && expression[i + 1] === '/') {
+        pushToken(token);
+        token = ' //';
+        i++; // skip comment start
+        currentType = '//';
       } else if (char === '#' && expression[i + 1] === '{') {
         i++; // skip open bracket
 
@@ -440,9 +471,10 @@ export class ASTParser {
         level++;
 
         token = '';
-      } else if (char === ' ' && !skipSpace) {
+      } else if (char === ' ') {
         pushToken(token);
         token = '';
+        addSpace = true;
       } else if (char === '(') {
         const node = createSassNode<'expression'>({
           type: 'expression',

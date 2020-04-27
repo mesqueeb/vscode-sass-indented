@@ -4,8 +4,9 @@ import { createSassDiagnostic, createRange } from '../abstractSyntaxTree/diagnos
 test('Complex Selector', async () => {
   const ast = new AbstractSyntaxTree();
   await ast.parseFile(
-    `#{$body}.class::hover,
-.class#id::not(.a) a[type="button"]`,
+    `#{$body}.class::hover,  
+.class#id::not(.a)    a[type="button"]   , // asd
+.class .class#id    `,
     '/file',
     { insertSpaces: true, tabSize: 2 }
   );
@@ -40,6 +41,18 @@ test('Complex Selector', async () => {
               body: [{ type: 'literal', value: '.a' }],
             },
             { type: 'literal', value: ' a[type="button"]' },
+            { type: 'literal', value: ' ,' },
+            { type: 'literal', value: ' // asd' },
+          ],
+          body: [],
+        },
+        {
+          type: 'selector',
+          level: 0,
+          line: 2,
+          value: [
+            { type: 'literal', value: '.class' },
+            { type: 'literal', value: ' .class#id' },
           ],
           body: [],
         },
@@ -50,6 +63,7 @@ test('Complex Selector', async () => {
 
   expect(await ast.stringifyFile('/file', { insertSpaces: true, tabSize: 2 })).toBe(
     `#{$body}.class::hover,
-.class#id::not(.a) a[type="button"]`
+.class#id::not(.a) a[type="button"] , // asd
+.class .class#id`
   );
 });
