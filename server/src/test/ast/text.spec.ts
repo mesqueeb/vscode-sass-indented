@@ -1,4 +1,4 @@
-import { AbstractSyntaxTree } from '../abstractSyntaxTree/abstractSyntaxTree';
+import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
 
 test('AST: text', async () => {
   const ast = new AbstractSyntaxTree();

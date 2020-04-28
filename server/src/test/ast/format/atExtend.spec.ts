@@ -1,4 +1,4 @@
-import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { AbstractSyntaxTree } from '../../../abstractSyntaxTree/abstractSyntaxTree';
 
 test('Sass Format Case 11', async () => {
   const ast = new AbstractSyntaxTree();

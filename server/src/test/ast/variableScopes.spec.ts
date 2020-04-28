@@ -1,5 +1,5 @@
-import { AbstractSyntaxTree } from '../abstractSyntaxTree/abstractSyntaxTree';
-import { createSassDiagnostic, createRange } from '../abstractSyntaxTree/diagnostics';
+import { AbstractSyntaxTree } from '../../abstractSyntaxTree/abstractSyntaxTree';
+import { createSassDiagnostic, createRange } from '../../abstractSyntaxTree/diagnostics';
 
 test('AST: Variable Scopes', async () => {
   const ast = new AbstractSyntaxTree();
