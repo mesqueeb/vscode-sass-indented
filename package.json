@@ -24,16 +24,16 @@
   ],
   "main": "./dist/extension.js",
   "scripts": {
-    "vscode:prepublish": "yarn build",
-    "build": "del ./dist && concurrently \"cd ./client && yarn build\" \"cd ./server && yarn build\"",
-    "watch": "concurrently \"cd ./client && yarn watch\" \"cd ./server && yarn watch\"",
-    "watch:client": "cd ./client && yarn watch",
-    "watch:server": "cd ./server && yarn watch",
-    "postinstall": "cd client && yarn && cd ../server && yarn && cd ..",
-    "test": "yarn test:syntax && yarn test:server",
+    "vscode:prepublish": "yarn build && yarn test",
+    "build": "yarn build:extension && yarn build:test",
+    "build:extension": "del ./dist && webpack --mode production",
+    "build:test": "del ./testOut && tsc -b",
+    "build:dev": "webpack --mode development",
+    "watch": "webpack --mode development",
+    "test": "yarn test:syntax && yarn test:e2e:noBuild",
+    "test:e2e:noBuild": "ts-node ./testOut/e2e/runTest.js",
     "test:syntax": "ts-node ./syntaxes/test/test.syntax.ts",
-    "test:server": "cd ./server && yarn test",
-    "test:watch": "cd ./server && yarn test:watch"
+    "test:e2e": "yarn build && yarn test:e2e:noBuild"
   },
   "contributes": {
     "configuration": {
@@ -94,20 +94,24 @@
     ]
   },
   "devDependencies": {
-    "@types/chokidar": "^2.1.3",
     "@types/mocha": "^7.0.2",
     "@types/node": "^12.11.7",
+    "@types/vscode": "^1.44.0",
     "@types/webpack": "^4.41.10",
+    "del-cli": "^3.0.0",
+    "mocha": "^7.1.2",
     "suf-node": "^1.1.1",
+    "test-grammar": "^1.0.3",
+    "ts-loader": "^7.0.2",
     "ts-node": "^8.8.2",
     "typescript": "^3.8.3",
+    "vscode-test": "^1.3.0",
     "webpack": "^4.42.1",
-    "webpack-bundle-analyzer": "^3.6.1"
+    "webpack-bundle-analyzer": "^3.6.1",
+    "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "@types/jest": "^25.2.1",
-    "concurrently": "^5.1.0",
-    "del-cli": "^3.0.0",
-    "test-grammar": "^1.0.3"
+    "sass-lsp-server": "/home/syler/Documents/GitHub/sass-lsp-server",
+    "vscode-languageclient": "^6.1.3"
   }
 }

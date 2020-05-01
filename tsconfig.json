@@ -5,10 +5,10 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "strict": true,
-    "outDir": "out",
+    "outDir": "testOut",
     "resolveJsonModule": true,
-    "rootDir": "scripts"
+    "rootDir": "src"
   },
-  "include": ["scripts"],
+  "include": ["src/e2e"],
   "exclude": ["node_modules"]
 }
