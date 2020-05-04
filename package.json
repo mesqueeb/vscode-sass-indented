@@ -29,7 +29,6 @@
     "build:extension": "del ./dist && webpack --mode production",
     "build:test": "del ./testOut && tsc -b",
     "build:dev": "webpack --mode development",
-    "watch": "webpack --mode development",
     "test": "yarn test:syntax && yarn test:e2e:noBuild",
     "test:e2e:noBuild": "ts-node ./testOut/e2e/runTest.js",
     "test:syntax": "ts-node ./syntaxes/test/test.syntax.ts",
