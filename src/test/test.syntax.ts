@@ -44,6 +44,7 @@ export function RunSyntaxTests() {
     const cssVariable = 'variable.css';
     const importCssVar = 'comment.import.css.variables';
     const control = 'keyword.control';
+    const jsDoc = 'storage.type.class.jsdoc';
     console.log(''); // add new line for visual purposes.
     run(
       'Property ',
@@ -102,12 +103,14 @@ ${tag}||${operator}||${_class}|${_class}|${comma}`
     run(
       'Comment  ',
       `/**
- * Comment
+Comment
+ * @at test
  */
 // Comment
 /* a */`,
       `${commentBlock}|${commentBlock}
 ${commentBlock}
+${commentBlock}|${commentBlock} ${jsDoc}|${commentBlock}
 ${commentBlock}|${commentBlock}
 ${commentLine}|${commentLine}
 ${commentBlock}|${commentBlock}|${commentBlock}`

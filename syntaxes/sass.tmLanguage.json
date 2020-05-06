@@ -6,8 +6,7 @@
   "patterns": [
     {
       "begin": "^(/\\*)",
-      "end": "\\*/|(?=^[a-zA-Z0-9#.%$@\\[=*+])",
-
+      "end": "\\*/",
       "name": "comment.block.sass",
       "patterns": [
         {
@@ -445,7 +444,7 @@
     },
     "comment-param": {
       "match": "\\@(\\w+)",
-      "name": "keyword.control.at-rule.css.sass"
+      "name": "storage.type.class.jsdoc"
     },
     "curly-brackets": {
       "match": "{|}",
