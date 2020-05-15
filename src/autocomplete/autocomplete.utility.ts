@@ -20,7 +20,7 @@ import { GetPropertyDescription } from '../utilityFunctions';
 export const importCssVariableRegex = /^[\t ]*\/\/[\t ]*import[\t ]*css-variables[\t ]*from/;
 const importPathRegex = /(@import|@use|\/\/[\t ]*import[\t ]*css-variables[\t ]*from)[\t ]*['"]?([\w-]*)['"]?/;
 const getImportsRegex = /^[\t ]*(@import|@use|\/\/[\t ]*import[\t ]*css-variables[\t ]*from){1}.*/gm;
-const importAtPathRegex = /^[\t ]*(@import|@use)[\t ]*['"]?(.*?)['"]?[\t ]*(as.*)?$/;
+const importAtPathRegex = /^[\t ]*(@import|@use)[\t ]*['"]?(.*?)['"]?[\t ]*([\t ]+as.*)?$/;
 const replaceQuotesRegex = /[\t ]*['"]?([\w-]*?)['"]?[\t ]*/;
 
 export interface ImportsItem {
