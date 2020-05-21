@@ -2,14 +2,15 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.8.4   | 21.5.2020  | Update sass-formatter.                                                         |
 | 1.8.3   | 20.4.2020  | Fix @extend indentation issue.                                                 |
 | 1.8.2   | 7.4.2020   | add css variable hover and completion.                                         |
 | 1.8.1   | 20.3.2020  | Add Extract to Mixin.                                                          |
 | 1.8.0   | 20.3.2020  | Merge and Remove Experimental data                                             |
 | 1.7.5   | 11,2.2020  | Fix @include and multiline comment                                             |
-| 1.7.4   | 2,2.2020   | Updated sass-formatter                                                         |
+| 1.7.4   | 2,2.2020   | Update sass-formatter.                                                         |
 | 1.7.3   | 2.1.2020   | Fix Readme                                                                     |
-| 1.7.2   | 2.1.2020   | Updated sass-formatter                                                         |
+| 1.7.2   | 2.1.2020   | Update sass-formatter.                                                         |
 | 1.7.1   | 28.11.2019 | Readme Update                                                                  |
 | 1.7.0   | 27.11.2019 | Added tests for sass language grammar, minor fixes                             |
 | 1.6.9   | 12.11.2019 | Added experimental data and fixed syntax highlighting.                         |
