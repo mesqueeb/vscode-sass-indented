@@ -139,12 +139,12 @@
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
   },
-  "license": "MIT",
   "dependencies": {
     "s.color": "0.0.13",
     "sass-formatter": "^0.4.7",
     "suf-cli": "^0.1.1",
     "suf-regex": "^0.0.20",
     "test-grammar": "^1.0.3"
-  }
+  },
+  "license": "MIT"
 }
