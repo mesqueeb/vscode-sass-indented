@@ -9,7 +9,7 @@ config();
     Failed('Error: variable "OVSX_TOKEN" not defined in .env');
     process.exit(1);
   }
-  await Try('yarn prepublish');
+  await Try('yarn pre:distribute');
   await Try(`ovsx publish -p ${OVSXToken}`);
   await Try('vsce publish');
 })();

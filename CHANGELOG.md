@@ -2,6 +2,7 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.8.6   | 16.6.2020  | update sass-formatter fix tr tag issue.                                        |
 | 1.8.5   | 2.6.2020   | update sass-formatter add figcaption support.                                  |
 | 1.8.4   | 21.5.2020  | Update sass-formatter.                                                         |
 | 1.8.3   | 20.4.2020  | Fix @extend indentation issue.                                                 |
