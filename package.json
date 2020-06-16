@@ -5,6 +5,7 @@
   "version": "1.8.5",
   "icon": "resources/images/sass-logo-seal.png",
   "publisher": "syler",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/TheRealSyler/vscode-sass-indented"
@@ -119,7 +120,8 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run build",
+    "prepublish": "yarn build",
+    "distribute": "ts-node ./src/distribute.ts",
     "build": "tsc -b && suf && webpack --mode production",
     "watch": "webpack --mode development",
     "postinstall": "node ./node_modules/vscode/bin/install",
@@ -129,7 +131,10 @@
   },
   "devDependencies": {
     "@types/node": "^8.10.59",
+    "dotenv": "^8.2.0",
     "nodemon": "2.0.0",
+    "ovsx": "^0.1.0-next.9b4e999",
+    "suf-node": "^1.1.1",
     "ts-loader": "^6.2.2",
     "ts-node": "^8.8.2",
     "tslib": "^1.11.1",
