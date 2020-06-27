@@ -3610,10 +3610,10 @@ safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sass-formatter@^0.4.9:
-  version "0.4.9"
-  resolved "https://registry.yarnpkg.com/sass-formatter/-/sass-formatter-0.4.9.tgz#fe6f63808d06ccf5933cc3706d113972340140e8"
-  integrity sha512-cLhpDfJA7H/2RNui7lt7Ndz/LqPYKY7TulCYJWSC2UJW3CuMs76Zr8pusN0zxbd9Rgb5uBiSBMMLlfN2OhftUg==
+sass-formatter@^0.4.10:
+  version "0.4.10"
+  resolved "https://registry.yarnpkg.com/sass-formatter/-/sass-formatter-0.4.10.tgz#ccc1e76aea605a3dba648e4569473ec369343a77"
+  integrity sha512-PGLPkmVH5D88rglknE+safJvtOG4uYhcNVD4opSDX4Ho5l5fkKmEMU526TPOXgfmpOGxi54lb42gzXfRiT6sZw==
   dependencies:
     "@sorg/log" "^2.0.1"
     suf-regex "^0.0.22"
