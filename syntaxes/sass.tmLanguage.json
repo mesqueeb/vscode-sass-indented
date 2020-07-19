@@ -5,8 +5,8 @@
   "name": "Sass",
   "patterns": [
     {
-      "begin": "^(/\\*)",
-      "end": "\\*/",
+      "begin": "^([\t ]*/\\*)",
+      "end": "\\*/|(?=^[a-zA-Z0-9#.%$@\\[=*+])",
       "name": "comment.block.sass",
       "patterns": [
         {
