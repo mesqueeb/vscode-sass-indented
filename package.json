@@ -120,14 +120,14 @@
     ]
   },
   "scripts": {
-    "pre:distribute": "yarn build",
+    "pre:distribute": "yarn test && yarn build",
     "distribute": "ts-node ./src/distribute.ts",
     "build": "tsc -b && suf && webpack --mode production",
     "watch": "webpack --mode development",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
     "test": "ts-node src/test/test.ts",
-    "test:dev": "nodemon src/test/test.ts -- DEV_MODE"
+    "test:watch": "nodemon src/test/test.ts -- DEV_MODE"
   },
   "devDependencies": {
     "@types/node": "^8.10.59",

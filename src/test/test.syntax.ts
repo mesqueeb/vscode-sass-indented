@@ -103,7 +103,7 @@ ${tag}||${operator}||${_class}|${_class}|${comma}`
     run(
       'Comment  ',
       `/**
-Comment
+ Comment
  * @at test
  */
 // Comment
