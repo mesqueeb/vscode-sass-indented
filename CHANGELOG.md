@@ -2,6 +2,8 @@
 
 | Version | Date       | Changelog                                                                      |
 | ------- | ---------- | ------------------------------------------------------------------------------ |
+| 1.8.9   | 20.7.2020  | update grammar and sass-formatter fix block comment. (again)                   |
+| 1.8.8   | 19.7.2020  | update grammar and sass-formatter fix block comment.                           |
 | 1.8.7   | 27.6.2020  | update sass-formatter fix keyframe point issue.                                |
 | 1.8.6   | 16.6.2020  | update sass-formatter fix tr tag issue.                                        |
 | 1.8.5   | 2.6.2020   | update sass-formatter add figcaption support.                                  |
