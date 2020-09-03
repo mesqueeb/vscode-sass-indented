@@ -110,7 +110,7 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "sass-lsp-server": "/home/syler/Documents/GitHub/sass-lsp-server",
+    "sass-lsp-server": "./sass-lsp-server",
     "vscode-languageclient": "^6.1.3"
   }
 }
